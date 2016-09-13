@@ -28,9 +28,9 @@ type Color struct {
 }
 
 type Drawable interface {
-	init()
-	draw()
-	update()
+	Init()
+	Draw()
+	Update()
 }
 
 type Canvas struct {
@@ -88,7 +88,7 @@ func (canvas *Canvas) Run() int {
 
 	// Init Code Goes Here
 	for _, drawable := range canvas.drawables {
-		drawable.init()
+		drawable.Init()
 	}
 
 	running := true
@@ -115,14 +115,13 @@ func (canvas *Canvas) Run() int {
 				}
 			}
 
+			canvas.renderer.SetDrawColor(0, 0, 0, 0xFF)
 			canvas.renderer.Clear()
-			canvas.renderer.SetDrawColor(0, 0, 0, 0x20)
-			canvas.renderer.FillRect(&sdl.Rect{0, 0, windowWidth, windowHeight})
 		}
 
 		for _, drawable := range canvas.drawables {
-			drawable.draw()
-			drawable.update()
+			drawable.Draw()
+			drawable.Update()
 		}
 
 		sdl.CallQueue <- func() {
@@ -145,7 +144,9 @@ func (canvas *Canvas) DrawPoints(points *[]Point, color Color) {
 			uint8(color.B),
 			uint8(color.A),
 		)
+
 		sdlPoints := make([]sdl.Point, len(*points))
+
 		for i, point := range *points {
 			sdlPoints[i] = sdl.Point{int32(point.X), int32(point.Y)}
 		}

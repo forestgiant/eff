@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/forestgiant/eff"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
@@ -17,7 +16,6 @@ const (
 )
 
 type sineWaveDrawable struct {
-	gridColor      eff.Color
 	gridPoints     []eff.Point
 	origGridPoints []eff.Point
 	canvas         eff.Canvas
@@ -30,7 +28,7 @@ type sineWaveDrawable struct {
 	yFreqDir float32
 }
 
-func (s *sineWaveDrawable) init() {
+func (s *sineWaveDrawable) Init() {
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
 	s.xFreq = 1
@@ -38,8 +36,8 @@ func (s *sineWaveDrawable) init() {
 	s.xFreqDir = 1
 	s.yFreqDir = 1
 
-	var gridPoints = make([]sdl.Point, numPoints)
-	var origGridPoints = make([]sdl.Point, numPoints)
+	s.gridPoints = make([]eff.Point, numPoints)
+	s.origGridPoints = make([]eff.Point, numPoints)
 	index := 0
 	cellWidth := math.Ceil(float64(windowWidth) / float64(cols))
 	cellHeight := math.Ceil(float64(windowHeight) / float64(rows))
@@ -47,8 +45,8 @@ func (s *sineWaveDrawable) init() {
 	for i := 1; i < cols-1; i++ {
 		x := i * int(cellWidth)
 		for j := 0; j < windowHeight; j++ {
-			gridPoints[index] = sdl.Point{X: int32(x), Y: int32(j)}
-			origGridPoints[index] = sdl.Point{X: int32(x), Y: int32(j)}
+			s.gridPoints[index] = eff.Point{X: (x), Y: (j)}
+			s.origGridPoints[index] = eff.Point{X: (x), Y: (j)}
 			index++
 		}
 	}
@@ -57,19 +55,19 @@ func (s *sineWaveDrawable) init() {
 	for i := 1; i < rows-1; i++ {
 		y := i * int(cellHeight)
 		for j := 0; j < windowWidth; j++ {
-			gridPoints[index] = sdl.Point{X: int32(j), Y: int32(y)}
-			origGridPoints[index] = sdl.Point{X: int32(j), Y: int32(y)}
+			s.gridPoints[index] = eff.Point{X: (j), Y: (y)}
+			s.origGridPoints[index] = eff.Point{X: (j), Y: (y)}
 			index++
 		}
 	}
 }
 
-func (s *sineWaveDrawable) draw() {
-	s.canvas.DrawPoints(&s.gridPoints, s.gridColor)
+func (s *sineWaveDrawable) Draw() {
+	color := eff.Color{R: 0x00, G: 0xFF, B: 0x00, A: 0xFF}
+	s.canvas.DrawPoints(&s.gridPoints, color)
 }
 
-func (s *sineWaveDrawable) update() {
-
+func (s *sineWaveDrawable) Update() {
 	updateDistortionState := func() {
 		s.xFreq += (0.1) * s.xFreqDir
 		if s.xFreq > 25 || s.xFreq < 1 {
@@ -101,5 +99,6 @@ func (s *sineWaveDrawable) update() {
 
 func main() {
 	s := sineWaveDrawable{}
+	s.canvas.AddDrawable(&s)
 	os.Exit(s.canvas.Run())
 }

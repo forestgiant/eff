@@ -27,38 +27,68 @@ type Color struct {
 	A int
 }
 
-// Drawable interface describing required methods for drawable objects
-type Drawable interface {
-	Init(canvas *Canvas)
-	Draw(canvas *Canvas)
-	Update(canvas *Canvas)
+// Canvas interface describing methods required for canvas renderers
+type Canvas interface {
+	AddDrawable(drawable Drawable)
+	Run() int
+	DrawPoints(points *[]Point, color Color)
+	SetWidth(width int)
+	SetHeight(height int)
+	GetWidth() int
+	GetHeight() int
 }
 
-// Canvas creates window and renderer and calls all drawable methods
-type Canvas struct {
+// Drawable interface describing required methods for drawable objects
+type Drawable interface {
+	Init(canvas Canvas)
+	Draw(canvas Canvas)
+	Update(canvas Canvas)
+}
+
+// SDLCanvas creates window and renderer and calls all drawable methods
+type SDLCanvas struct {
 	window    *sdl.Window
 	renderer  *sdl.Renderer
 	drawables []Drawable
+	width     int
+	height    int
+}
 
-	Width  int
-	Height int
+// SetWidth set the width of the canvas, must be called prior to run
+func (sdlCanvas *SDLCanvas) SetWidth(width int) {
+	sdlCanvas.width = width
+}
+
+// GetWidth get the width of the canvas window
+func (sdlCanvas *SDLCanvas) GetWidth() int {
+	return sdlCanvas.width
+}
+
+// SetHeight set the height of the canvas, must be called prior to run
+func (sdlCanvas *SDLCanvas) SetHeight(height int) {
+	sdlCanvas.height = height
+}
+
+// GetHeight get the height of the canvas window
+func (sdlCanvas *SDLCanvas) GetHeight() int {
+	return sdlCanvas.height
 }
 
 // AddDrawable adds a struct that implements the eff.Drawable interface
-func (canvas *Canvas) AddDrawable(drawable Drawable) {
-	canvas.drawables = append(canvas.drawables, drawable)
+func (sdlCanvas *SDLCanvas) AddDrawable(drawable Drawable) {
+	sdlCanvas.drawables = append(sdlCanvas.drawables, drawable)
 }
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
-func (canvas *Canvas) Run() int {
+func (sdlCanvas *SDLCanvas) Run() int {
 	var err error
 	sdl.CallQueue <- func() {
-		canvas.window, err = sdl.CreateWindow(
+		sdlCanvas.window, err = sdl.CreateWindow(
 			windowTitle,
 			sdl.WINDOWPOS_UNDEFINED,
 			sdl.WINDOWPOS_UNDEFINED,
-			canvas.Width,
-			canvas.Height,
+			sdlCanvas.GetWidth(),
+			sdlCanvas.GetHeight(),
 			sdl.WINDOW_OPENGL,
 		)
 	}
@@ -68,13 +98,13 @@ func (canvas *Canvas) Run() int {
 	}
 	defer func() {
 		sdl.CallQueue <- func() {
-			canvas.window.Destroy()
+			sdlCanvas.window.Destroy()
 		}
 	}()
 
 	sdl.CallQueue <- func() {
-		canvas.renderer, err = sdl.CreateRenderer(
-			canvas.window,
+		sdlCanvas.renderer, err = sdl.CreateRenderer(
+			sdlCanvas.window,
 			-1,
 			sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC,
 		)
@@ -85,17 +115,17 @@ func (canvas *Canvas) Run() int {
 	}
 	defer func() {
 		sdl.CallQueue <- func() {
-			canvas.renderer.Destroy()
+			sdlCanvas.renderer.Destroy()
 		}
 	}()
 
 	sdl.CallQueue <- func() {
-		canvas.renderer.Clear()
+		sdlCanvas.renderer.Clear()
 	}
 
 	// Init Code Goes Here
-	for _, drawable := range canvas.drawables {
-		drawable.Init(canvas)
+	for _, drawable := range sdlCanvas.drawables {
+		drawable.Init(sdlCanvas)
 	}
 
 	running := true
@@ -114,26 +144,26 @@ func (canvas *Canvas) Run() int {
 					case sdl.K_f:
 						fullscreen = !fullscreen
 						if fullscreen {
-							canvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+							sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
 						} else {
-							canvas.window.SetFullscreen(0)
+							sdlCanvas.window.SetFullscreen(0)
 						}
 					}
 				}
 			}
 
-			canvas.renderer.SetDrawColor(0, 0, 0, 0xFF)
-			canvas.renderer.Clear()
+			sdlCanvas.renderer.SetDrawColor(0, 0, 0, 0xFF)
+			sdlCanvas.renderer.Clear()
 		}
 
-		for _, drawable := range canvas.drawables {
-			drawable.Draw(canvas)
-			drawable.Update(canvas)
+		for _, drawable := range sdlCanvas.drawables {
+			drawable.Draw(sdlCanvas)
+			drawable.Update(sdlCanvas)
 		}
 
 		sdl.CallQueue <- func() {
 			currentFrameTime := sdl.GetTicks()
-			canvas.renderer.Present()
+			sdlCanvas.renderer.Present()
 			if currentFrameTime-lastFrameTime < frameTime {
 				sdl.Delay(frameTime - (currentFrameTime - lastFrameTime))
 			}
@@ -144,9 +174,9 @@ func (canvas *Canvas) Run() int {
 }
 
 //DrawPoints draw a slice of points to the screen all the same color
-func (canvas *Canvas) DrawPoints(points *[]Point, color Color) {
+func (sdlCanvas *SDLCanvas) DrawPoints(points *[]Point, color Color) {
 	sdl.CallQueue <- func() {
-		canvas.renderer.SetDrawColor(
+		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
@@ -159,6 +189,6 @@ func (canvas *Canvas) DrawPoints(points *[]Point, color Color) {
 			sdlPoints[i] = sdl.Point{X: int32(point.X), Y: int32(point.Y)}
 		}
 
-		canvas.renderer.DrawPoints(sdlPoints)
+		sdlCanvas.renderer.DrawPoints(sdlPoints)
 	}
 }

@@ -8,18 +8,18 @@ import (
 )
 
 const (
-	windowTitle  = "Effulgent"
-	windowWidth  = 1280
-	windowHeight = 720
-	frameRate    = 90
-	frameTime    = 1000 / frameRate
+	windowTitle = "Effulgent"
+	frameRate   = 90
+	frameTime   = 1000 / frameRate
 )
 
+// Point container for 2d points
 type Point struct {
 	X int
 	Y int
 }
 
+// Color container for argb colors
 type Color struct {
 	R int
 	G int
@@ -27,22 +27,29 @@ type Color struct {
 	A int
 }
 
+// Drawable interface describing required methods for drawable objects
 type Drawable interface {
-	Init()
-	Draw()
-	Update()
+	Init(canvas *Canvas)
+	Draw(canvas *Canvas)
+	Update(canvas *Canvas)
 }
 
+// Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
 	window    *sdl.Window
 	renderer  *sdl.Renderer
 	drawables []Drawable
+
+	Width  int
+	Height int
 }
 
+// AddDrawable adds a struct that implements the eff.Drawable interface
 func (canvas *Canvas) AddDrawable(drawable Drawable) {
 	canvas.drawables = append(canvas.drawables, drawable)
 }
 
+// Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (canvas *Canvas) Run() int {
 	var err error
 	sdl.CallQueue <- func() {
@@ -50,8 +57,8 @@ func (canvas *Canvas) Run() int {
 			windowTitle,
 			sdl.WINDOWPOS_UNDEFINED,
 			sdl.WINDOWPOS_UNDEFINED,
-			windowWidth,
-			windowHeight,
+			canvas.Width,
+			canvas.Height,
 			sdl.WINDOW_OPENGL,
 		)
 	}
@@ -73,7 +80,7 @@ func (canvas *Canvas) Run() int {
 		)
 	}
 	if err != nil {
-		fmt.Fprint(os.Stderr, "Failed to create renderer: %s\n", err)
+		fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
 		return 2
 	}
 	defer func() {
@@ -88,12 +95,12 @@ func (canvas *Canvas) Run() int {
 
 	// Init Code Goes Here
 	for _, drawable := range canvas.drawables {
-		drawable.Init()
+		drawable.Init(canvas)
 	}
 
 	running := true
 	fullscreen := false
-	var lastFrameTime uint32 = sdl.GetTicks()
+	var lastFrameTime = sdl.GetTicks()
 	for running {
 		sdl.CallQueue <- func() {
 			for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -120,8 +127,8 @@ func (canvas *Canvas) Run() int {
 		}
 
 		for _, drawable := range canvas.drawables {
-			drawable.Draw()
-			drawable.Update()
+			drawable.Draw(canvas)
+			drawable.Update(canvas)
 		}
 
 		sdl.CallQueue <- func() {
@@ -136,6 +143,7 @@ func (canvas *Canvas) Run() int {
 	return 0
 }
 
+//DrawPoints draw a slice of points to the screen all the same color
 func (canvas *Canvas) DrawPoints(points *[]Point, color Color) {
 	sdl.CallQueue <- func() {
 		canvas.renderer.SetDrawColor(
@@ -148,7 +156,7 @@ func (canvas *Canvas) DrawPoints(points *[]Point, color Color) {
 		sdlPoints := make([]sdl.Point, len(*points))
 
 		for i, point := range *points {
-			sdlPoints[i] = sdl.Point{int32(point.X), int32(point.Y)}
+			sdlPoints[i] = sdl.Point{X: int32(point.X), Y: int32(point.Y)}
 		}
 
 		canvas.renderer.DrawPoints(sdlPoints)

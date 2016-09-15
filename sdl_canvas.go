@@ -43,6 +43,14 @@ func (sdlCanvas *SDLCanvas) AddDrawable(drawable Drawable) {
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (sdlCanvas *SDLCanvas) Run() int {
+	if sdlCanvas.width == 0 {
+		sdlCanvas.width = defaultWidth
+	}
+
+	if sdlCanvas.height == 0 {
+		sdlCanvas.height = defaultHeight
+	}
+
 	var err error
 	sdl.CallQueue <- func() {
 		sdlCanvas.window, err = sdl.CreateWindow(
@@ -137,6 +145,12 @@ func (sdlCanvas *SDLCanvas) Run() int {
 
 //DrawPoints draw a slice of points to the screen all the same color
 func (sdlCanvas *SDLCanvas) DrawPoints(points *[]Point, color Color) {
+	sdlPoints := make([]sdl.Point, len(*points))
+
+	for i, point := range *points {
+		sdlPoints[i] = sdl.Point{X: int32(point.X), Y: int32(point.Y)}
+	}
+
 	sdl.CallQueue <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
@@ -145,12 +159,137 @@ func (sdlCanvas *SDLCanvas) DrawPoints(points *[]Point, color Color) {
 			uint8(color.A),
 		)
 
-		sdlPoints := make([]sdl.Point, len(*points))
-
-		for i, point := range *points {
-			sdlPoints[i] = sdl.Point{X: int32(point.X), Y: int32(point.Y)}
-		}
-
 		sdlCanvas.renderer.DrawPoints(sdlPoints)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawPoint(point Point, color Color) {
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+		sdlCanvas.renderer.DrawPoint(point.X, point.Y)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) FillRect(rect Rect, color Color) {
+	sdlRect := sdl.Rect{
+		X: int32(rect.X),
+		Y: int32(rect.Y),
+		W: int32(rect.W),
+		H: int32(rect.H),
+	}
+
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		sdlCanvas.renderer.FillRect(&sdlRect)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) FillRects(rects *[]Rect, color Color) {
+	sdlRects := make([]sdl.Rect, len(*rects))
+
+	for i, rect := range *rects {
+		sdlRects[i] = sdl.Rect{
+			X: int32(rect.X),
+			Y: int32(rect.Y),
+			W: int32(rect.W),
+			H: int32(rect.H),
+		}
+	}
+
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		sdlCanvas.renderer.FillRects(sdlRects)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawRect(rect Rect, color Color) {
+	sdlRect := sdl.Rect{
+		X: int32(rect.X),
+		Y: int32(rect.Y),
+		W: int32(rect.W),
+		H: int32(rect.H),
+	}
+
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		sdlCanvas.renderer.DrawRect(&sdlRect)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawRects(rects *[]Rect, color Color) {
+	sdlRects := make([]sdl.Rect, len(*rects))
+
+	for i, rect := range *rects {
+		sdlRects[i] = sdl.Rect{
+			X: int32(rect.X),
+			Y: int32(rect.Y),
+			W: int32(rect.W),
+			H: int32(rect.H),
+		}
+	}
+
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		sdlCanvas.renderer.DrawRects(sdlRects)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawLine(p1 Point, p2 Point, color Color) {
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+		sdlCanvas.renderer.DrawLine(p1.X, p1.Y, p2.X, p2.Y)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawLines(points *[]Point, color Color) {
+	sdlPoints := make([]sdl.Point, len(*points))
+
+	for i, point := range *points {
+		sdlPoints[i] = sdl.Point{X: int32(point.X), Y: int32(point.Y)}
+	}
+
+	sdl.CallQueue <- func() {
+		sdlCanvas.renderer.SetDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		sdlCanvas.renderer.DrawLines(sdlPoints)
 	}
 }

@@ -9,11 +9,12 @@ import (
 
 // SDLCanvas creates window and renderer and calls all drawable methods
 type SDLCanvas struct {
-	window    *sdl.Window
-	renderer  *sdl.Renderer
-	drawables []Drawable
-	width     int
-	height    int
+	window     *sdl.Window
+	renderer   *sdl.Renderer
+	drawables  []Drawable
+	width      int
+	height     int
+	fullscreen bool
 }
 
 // SetWidth set the width of the canvas, must be called prior to run
@@ -61,6 +62,12 @@ func (sdlCanvas *SDLCanvas) Run() int {
 			sdlCanvas.Height(),
 			sdl.WINDOW_OPENGL,
 		)
+
+		if sdlCanvas.fullscreen {
+			sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+		} else {
+			sdlCanvas.window.SetFullscreen(0)
+		}
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -99,7 +106,7 @@ func (sdlCanvas *SDLCanvas) Run() int {
 	}
 
 	running := true
-	fullscreen := false
+
 	var lastFrameTime = sdl.GetTicks()
 	for running {
 		sdl.CallQueue <- func() {
@@ -112,8 +119,8 @@ func (sdlCanvas *SDLCanvas) Run() int {
 					case sdl.K_q:
 						running = false
 					case sdl.K_f:
-						fullscreen = !fullscreen
-						if fullscreen {
+						sdlCanvas.fullscreen = !sdlCanvas.fullscreen
+						if sdlCanvas.fullscreen {
 							sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
 						} else {
 							sdlCanvas.window.SetFullscreen(0)
@@ -292,4 +299,12 @@ func (sdlCanvas *SDLCanvas) DrawLines(points *[]Point, color Color) {
 
 		sdlCanvas.renderer.DrawLines(sdlPoints)
 	}
+}
+
+func (sdlCanvas *SDLCanvas) Fullscreen() bool {
+	return sdlCanvas.fullscreen
+}
+
+func (sdlCanvas *SDLCanvas) SetFullscreen(fullscreen bool) {
+	sdlCanvas.fullscreen = fullscreen
 }

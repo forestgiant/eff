@@ -3,18 +3,22 @@ package eff
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 // SDLCanvas creates window and renderer and calls all drawable methods
 type SDLCanvas struct {
-	window     *sdl.Window
-	renderer   *sdl.Renderer
-	drawables  []Drawable
-	width      int
-	height     int
-	fullscreen bool
+	window          *sdl.Window
+	renderer        *sdl.Renderer
+	drawablesMutex  sync.Mutex
+	drawables       []Drawable
+	width           int
+	height          int
+	fullscreen      bool
+	keyUpHandlers   []KeyHandler
+	keyDownHandlers []KeyHandler
 }
 
 // SetWidth set the width of the canvas, must be called prior to run
@@ -39,7 +43,34 @@ func (sdlCanvas *SDLCanvas) Height() int {
 
 // AddDrawable adds a struct that implements the eff.Drawable interface
 func (sdlCanvas *SDLCanvas) AddDrawable(drawable Drawable) {
+	sdlCanvas.drawablesMutex.Lock()
 	sdlCanvas.drawables = append(sdlCanvas.drawables, drawable)
+	sdlCanvas.drawablesMutex.Unlock()
+}
+
+func (sdlCanvas *SDLCanvas) RemoveDrawable(drawable Drawable) {
+	index := -1
+	for i, d := range sdlCanvas.drawables {
+		if d == drawable {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return
+	}
+
+	sdlCanvas.drawablesMutex.Lock()
+	sdlCanvas.drawables = append(sdlCanvas.drawables[:index], sdlCanvas.drawables[index+1:]...)
+	sdlCanvas.drawablesMutex.Unlock()
+}
+
+func (sdlCanvas *SDLCanvas) AddKeyUpHandler(handler KeyHandler) {
+	sdlCanvas.keyUpHandlers = append(sdlCanvas.keyUpHandlers, handler)
+}
+
+func (sdlCanvas *SDLCanvas) AddKeyDownHandler(handler KeyHandler) {
+	sdlCanvas.keyUpHandlers = append(sdlCanvas.keyUpHandlers, handler)
 }
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
@@ -101,9 +132,11 @@ func (sdlCanvas *SDLCanvas) Run() int {
 	}
 
 	// Init Code Goes Here
+	sdlCanvas.drawablesMutex.Lock()
 	for _, drawable := range sdlCanvas.drawables {
 		drawable.Init(sdlCanvas)
 	}
+	sdlCanvas.drawablesMutex.Unlock()
 
 	running := true
 
@@ -126,6 +159,14 @@ func (sdlCanvas *SDLCanvas) Run() int {
 							sdlCanvas.window.SetFullscreen(0)
 						}
 					}
+
+					for _, handler := range sdlCanvas.keyUpHandlers {
+						handler(sdl.GetKeyName(t.Keysym.Sym), sdlCanvas)
+					}
+				case *sdl.KeyDownEvent:
+					for _, handler := range sdlCanvas.keyDownHandlers {
+						handler(sdl.GetKeyName(t.Keysym.Sym), sdlCanvas)
+					}
 				}
 			}
 
@@ -133,10 +174,12 @@ func (sdlCanvas *SDLCanvas) Run() int {
 			sdlCanvas.renderer.Clear()
 		}
 
+		sdlCanvas.drawablesMutex.Lock()
 		for _, drawable := range sdlCanvas.drawables {
 			drawable.Draw(sdlCanvas)
 			drawable.Update(sdlCanvas)
 		}
+		sdlCanvas.drawablesMutex.Unlock()
 
 		sdl.CallQueue <- func() {
 			currentFrameTime := sdl.GetTicks()

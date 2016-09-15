@@ -1,6 +1,9 @@
 package eff
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 const (
 	windowTitle   = "Effulgent"
@@ -24,6 +27,15 @@ type Color struct {
 	A int
 }
 
+func (c Color) RandomColor() Color {
+	return Color{
+		R: rand.Intn(255),
+		G: rand.Intn(255),
+		B: rand.Intn(255),
+		A: rand.Intn(255),
+	}
+}
+
 type Rect struct {
 	X int
 	Y int
@@ -36,9 +48,12 @@ func (r *Rect) Intersects(otherRect Rect) bool {
 		(int(math.Abs(float64(r.Y-otherRect.Y)))*2 < (r.H + otherRect.H))
 }
 
+type KeyHandler func(key string, canvas Canvas)
+
 // Canvas interface describing methods required for canvas renderers
 type Canvas interface {
 	AddDrawable(drawable Drawable)
+	RemoveDrawable(drawable Drawable)
 	Run() int
 
 	DrawPoint(point Point, color Color)
@@ -59,6 +74,9 @@ type Canvas interface {
 
 	Fullscreen() bool
 	SetFullscreen(fullscreen bool)
+
+	AddKeyUpHandler(handler KeyHandler)
+	AddKeyDownHandler(handler KeyHandler)
 }
 
 // Drawable interface describing required methods for drawable objects

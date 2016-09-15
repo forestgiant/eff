@@ -56,6 +56,9 @@ type Canvas interface {
 	SetHeight(height int)
 	Width() int
 	Height() int
+
+	Fullscreen() bool
+	SetFullscreen(fullscreen bool)
 }
 
 // Drawable interface describing required methods for drawable objects

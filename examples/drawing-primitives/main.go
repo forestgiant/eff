@@ -33,7 +33,7 @@ func (d *dots) Draw(canvas eff.Canvas) {
 
 func (d *dots) Update(canvas eff.Canvas) {
 	updateRandomPoints := func() {
-		for i, _ := range d.points {
+		for i := range d.points {
 			d.points[i].X = rand.Intn(canvas.Width())
 			d.points[i].Y = rand.Intn(canvas.Height())
 		}
@@ -48,6 +48,9 @@ func main() {
 
 	//Create Eff Canvas
 	canvas := eff.SDLCanvas{}
+	// canvas.SetWidth(2560)
+	// canvas.SetHeight(1440)
+	canvas.SetFullscreen(true)
 
 	//Add drawables to canvas
 	canvas.AddDrawable(&d)

@@ -28,7 +28,7 @@ func (d *dots) Init(canvas eff.Canvas) {
 
 func (d *dots) Draw(canvas eff.Canvas) {
 	//Draw Points in a random color
-	canvas.DrawPoints(&d.points, eff.Color{R: rand.Intn(255), G: rand.Intn(255), B: rand.Intn(255), A: rand.Intn(255)})
+	canvas.DrawPoints(&d.points, eff.Color{}.RandomColor())
 }
 
 func (d *dots) Update(canvas eff.Canvas) {
@@ -42,18 +42,79 @@ func (d *dots) Update(canvas eff.Canvas) {
 	updateRandomPoints()
 }
 
+type rects struct {
+	rects []eff.Rect
+}
+
+func (r *rects) randomRects(count int, maxX int, maxY int) *[]eff.Rect {
+	rects := make([]eff.Rect, count)
+	for i := 0; i < count; i++ {
+		rects[i] = eff.Rect{X: rand.Intn(maxX), Y: rand.Intn(maxY), W: rand.Intn(maxX / 2), H: rand.Intn(maxY / 2)}
+	}
+
+	return &rects
+}
+
+func (r *rects) Init(canvas eff.Canvas) {
+	r.rects = *r.randomRects(100, canvas.Width(), canvas.Height())
+}
+
+func (r *rects) Draw(canvas eff.Canvas) {
+	canvas.DrawRects(&r.rects, eff.Color{}.RandomColor())
+}
+
+func (r *rects) Update(canvas eff.Canvas) {
+	updateRandomRects := func() {
+		for i := range r.rects {
+			r.rects[i].X = rand.Intn(canvas.Width())
+			r.rects[i].Y = rand.Intn(canvas.Height())
+			r.rects[i].W = rand.Intn(canvas.Width() / 2)
+			r.rects[i].H = rand.Intn(canvas.Height() / 2)
+		}
+	}
+
+	updateRandomRects()
+}
+
 func main() {
 	//Create drawables
-	d := dots{}
+	drawables := make([]eff.Drawable, 2)
+	drawables[0] = &dots{}
+	drawables[1] = &rects{}
+
+	drawableIndex := 0
 
 	//Create Eff Canvas
 	canvas := eff.SDLCanvas{}
-	// canvas.SetWidth(2560)
-	// canvas.SetHeight(1440)
-	canvas.SetFullscreen(true)
+	canvas.SetWidth(1280)
+	canvas.SetHeight(720)
+
+	setDrawable := func(index int) {
+		if index < 0 || index >= len(drawables) {
+			return
+		}
+
+		if index == drawableIndex {
+			return
+		}
+
+		canvas.RemoveDrawable(drawables[drawableIndex])
+		canvas.AddDrawable(drawables[index])
+
+		drawableIndex = index
+	}
 
 	//Add drawables to canvas
-	canvas.AddDrawable(&d)
+	canvas.AddDrawable(drawables[0])
+
+	canvas.AddKeyUpHandler(func(key string, canvas eff.Canvas) {
+		// fmt.Println("Up", key)
+		if key == "1" {
+			setDrawable(0)
+		} else if key == "2" {
+			setDrawable(1)
+		}
+	})
 
 	//Start the run loop
 	os.Exit(canvas.Run())

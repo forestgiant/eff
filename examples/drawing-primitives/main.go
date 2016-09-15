@@ -8,7 +8,8 @@ import (
 )
 
 type dots struct {
-	points []eff.Point
+	points      []eff.Point
+	initialized bool
 }
 
 func (d *dots) randomPoints(count int, maxX int, maxY int) *[]eff.Point {
@@ -24,6 +25,8 @@ func (d *dots) randomPoints(count int, maxX int, maxY int) *[]eff.Point {
 
 func (d *dots) Init(canvas eff.Canvas) {
 	d.points = *d.randomPoints(10000, canvas.Width(), canvas.Height())
+
+	d.initialized = true
 }
 
 func (d *dots) Draw(canvas eff.Canvas) {
@@ -42,8 +45,13 @@ func (d *dots) Update(canvas eff.Canvas) {
 	updateRandomPoints()
 }
 
+func (d *dots) Initialized() bool {
+	return d.initialized
+}
+
 type rects struct {
-	rects []eff.Rect
+	rects       []eff.Rect
+	initialized bool
 }
 
 func (r *rects) randomRects(count int, maxX int, maxY int) *[]eff.Rect {
@@ -57,6 +65,7 @@ func (r *rects) randomRects(count int, maxX int, maxY int) *[]eff.Rect {
 
 func (r *rects) Init(canvas eff.Canvas) {
 	r.rects = *r.randomRects(100, canvas.Width(), canvas.Height())
+	r.initialized = true
 }
 
 func (r *rects) Draw(canvas eff.Canvas) {
@@ -74,6 +83,10 @@ func (r *rects) Update(canvas eff.Canvas) {
 	}
 
 	updateRandomRects()
+}
+
+func (r *rects) Initialized() bool {
+	return r.initialized
 }
 
 func main() {
@@ -98,7 +111,10 @@ func main() {
 			return
 		}
 
-		canvas.RemoveDrawable(drawables[drawableIndex])
+		if len(drawables) > 0 && drawableIndex >= 0 {
+			canvas.RemoveDrawable(drawables[drawableIndex])
+		}
+
 		canvas.AddDrawable(drawables[index])
 
 		drawableIndex = index

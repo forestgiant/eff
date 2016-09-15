@@ -131,13 +131,6 @@ func (sdlCanvas *SDLCanvas) Run() int {
 		sdlCanvas.renderer.Clear()
 	}
 
-	// Init Code Goes Here
-	sdlCanvas.drawablesMutex.Lock()
-	for _, drawable := range sdlCanvas.drawables {
-		drawable.Init(sdlCanvas)
-	}
-	sdlCanvas.drawablesMutex.Unlock()
-
 	running := true
 
 	var lastFrameTime = sdl.GetTicks()
@@ -176,6 +169,10 @@ func (sdlCanvas *SDLCanvas) Run() int {
 
 		sdlCanvas.drawablesMutex.Lock()
 		for _, drawable := range sdlCanvas.drawables {
+			if !drawable.Initialized() {
+				drawable.Init(sdlCanvas)
+			}
+
 			drawable.Draw(sdlCanvas)
 			drawable.Update(sdlCanvas)
 		}

@@ -84,4 +84,5 @@ type Drawable interface {
 	Init(canvas Canvas)
 	Draw(canvas Canvas)
 	Update(canvas Canvas)
+	Initialized() bool
 }

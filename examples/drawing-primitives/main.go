@@ -90,22 +90,21 @@ func (r *rects) Initialized() bool {
 }
 
 type block struct {
-	rect  eff.Rect
-	dir   eff.Point
-	color eff.Color
+	dir       eff.Point
+	colorRect eff.ColorRect
 }
 
 func (b *block) applyDir() {
-	b.rect.X += b.dir.X
-	b.rect.Y += b.dir.Y
+	b.colorRect.Rect.X += b.dir.X
+	b.colorRect.Rect.Y += b.dir.Y
 }
 
 func (b *block) wallBounce(width int, height int) {
-	if b.rect.X < 0 || b.rect.X+b.rect.W > width {
+	if b.colorRect.Rect.X < 0 || b.colorRect.Rect.X+b.colorRect.Rect.W > width {
 		b.dir.X *= -1
 	}
 
-	if b.rect.Y < 0 || b.rect.Y+b.rect.H > height {
+	if b.colorRect.Rect.Y < 0 || b.colorRect.Rect.Y+b.colorRect.Rect.H > height {
 		b.dir.Y *= -1
 	}
 }
@@ -116,22 +115,24 @@ type collidingBlocks struct {
 }
 
 func (c *collidingBlocks) Init(canvas eff.Canvas) {
-	blockCount := 200
-	blockSize := 10
+	blockCount := 5000
+	blockSize := 5
 	c.blocks = make([]block, blockCount)
 	for i := 0; i < blockCount; i++ {
 		b := block{
-			rect: eff.Rect{
-				X: rand.Intn(canvas.Width() - blockSize),
-				Y: rand.Intn(canvas.Height() - blockSize),
-				W: blockSize,
-				H: blockSize,
+			colorRect: eff.ColorRect{
+				Rect: eff.Rect{
+					X: rand.Intn(canvas.Width() - blockSize),
+					Y: rand.Intn(canvas.Height() - blockSize),
+					W: blockSize,
+					H: blockSize,
+				},
+				Color: eff.Color{}.RandomColor(),
 			},
 			dir: eff.Point{
 				X: rand.Intn(4) + 1,
 				Y: rand.Intn(4) + 1,
 			},
-			color: eff.Color{}.RandomColor(),
 		}
 		c.blocks[i] = b
 	}
@@ -140,9 +141,12 @@ func (c *collidingBlocks) Init(canvas eff.Canvas) {
 }
 
 func (c *collidingBlocks) Draw(canvas eff.Canvas) {
+	colorRects := make([]eff.ColorRect, len(c.blocks))
 	for _, block := range c.blocks {
-		canvas.FillRect(block.rect, block.color)
+		colorRects = append(colorRects, block.colorRect)
 	}
+
+	canvas.DrawColorRects(&colorRects)
 }
 
 func (c *collidingBlocks) Initialized() bool {
@@ -151,29 +155,6 @@ func (c *collidingBlocks) Initialized() bool {
 
 func (c *collidingBlocks) Update(canvas eff.Canvas) {
 	for i, block := range c.blocks {
-		for j, otherBlock := range c.blocks {
-			if otherBlock.rect.Equals(block.rect) {
-				// fmt.Println("Skipping block because its the same")
-				continue
-			}
-
-			if block.rect.Intersects(otherBlock.rect) {
-
-				block.dir.X *= -1
-				block.dir.Y *= -1
-
-				otherBlock.dir.X *= -1
-				otherBlock.dir.Y *= -1
-				for block.rect.Intersects(otherBlock.rect) {
-					block.applyDir()
-					otherBlock.applyDir()
-				}
-
-				break
-			}
-			c.blocks[j] = otherBlock
-		}
-
 		block.applyDir()
 		block.wallBounce(canvas.Width(), canvas.Height())
 		c.blocks[i] = block

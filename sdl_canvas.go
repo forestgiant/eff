@@ -169,6 +169,10 @@ func (sdlCanvas *SDLCanvas) Run() int {
 
 		sdlCanvas.drawablesMutex.Lock()
 		for _, drawable := range sdlCanvas.drawables {
+			if drawable == nil {
+				continue
+			}
+
 			if !drawable.Initialized() {
 				drawable.Init(sdlCanvas)
 			}
@@ -283,6 +287,28 @@ func (sdlCanvas *SDLCanvas) DrawRect(rect Rect, color Color) {
 		)
 
 		sdlCanvas.renderer.DrawRect(&sdlRect)
+	}
+}
+
+func (sdlCanvas *SDLCanvas) DrawColorRects(colorRects *[]ColorRect) {
+	sdl.CallQueue <- func() {
+		for _, colorRect := range *colorRects {
+			sdlCanvas.renderer.SetDrawColor(
+				uint8(colorRect.Color.R),
+				uint8(colorRect.Color.G),
+				uint8(colorRect.Color.B),
+				uint8(colorRect.Color.A),
+			)
+
+			sdlRect := sdl.Rect{
+				X: int32(colorRect.Rect.X),
+				Y: int32(colorRect.Rect.Y),
+				W: int32(colorRect.Rect.W),
+				H: int32(colorRect.Rect.H),
+			}
+
+			sdlCanvas.renderer.FillRect(&sdlRect)
+		}
 	}
 }
 

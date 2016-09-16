@@ -43,6 +43,11 @@ type Rect struct {
 	H int
 }
 
+type ColorRect struct {
+	Rect  Rect
+	Color Color
+}
+
 func (r *Rect) Equals(otherRect Rect) bool {
 	return (r.X == otherRect.X &&
 		r.Y == otherRect.Y &&
@@ -71,6 +76,7 @@ type Canvas interface {
 
 	DrawRect(rect Rect, color Color)
 	DrawRects(rect *[]Rect, color Color)
+	DrawColorRects(colorRect *[]ColorRect)
 	FillRect(rect Rect, color Color)
 	FillRects(rect *[]Rect, color Color)
 

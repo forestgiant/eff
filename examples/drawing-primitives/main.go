@@ -89,11 +89,103 @@ func (r *rects) Initialized() bool {
 	return r.initialized
 }
 
+type block struct {
+	rect  eff.Rect
+	dir   eff.Point
+	color eff.Color
+}
+
+func (b *block) applyDir() {
+	b.rect.X += b.dir.X
+	b.rect.Y += b.dir.Y
+}
+
+func (b *block) wallBounce(width int, height int) {
+	if b.rect.X < 0 || b.rect.X+b.rect.W > width {
+		b.dir.X *= -1
+	}
+
+	if b.rect.Y < 0 || b.rect.Y+b.rect.H > height {
+		b.dir.Y *= -1
+	}
+}
+
+type collidingBlocks struct {
+	blocks      []block
+	initialized bool
+}
+
+func (c *collidingBlocks) Init(canvas eff.Canvas) {
+	blockCount := 200
+	blockSize := 10
+	c.blocks = make([]block, blockCount)
+	for i := 0; i < blockCount; i++ {
+		b := block{
+			rect: eff.Rect{
+				X: rand.Intn(canvas.Width() - blockSize),
+				Y: rand.Intn(canvas.Height() - blockSize),
+				W: blockSize,
+				H: blockSize,
+			},
+			dir: eff.Point{
+				X: rand.Intn(4) + 1,
+				Y: rand.Intn(4) + 1,
+			},
+			color: eff.Color{}.RandomColor(),
+		}
+		c.blocks[i] = b
+	}
+
+	c.initialized = true
+}
+
+func (c *collidingBlocks) Draw(canvas eff.Canvas) {
+	for _, block := range c.blocks {
+		canvas.FillRect(block.rect, block.color)
+	}
+}
+
+func (c *collidingBlocks) Initialized() bool {
+	return c.initialized
+}
+
+func (c *collidingBlocks) Update(canvas eff.Canvas) {
+	for i, block := range c.blocks {
+		for j, otherBlock := range c.blocks {
+			if otherBlock.rect.Equals(block.rect) {
+				// fmt.Println("Skipping block because its the same")
+				continue
+			}
+
+			if block.rect.Intersects(otherBlock.rect) {
+
+				block.dir.X *= -1
+				block.dir.Y *= -1
+
+				otherBlock.dir.X *= -1
+				otherBlock.dir.Y *= -1
+				for block.rect.Intersects(otherBlock.rect) {
+					block.applyDir()
+					otherBlock.applyDir()
+				}
+
+				break
+			}
+			c.blocks[j] = otherBlock
+		}
+
+		block.applyDir()
+		block.wallBounce(canvas.Width(), canvas.Height())
+		c.blocks[i] = block
+	}
+}
+
 func main() {
 	//Create drawables
-	drawables := make([]eff.Drawable, 2)
+	drawables := make([]eff.Drawable, 3)
 	drawables[0] = &dots{}
 	drawables[1] = &rects{}
+	drawables[2] = &collidingBlocks{}
 
 	drawableIndex := 0
 
@@ -129,6 +221,8 @@ func main() {
 			setDrawable(0)
 		} else if key == "2" {
 			setDrawable(1)
+		} else if key == "3" {
+			setDrawable(2)
 		}
 	})
 

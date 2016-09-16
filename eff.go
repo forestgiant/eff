@@ -43,6 +43,13 @@ type Rect struct {
 	H int
 }
 
+func (r *Rect) Equals(otherRect Rect) bool {
+	return (r.X == otherRect.X &&
+		r.Y == otherRect.Y &&
+		r.W == otherRect.W &&
+		r.H == otherRect.H)
+}
+
 func (r *Rect) Intersects(otherRect Rect) bool {
 	return (int(math.Abs(float64(r.X-otherRect.X)))*2 < (r.W + otherRect.W)) &&
 		(int(math.Abs(float64(r.Y-otherRect.Y)))*2 < (r.H + otherRect.H))

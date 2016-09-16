@@ -22,6 +22,8 @@ type sineWaveDrawable struct {
 	yFreq    float32
 	xFreqDir float32
 	yFreqDir float32
+
+	initialized bool
 }
 
 func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
@@ -57,6 +59,8 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 			index++
 		}
 	}
+
+	s.initialized = true
 }
 
 func (s *sineWaveDrawable) Draw(canvas eff.Canvas) {
@@ -92,6 +96,10 @@ func (s *sineWaveDrawable) Update(canvas eff.Canvas) {
 	}
 
 	updateDistortionState()
+}
+
+func (s *sineWaveDrawable) Initialized() bool {
+	return s.initialized
 }
 
 func main() {

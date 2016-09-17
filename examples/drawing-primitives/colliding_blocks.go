@@ -34,7 +34,6 @@ type collidingBlocks struct {
 func (c *collidingBlocks) Init(canvas eff.Canvas) {
 	blockCount := 5000
 	blockSize := 5
-	c.blocks = make([]block, blockCount)
 	for i := 0; i < blockCount; i++ {
 		b := block{
 			colorRect: eff.ColorRect{
@@ -51,19 +50,19 @@ func (c *collidingBlocks) Init(canvas eff.Canvas) {
 				Y: rand.Intn(4) + 1,
 			},
 		}
-		c.blocks[i] = b
+		c.blocks = append(c.blocks, b)
 	}
 
 	c.initialized = true
 }
 
 func (c *collidingBlocks) Draw(canvas eff.Canvas) {
-	colorRects := make([]eff.ColorRect, len(c.blocks))
+	var colorRects []eff.ColorRect
 	for _, block := range c.blocks {
 		colorRects = append(colorRects, block.colorRect)
 	}
 
-	canvas.DrawColorRects(&colorRects)
+	canvas.DrawColorRects(colorRects)
 }
 
 func (c *collidingBlocks) Initialized() bool {

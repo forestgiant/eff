@@ -11,22 +11,23 @@ type rects struct {
 	initialized bool
 }
 
-func (r *rects) randomRects(count int, maxX int, maxY int) *[]eff.Rect {
-	rects := make([]eff.Rect, count)
+func (r *rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
+	var rects []eff.Rect
 	for i := 0; i < count; i++ {
-		rects[i] = eff.Rect{X: rand.Intn(maxX), Y: rand.Intn(maxY), W: rand.Intn(maxX / 2), H: rand.Intn(maxY / 2)}
+		r := eff.Rect{X: rand.Intn(maxX), Y: rand.Intn(maxY), W: rand.Intn(maxX / 2), H: rand.Intn(maxY / 2)}
+		rects = append(rects, r)
 	}
 
-	return &rects
+	return rects
 }
 
 func (r *rects) Init(canvas eff.Canvas) {
-	r.rects = *r.randomRects(100, canvas.Width(), canvas.Height())
+	r.rects = r.randomRects(100, canvas.Width(), canvas.Height())
 	r.initialized = true
 }
 
 func (r *rects) Draw(canvas eff.Canvas) {
-	canvas.DrawRects(&r.rects, eff.Color{}.RandomColor())
+	canvas.DrawRects(r.rects, eff.Color{}.RandomColor())
 }
 
 func (r *rects) Update(canvas eff.Canvas) {

@@ -27,6 +27,7 @@ type Color struct {
 	A int
 }
 
+// RandomColor genereate a random color struct.  The opacity is also random
 func (c Color) RandomColor() Color {
 	return Color{
 		R: rand.Intn(255),
@@ -36,6 +37,7 @@ func (c Color) RandomColor() Color {
 	}
 }
 
+// Rect container for rectangle
 type Rect struct {
 	X int
 	Y int
@@ -43,11 +45,19 @@ type Rect struct {
 	H int
 }
 
+// ColorRect container for rectange and color
 type ColorRect struct {
-	Rect  Rect
-	Color Color
+	Rect
+	Color
 }
 
+// ColorPoint container for point and color
+type ColorPoint struct {
+	Point
+	Color
+}
+
+// Equals test to see if two rectangles occupy the same location exactly
 func (r *Rect) Equals(otherRect Rect) bool {
 	return (r.X == otherRect.X &&
 		r.Y == otherRect.Y &&
@@ -55,12 +65,14 @@ func (r *Rect) Equals(otherRect Rect) bool {
 		r.H == otherRect.H)
 }
 
+// Intersects check to see if a rectangle is inside of this rectangle
 func (r *Rect) Intersects(otherRect Rect) bool {
 	return (int(math.Abs(float64(r.X-otherRect.X)))*2 < (r.W + otherRect.W)) &&
 		(int(math.Abs(float64(r.Y-otherRect.Y)))*2 < (r.H + otherRect.H))
 }
 
-type KeyHandler func(key string, canvas Canvas)
+// KeyHandler function that is called when a key board event occurs
+type KeyHandler func(key string)
 
 // Canvas interface describing methods required for canvas renderers
 type Canvas interface {
@@ -69,16 +81,17 @@ type Canvas interface {
 	Run() int
 
 	DrawPoint(point Point, color Color)
-	DrawPoints(points *[]Point, color Color)
+	DrawPoints(points []Point, color Color)
+	DrawColorPoints(colorPoints []ColorPoint)
 
 	DrawLine(p1 Point, p2 Point, color Color)
-	DrawLines(points *[]Point, color Color)
+	DrawLines(points []Point, color Color)
 
 	DrawRect(rect Rect, color Color)
-	DrawRects(rect *[]Rect, color Color)
-	DrawColorRects(colorRect *[]ColorRect)
+	DrawRects(rect []Rect, color Color)
+	DrawColorRects(colorRect []ColorRect)
 	FillRect(rect Rect, color Color)
-	FillRects(rect *[]Rect, color Color)
+	FillRects(rect []Rect, color Color)
 
 	SetWidth(width int)
 	SetHeight(height int)

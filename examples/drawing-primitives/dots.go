@@ -11,26 +11,26 @@ type dots struct {
 	initialized bool
 }
 
-func (d *dots) randomPoints(count int, maxX int, maxY int) *[]eff.Point {
-	points := make([]eff.Point, count)
+func (d *dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
+	var points []eff.Point
 	for i := 0; i < count; i++ {
-		points[i] = eff.Point{
+		points = append(points, eff.Point{
 			X: rand.Intn(maxX),
 			Y: rand.Intn(maxY),
-		}
+		})
 	}
-	return &points
+	return points
 }
 
 func (d *dots) Init(canvas eff.Canvas) {
-	d.points = *d.randomPoints(10000, canvas.Width(), canvas.Height())
+	d.points = d.randomPoints(10000, canvas.Width(), canvas.Height())
 
 	d.initialized = true
 }
 
 func (d *dots) Draw(canvas eff.Canvas) {
 	//Draw Points in a random color
-	canvas.DrawPoints(&d.points, eff.Color{}.RandomColor())
+	canvas.DrawPoints(d.points, eff.Color{}.RandomColor())
 }
 
 func (d *dots) Update(canvas eff.Canvas) {

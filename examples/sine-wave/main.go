@@ -27,7 +27,6 @@ type sineWaveDrawable struct {
 }
 
 func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
-	numPoints := (cols-1)*canvas.Height() + (rows-1)*canvas.Width()
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
 	s.xFreq = 1
@@ -35,18 +34,14 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	s.xFreqDir = 1
 	s.yFreqDir = 1
 
-	s.gridPoints = make([]eff.Point, numPoints)
-	s.origGridPoints = make([]eff.Point, numPoints)
-	index := 0
 	cellWidth := math.Ceil(float64(canvas.Width()) / float64(cols))
 	cellHeight := math.Ceil(float64(canvas.Height()) / float64(rows))
 	// Create Columns
 	for i := 1; i < cols-1; i++ {
 		x := i * int(cellWidth)
 		for j := 0; j < canvas.Height(); j++ {
-			s.gridPoints[index] = eff.Point{X: (x), Y: (j)}
-			s.origGridPoints[index] = eff.Point{X: (x), Y: (j)}
-			index++
+			s.gridPoints = append(s.gridPoints, eff.Point{X: (x), Y: (j)})
+			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (x), Y: (j)})
 		}
 	}
 
@@ -54,9 +49,8 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	for i := 1; i < rows-1; i++ {
 		y := i * int(cellHeight)
 		for j := 0; j < canvas.Width(); j++ {
-			s.gridPoints[index] = eff.Point{X: (j), Y: (y)}
-			s.origGridPoints[index] = eff.Point{X: (j), Y: (y)}
-			index++
+			s.gridPoints = append(s.gridPoints, eff.Point{X: (j), Y: (y)})
+			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (j), Y: (y)})
 		}
 	}
 
@@ -65,7 +59,7 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 
 func (s *sineWaveDrawable) Draw(canvas eff.Canvas) {
 	color := eff.Color{R: 0x00, G: 0xFF, B: 0x00, A: 0xFF}
-	canvas.DrawPoints(&s.gridPoints, color)
+	canvas.DrawPoints(s.gridPoints, color)
 }
 
 func (s *sineWaveDrawable) Update(canvas eff.Canvas) {

@@ -379,6 +379,9 @@ func (sdlCanvas *SDLCanvas) DrawLine(p1 Point, p2 Point, color Color) {
 
 //DrawLines a slice of lines to the screen all the same color
 func (sdlCanvas *SDLCanvas) DrawLines(points []Point, color Color) {
+	if len(points) == 0 {
+		return
+	}
 	var sdlPoints []sdl.Point
 
 	for _, point := range points {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 
@@ -33,11 +32,6 @@ type circleDots struct {
 }
 
 func (dot *circleDots) Init(canvas eff.Canvas) {
-	if dot.initialized {
-		fmt.Println("circle dots already initialized")
-		return
-	}
-
 	dotCount := 10000
 
 	pointOnCirlce := func(radius int, index int, totalPoints int, w int, h int) eff.Point {

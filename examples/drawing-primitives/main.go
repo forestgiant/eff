@@ -14,6 +14,7 @@ func main() {
 	drawables = append(drawables, &rects{})
 	drawables = append(drawables, &collidingBlocks{})
 	drawables = append(drawables, &circleDots{})
+	drawables = append(drawables, &squareSpiral{})
 
 	drawableIndex := 0
 

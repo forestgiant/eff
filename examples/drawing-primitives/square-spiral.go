@@ -1,10 +1,6 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/forestgiant/eff"
-)
+import "github.com/forestgiant/eff"
 
 type squareSpiral struct {
 	initialized  bool
@@ -74,7 +70,7 @@ func (s *squareSpiral) Update(canvas eff.Canvas) {
 	percentage := float64(len(s.linePoints)) * s.t
 	index := int(percentage)
 	diff := percentage - float64(index)
-	fmt.Println(diff)
+
 	s.renderPoints = make([]eff.Point, index)
 	copy(s.renderPoints, s.linePoints[:index])
 

@@ -28,12 +28,12 @@ type Color struct {
 }
 
 // RandomColor genereate a random color struct.  The opacity is also random
-func (c Color) RandomColor() Color {
+func RandomColor() Color {
 	return Color{
-		R: rand.Intn(0xF),
-		G: rand.Intn(0xF),
-		B: rand.Intn(0xF),
-		A: rand.Intn(0xF),
+		R: rand.Intn(0xFF),
+		G: rand.Intn(0xFF),
+		B: rand.Intn(0xFF),
+		A: rand.Intn(0xFF),
 	}
 }
 
@@ -110,5 +110,4 @@ type Drawable interface {
 	Init(canvas Canvas)
 	Draw(canvas Canvas)
 	Update(canvas Canvas)
-	Initialized() bool
 }

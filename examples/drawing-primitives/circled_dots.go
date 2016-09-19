@@ -27,8 +27,6 @@ type circleDots struct {
 	t    float64
 	tDir float64
 	dots []twoPositionDot
-
-	initialized bool
 }
 
 func (dot *circleDots) Init(canvas eff.Canvas) {
@@ -46,7 +44,7 @@ func (dot *circleDots) Init(canvas eff.Canvas) {
 
 	for i := 0; i < dotCount; i++ {
 		d := twoPositionDot{
-			Color: eff.Color{}.RandomColor(),
+			Color: eff.RandomColor(),
 			p1: eff.Point{
 				X: rand.Intn(canvas.Width()),
 				Y: rand.Intn(canvas.Height()),
@@ -58,7 +56,6 @@ func (dot *circleDots) Init(canvas eff.Canvas) {
 	}
 
 	dot.tDir = 1
-	dot.initialized = true
 }
 
 func (dot *circleDots) Draw(canvas eff.Canvas) {
@@ -83,8 +80,4 @@ func (dot *circleDots) Update(canvas eff.Canvas) {
 	if dot.t > 1 || dot.t < 0 {
 		dot.tDir *= -1
 	}
-}
-
-func (dot *circleDots) Initialized() bool {
-	return dot.initialized
 }

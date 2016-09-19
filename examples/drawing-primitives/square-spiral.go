@@ -52,8 +52,7 @@ func (s *squareSpiral) Init(canvas eff.Canvas) {
 		s.linePoints = append(s.linePoints, bottomRight)
 		s.linePoints = append(s.linePoints, bottomLeft)
 	}
-	s.color = eff.Color{}.RandomColor()
-	s.initialized = true
+	s.color = eff.RandomColor()
 }
 
 func (s *squareSpiral) Draw(canvas eff.Canvas) {
@@ -64,7 +63,7 @@ func (s *squareSpiral) Update(canvas eff.Canvas) {
 	s.t += 0.0006
 	if s.t > 1 {
 		s.t = 0
-		s.color = eff.Color{}.RandomColor()
+		s.color = eff.RandomColor()
 	}
 
 	percentage := float64(len(s.linePoints)) * s.t
@@ -88,8 +87,4 @@ func (s *squareSpiral) Update(canvas eff.Canvas) {
 		}
 	}
 
-}
-
-func (s *squareSpiral) Initialized() bool {
-	return s.initialized
 }

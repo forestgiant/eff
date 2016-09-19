@@ -30,10 +30,10 @@ type Color struct {
 // RandomColor genereate a random color struct.  The opacity is also random
 func (c Color) RandomColor() Color {
 	return Color{
-		R: rand.Intn(255),
-		G: rand.Intn(255),
-		B: rand.Intn(255),
-		A: rand.Intn(255),
+		R: rand.Intn(0xF),
+		G: rand.Intn(0xF),
+		B: rand.Intn(0xF),
+		A: rand.Intn(0xF),
 	}
 }
 

@@ -27,8 +27,7 @@ func (b *block) wallBounce(width int, height int) {
 }
 
 type collidingBlocks struct {
-	blocks      []block
-	initialized bool
+	blocks []block
 }
 
 func (c *collidingBlocks) Init(canvas eff.Canvas) {
@@ -43,7 +42,7 @@ func (c *collidingBlocks) Init(canvas eff.Canvas) {
 					W: blockSize,
 					H: blockSize,
 				},
-				Color: eff.Color{}.RandomColor(),
+				Color: eff.RandomColor(),
 			},
 			dir: eff.Point{
 				X: rand.Intn(4) + 1,
@@ -52,8 +51,6 @@ func (c *collidingBlocks) Init(canvas eff.Canvas) {
 		}
 		c.blocks = append(c.blocks, b)
 	}
-
-	c.initialized = true
 }
 
 func (c *collidingBlocks) Draw(canvas eff.Canvas) {
@@ -63,10 +60,6 @@ func (c *collidingBlocks) Draw(canvas eff.Canvas) {
 	}
 
 	canvas.DrawColorRects(colorRects)
-}
-
-func (c *collidingBlocks) Initialized() bool {
-	return c.initialized
 }
 
 func (c *collidingBlocks) Update(canvas eff.Canvas) {

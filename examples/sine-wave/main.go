@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"os"
 
@@ -22,11 +23,10 @@ type sineWaveDrawable struct {
 	yFreq    float32
 	xFreqDir float32
 	yFreqDir float32
-
-	initialized bool
 }
 
 func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
+	fmt.Println("Init sine wave")
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
 	s.xFreq = 1
@@ -53,8 +53,6 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (j), Y: (y)})
 		}
 	}
-
-	s.initialized = true
 }
 
 func (s *sineWaveDrawable) Draw(canvas eff.Canvas) {
@@ -90,10 +88,6 @@ func (s *sineWaveDrawable) Update(canvas eff.Canvas) {
 	}
 
 	updateDistortionState()
-}
-
-func (s *sineWaveDrawable) Initialized() bool {
-	return s.initialized
 }
 
 func main() {

@@ -7,8 +7,7 @@ import (
 )
 
 type rects struct {
-	rects       []eff.Rect
-	initialized bool
+	rects []eff.Rect
 }
 
 func (r *rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
@@ -23,11 +22,10 @@ func (r *rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
 
 func (r *rects) Init(canvas eff.Canvas) {
 	r.rects = r.randomRects(100, canvas.Width(), canvas.Height())
-	r.initialized = true
 }
 
 func (r *rects) Draw(canvas eff.Canvas) {
-	canvas.DrawRects(r.rects, eff.Color{}.RandomColor())
+	canvas.DrawRects(r.rects, eff.RandomColor())
 }
 
 func (r *rects) Update(canvas eff.Canvas) {
@@ -41,8 +39,4 @@ func (r *rects) Update(canvas eff.Canvas) {
 	}
 
 	updateRandomRects()
-}
-
-func (r *rects) Initialized() bool {
-	return r.initialized
 }

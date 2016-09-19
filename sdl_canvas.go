@@ -7,12 +7,35 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// Wraps the Drawable to track whether or not it has been initialized
+type sdlDrawable struct {
+	initialized bool
+	drawable    Drawable
+}
+
+func (s *sdlDrawable) Init(canvas Canvas) {
+	s.drawable.Init(canvas)
+	s.initialized = true
+}
+
+func (s *sdlDrawable) Initialized() bool {
+	return s.initialized
+}
+
+func (s *sdlDrawable) Draw(canvas Canvas) {
+	s.drawable.Draw(canvas)
+}
+
+func (s *sdlDrawable) Update(canvas Canvas) {
+	s.drawable.Update(canvas)
+}
+
 // SDLCanvas creates window and renderer and calls all drawable methods
 type SDLCanvas struct {
 	window   *sdl.Window
 	renderer *sdl.Renderer
 	// drawablesMutex  sync.Mutex
-	drawables       []Drawable
+	drawables       []*sdlDrawable
 	width           int
 	height          int
 	fullscreen      bool
@@ -42,16 +65,14 @@ func (sdlCanvas *SDLCanvas) Height() int {
 
 // AddDrawable adds a struct that implements the eff.Drawable interface
 func (sdlCanvas *SDLCanvas) AddDrawable(drawable Drawable) {
-	// sdlCanvas.drawablesMutex.Lock()
-	sdlCanvas.drawables = append(sdlCanvas.drawables, drawable)
-	// sdlCanvas.drawablesMutex.Unlock()
+	sdlCanvas.drawables = append(sdlCanvas.drawables, &sdlDrawable{drawable: drawable})
 }
 
 //RemoveDrawable removes struct from canvas that implements eff.Drawable
 func (sdlCanvas *SDLCanvas) RemoveDrawable(drawable Drawable) {
 	index := -1
 	for i, d := range sdlCanvas.drawables {
-		if d == drawable {
+		if d.drawable == drawable {
 			index = i
 			break
 		}
@@ -60,9 +81,7 @@ func (sdlCanvas *SDLCanvas) RemoveDrawable(drawable Drawable) {
 		return
 	}
 
-	// sdlCanvas.drawablesMutex.Lock()
 	sdlCanvas.drawables = append(sdlCanvas.drawables[:index], sdlCanvas.drawables[index+1:]...)
-	// sdlCanvas.drawablesMutex.Unlock()
 }
 
 //AddKeyUpHandler adds key up event handler to the canvas
@@ -165,12 +184,12 @@ func (sdlCanvas *SDLCanvas) Run() int {
 				}
 			}
 
-			sdlCanvas.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xF)
+			sdlCanvas.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xFF)
 			sdlCanvas.renderer.Clear()
 		}
 
 		for _, drawable := range sdlCanvas.drawables {
-			if drawable == nil {
+			if drawable.drawable == nil {
 				continue
 			}
 

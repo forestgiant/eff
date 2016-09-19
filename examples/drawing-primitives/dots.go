@@ -7,8 +7,7 @@ import (
 )
 
 type dots struct {
-	points      []eff.Point
-	initialized bool
+	points []eff.Point
 }
 
 func (d *dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
@@ -24,13 +23,11 @@ func (d *dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
 
 func (d *dots) Init(canvas eff.Canvas) {
 	d.points = d.randomPoints(10000, canvas.Width(), canvas.Height())
-
-	d.initialized = true
 }
 
 func (d *dots) Draw(canvas eff.Canvas) {
 	//Draw Points in a random color
-	canvas.DrawPoints(d.points, eff.Color{}.RandomColor())
+	canvas.DrawPoints(d.points, eff.RandomColor())
 }
 
 func (d *dots) Update(canvas eff.Canvas) {
@@ -42,8 +39,4 @@ func (d *dots) Update(canvas eff.Canvas) {
 	}
 
 	updateRandomPoints()
-}
-
-func (d *dots) Initialized() bool {
-	return d.initialized
 }

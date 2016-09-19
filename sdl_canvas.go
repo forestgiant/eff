@@ -165,11 +165,10 @@ func (sdlCanvas *SDLCanvas) Run() int {
 				}
 			}
 
-			sdlCanvas.renderer.SetDrawColor(0, 0, 0, 0xFF)
+			sdlCanvas.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xF)
 			sdlCanvas.renderer.Clear()
 		}
 
-		// sdlCanvas.drawablesMutex.Lock()
 		for _, drawable := range sdlCanvas.drawables {
 			if drawable == nil {
 				continue
@@ -182,7 +181,6 @@ func (sdlCanvas *SDLCanvas) Run() int {
 			drawable.Draw(sdlCanvas)
 			drawable.Update(sdlCanvas)
 		}
-		// sdlCanvas.drawablesMutex.Unlock()
 
 		sdl.CallQueue <- func() {
 			currentFrameTime := sdl.GetTicks()

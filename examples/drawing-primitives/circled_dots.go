@@ -24,9 +24,10 @@ func (dot *twoPositionDot) linearInterpolate(normalizedPercentage float64) eff.P
 }
 
 type circleDots struct {
-	t    float64
-	tDir float64
-	dots []twoPositionDot
+	t           float64
+	tDir        float64
+	dots        []twoPositionDot
+	initialized bool
 }
 
 func (dot *circleDots) Init(canvas eff.Canvas) {
@@ -56,6 +57,7 @@ func (dot *circleDots) Init(canvas eff.Canvas) {
 	}
 
 	dot.tDir = 1
+	dot.initialized = true
 }
 
 func (dot *circleDots) Draw(canvas eff.Canvas) {
@@ -80,4 +82,8 @@ func (dot *circleDots) Update(canvas eff.Canvas) {
 	if dot.t > 1 || dot.t < 0 {
 		dot.tDir *= -1
 	}
+}
+
+func (dot *circleDots) Initialized() bool {
+	return dot.initialized
 }

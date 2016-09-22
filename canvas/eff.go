@@ -1,4 +1,4 @@
-package eff
+package canvas
 
 import (
 	"math"

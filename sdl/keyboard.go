@@ -1,6 +1,6 @@
 package sdl
 
-// #include "sdl_wrapper.h"
+// #include "wrapper.h"
 import "C"
 
 // Keysym (https://wiki.libsdl.org/SDL_Keysym)

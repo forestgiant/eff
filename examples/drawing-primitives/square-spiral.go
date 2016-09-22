@@ -3,11 +3,11 @@ package main
 import "github.com/forestgiant/eff/eff"
 
 type squareSpiral struct {
-	initialized  bool
 	color        eff.Color
 	linePoints   []eff.Point
 	renderPoints []eff.Point
 	t            float64
+	initialized  bool
 }
 
 func (s *squareSpiral) Init(canvas eff.Canvas) {
@@ -53,6 +53,8 @@ func (s *squareSpiral) Init(canvas eff.Canvas) {
 		s.linePoints = append(s.linePoints, bottomLeft)
 	}
 	s.color = eff.RandomColor()
+
+	s.initialized = true
 }
 
 func (s *squareSpiral) Draw(canvas eff.Canvas) {
@@ -87,4 +89,8 @@ func (s *squareSpiral) Update(canvas eff.Canvas) {
 		}
 	}
 
+}
+
+func (s *squareSpiral) Initialized() bool {
+	return s.initialized
 }

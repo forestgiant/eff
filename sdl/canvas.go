@@ -15,35 +15,11 @@ const (
 	frameTime     = 1000 / frameRate
 )
 
-// Wraps the Drawable to track whether or not it has been initialized
-type sdlDrawable struct {
-	initialized bool
-	drawable    eff.Drawable
-}
-
-func (s *sdlDrawable) Init(canvas eff.Canvas) {
-	s.drawable.Init(canvas)
-	s.initialized = true
-}
-
-func (s *sdlDrawable) Initialized() bool {
-	return s.initialized
-}
-
-func (s *sdlDrawable) Draw(canvas eff.Canvas) {
-	s.drawable.Draw(canvas)
-}
-
-func (s *sdlDrawable) Update(canvas eff.Canvas) {
-	s.drawable.Update(canvas)
-}
-
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
-	window   *Window
-	renderer *Renderer
-	// drawablesMutex  sync.Mutex
-	drawables       []*sdlDrawable
+	window          *Window
+	renderer        *Renderer
+	drawables       []eff.Drawable
 	width           int
 	height          int
 	fullscreen      bool
@@ -73,14 +49,14 @@ func (sdlCanvas *Canvas) Height() int {
 
 // AddDrawable adds a struct that implements the eff.Drawable interface
 func (sdlCanvas *Canvas) AddDrawable(drawable eff.Drawable) {
-	sdlCanvas.drawables = append(sdlCanvas.drawables, &sdlDrawable{drawable: drawable})
+	sdlCanvas.drawables = append(sdlCanvas.drawables, drawable)
 }
 
 //RemoveDrawable removes struct from canvas that implements eff.Drawable
 func (sdlCanvas *Canvas) RemoveDrawable(drawable eff.Drawable) {
 	index := -1
 	for i, d := range sdlCanvas.drawables {
-		if d.drawable == drawable {
+		if d == drawable {
 			index = i
 			break
 		}
@@ -193,7 +169,7 @@ func (sdlCanvas *Canvas) Run() int {
 			}
 
 			for _, drawable := range sdlCanvas.drawables {
-				if drawable.drawable == nil {
+				if drawable == nil {
 					continue
 				}
 

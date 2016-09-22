@@ -1,6 +1,6 @@
 package main
 
-import "github.com/forestgiant/eff"
+import "github.com/forestgiant/eff/eff"
 
 type squareSpiral struct {
 	initialized  bool

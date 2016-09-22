@@ -5,14 +5,6 @@ import (
 	"math/rand"
 )
 
-const (
-	windowTitle   = "Effulgent"
-	defaultWidth  = 480
-	defaultHeight = 320
-	frameRate     = 90
-	frameTime     = 1000 / frameRate
-)
-
 // Point container for 2d points
 type Point struct {
 	X int

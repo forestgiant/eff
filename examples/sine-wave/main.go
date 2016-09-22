@@ -5,7 +5,8 @@ import (
 	"math"
 	"os"
 
-	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff/sdl"
 )
 
 const (
@@ -95,7 +96,7 @@ func main() {
 	s := sineWaveDrawable{}
 
 	//Create canvas
-	canvas := eff.SDLCanvas{}
+	canvas := sdl.Canvas{}
 	canvas.SetWidth(1280)
 	canvas.SetHeight(720)
 

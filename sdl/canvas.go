@@ -115,7 +115,7 @@ func (sdlCanvas *Canvas) Run() int {
 		}
 
 		var err error
-		CallQueue <- func() {
+		MainThread <- func() {
 			sdlCanvas.window, err = CreateWindow(
 				windowTitle,
 				WindowPosUndefined,
@@ -136,7 +136,7 @@ func (sdlCanvas *Canvas) Run() int {
 			return 1
 		}
 
-		CallQueue <- func() {
+		MainThread <- func() {
 			sdlCanvas.renderer, err = CreateRenderer(
 				sdlCanvas.window,
 				-1,
@@ -148,7 +148,7 @@ func (sdlCanvas *Canvas) Run() int {
 			return 2
 		}
 
-		CallQueue <- func() {
+		MainThread <- func() {
 			sdlCanvas.renderer.Clear()
 		}
 
@@ -160,7 +160,7 @@ func (sdlCanvas *Canvas) Run() int {
 		var lastFrameTime uint32
 
 		for running {
-			CallQueue <- func() {
+			MainThread <- func() {
 				for event := PollEvent(); event != nil; event = PollEvent() {
 					switch t := event.(type) {
 					case *QuitEvent:
@@ -205,7 +205,7 @@ func (sdlCanvas *Canvas) Run() int {
 				drawable.Update(sdlCanvas)
 			}
 
-			CallQueue <- func() {
+			MainThread <- func() {
 				currentFrameTime := GetTicks()
 				if lastFrameTime == 0 {
 					lastFrameTime = currentFrameTime
@@ -225,14 +225,14 @@ func (sdlCanvas *Canvas) Run() int {
 			os.Exit(initOK)
 		}
 		run()
-		CallQueue <- func() {
+		MainThread <- func() {
 			sdlCanvas.renderer.Destroy()
 			sdlCanvas.window.Destroy()
 		}
 		os.Exit(0)
 	}()
 
-	ProcessCalls()
+	LockMain()
 
 	return 0
 }
@@ -245,7 +245,7 @@ func (sdlCanvas *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
 		sdlPoints = append(sdlPoints, Point{X: int32(point.X), Y: int32(point.Y)})
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -259,7 +259,7 @@ func (sdlCanvas *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
 
 //DrawPoint draw a point on the screen specifying what color
 func (sdlCanvas *Canvas) DrawPoint(point eff.Point, color eff.Color) {
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -272,7 +272,7 @@ func (sdlCanvas *Canvas) DrawPoint(point eff.Point, color eff.Color) {
 
 //DrawColorPoints draw a slide of colorPoints on the screen
 func (sdlCanvas *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
-	CallQueue <- func() {
+	MainThread <- func() {
 		for _, colorPoint := range colorPoints {
 			sdlCanvas.renderer.SetDrawColor(
 				uint8(colorPoint.R),
@@ -295,7 +295,7 @@ func (sdlCanvas *Canvas) FillRect(rect eff.Rect, color eff.Color) {
 		H: int32(rect.H),
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -322,7 +322,7 @@ func (sdlCanvas *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
 		)
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -343,7 +343,7 @@ func (sdlCanvas *Canvas) DrawRect(rect eff.Rect, color eff.Color) {
 		H: int32(rect.H),
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -357,7 +357,7 @@ func (sdlCanvas *Canvas) DrawRect(rect eff.Rect, color eff.Color) {
 
 //DrawColorRects draw a slice of color rectangles to the screen
 func (sdlCanvas *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
-	CallQueue <- func() {
+	MainThread <- func() {
 		for _, colorRect := range colorRects {
 			sdlCanvas.renderer.SetDrawColor(
 				uint8(colorRect.R),
@@ -393,7 +393,7 @@ func (sdlCanvas *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
 		sdlRects = append(sdlRects, r)
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -407,7 +407,7 @@ func (sdlCanvas *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
 
 //DrawLine draw a line of to the screen with a color
 func (sdlCanvas *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),
@@ -430,7 +430,7 @@ func (sdlCanvas *Canvas) DrawLines(points []eff.Point, color eff.Color) {
 		sdlPoints = append(sdlPoints, p)
 	}
 
-	CallQueue <- func() {
+	MainThread <- func() {
 		sdlCanvas.renderer.SetDrawColor(
 			uint8(color.R),
 			uint8(color.G),

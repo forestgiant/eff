@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/eff"
 )
 
 type twoPositionDot struct {

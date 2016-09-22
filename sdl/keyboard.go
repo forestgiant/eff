@@ -17,6 +17,10 @@ type Scancode uint32
 // Keycode (https://wiki.libsdl.org/SDL_Keycode)
 type Keycode C.SDL_Keycode
 
+func (code Keycode) c() C.SDL_Keycode {
+	return C.SDL_Keycode(code)
+}
+
 const KeyScancodeMask = 1 << 30
 
 const (
@@ -278,3 +282,8 @@ const (
 	KModGui      = C.KMOD_GUI
 	KModReserved = C.KMOD_RESERVED
 )
+
+// GetKeyName (https://wiki.libsdl.org/SDL_GetKeyName)
+func GetKeyName(code Keycode) string {
+	return (C.GoString)(C.SDL_GetKeyName(code.c()))
+}

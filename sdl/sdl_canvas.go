@@ -7,6 +7,14 @@ import (
 	"github.com/forestgiant/eff/eff"
 )
 
+const (
+	windowTitle   = "Effulgent"
+	defaultWidth  = 480
+	defaultHeight = 320
+	frameRate     = 90
+	frameTime     = 1000 / frameRate
+)
+
 // Wraps the Drawable to track whether or not it has been initialized
 type sdlDrawable struct {
 	initialized bool
@@ -99,17 +107,17 @@ func (sdlCanvas *Canvas) Run() int {
 
 	init := func() int {
 		if sdlCanvas.width == 0 {
-			sdlCanvas.width = 640
+			sdlCanvas.width = defaultWidth
 		}
 
 		if sdlCanvas.height == 0 {
-			sdlCanvas.height = 480
+			sdlCanvas.height = defaultHeight
 		}
 
 		var err error
 		CallQueue <- func() {
 			sdlCanvas.window, err = CreateWindow(
-				"Effulgent",
+				windowTitle,
 				WindowPosUndefined,
 				WindowPosUndefined,
 				sdlCanvas.Width(),

@@ -4,7 +4,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff/sdl"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	drawableIndex := 0
 
 	//Create Eff Canvas
-	canvas := eff.SDLCanvas{}
+	canvas := sdl.Canvas{}
 	canvas.SetWidth(1280)
 	canvas.SetHeight(720)
 

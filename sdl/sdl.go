@@ -4,13 +4,50 @@ package sdl
 // #cgo linux freebsd darwin pkg-config: sdl2
 // #include "sdl_wrapper.h"
 import "C"
-import "unsafe"
+import (
+	"errors"
+	"runtime"
+	"unsafe"
+)
+
+// Point is a structure that defines a two demensional point.
+// (https://wiki.libsdl.org/SDL_Point)
+type Point struct {
+	X int32
+	Y int32
+}
+
+// Rect is a structure that defines a rectangle, with the origin at the upper
+// left.
+// (https://wiki.libsdl.org/SDL_Rect)
+type Rect struct {
+	X int32
+	Y int32
+	W int32
+	H int32
+}
+
+func (p *Point) cptr() *C.SDL_Point {
+	return (*C.SDL_Point)(unsafe.Pointer(p))
+}
+
+func (a *Rect) cptr() *C.SDL_Rect {
+	return (*C.SDL_Rect)(unsafe.Pointer(a))
+}
 
 //Renderer SDL renderer
 type Renderer C.SDL_Renderer
 
+func (r *Renderer) cptr() *C.SDL_Renderer {
+	return (*C.SDL_Renderer)(unsafe.Pointer(r))
+}
+
 //Window SDL window
 type Window C.SDL_Window
+
+func (w *Window) cptr() *C.SDL_Window {
+	return (*C.SDL_Window)(unsafe.Pointer(w))
+}
 
 //CallQueue manages the thread that SDL calls execute on
 var CallQueue = make(chan func(), 1)
@@ -54,9 +91,42 @@ const (
 	TextureModulateAlpha = C.SDL_TEXTUREMODULATE_ALPHA
 )
 
-// Window (https://wiki.libsdl.org/SDL_SetWindowFullscreen)
-func (window *Window) SetFullscreen(flags uint32) error {
-	if C.SDL_SetWindowFullscreen(window.cptr(), C.Uint32(flags)) != 0 {
+// ProcessCalls run through functions in CallQueue. Intended to be called as a goroutine.
+func ProcessCalls() {
+	runtime.LockOSThread()
+
+	for {
+		f := <-CallQueue
+		f()
+	}
+}
+
+// GetTicks (https://wiki.libsdl.org/SDL_GetTicks)
+func GetTicks() uint32 {
+	return uint32(C.SDL_GetTicks())
+}
+
+// Delay (https://wiki.libsdl.org/SDL_Delay)
+func Delay(ms uint32) {
+	C.SDL_Delay(C.Uint32(ms))
+}
+
+// GetError (https://wiki.libsdl.org/SDL_GetError)
+func GetError() error {
+	if err := C.SDL_GetError(); err != nil {
+		return errors.New(C.GoString(err))
+	}
+	return nil
+}
+
+// ClearError (https://wiki.libsdl.org/SDL_ClearError)
+func ClearError() {
+	C.SDL_ClearError()
+}
+
+// SetFullscreen (https://wiki.libsdl.org/SDL_SetWindowFullscreen)
+func (w *Window) SetFullscreen(flags uint32) error {
+	if C.SDL_SetWindowFullscreen(w.cptr(), C.Uint32(flags)) != 0 {
 		return GetError()
 	}
 	return nil
@@ -72,6 +142,11 @@ func CreateWindow(title string, x int, y int, w int, h int, flags uint32) (*Wind
 	return (*Window)(unsafe.Pointer(_window)), nil
 }
 
+// Destroy (https://wiki.libsdl.org/SDL_DestroyWindow)
+func (w *Window) Destroy() {
+	C.SDL_DestroyWindow(w.cptr())
+}
+
 // CreateRenderer (https://wiki.libsdl.org/SDL_CreateRenderer)
 func CreateRenderer(window *Window, index int, flags uint32) (*Renderer, error) {
 	_renderer := C.SDL_CreateRenderer(window.cptr(), C.int(index), C.Uint32(flags))
@@ -82,102 +157,109 @@ func CreateRenderer(window *Window, index int, flags uint32) (*Renderer, error) 
 }
 
 // Clear (https://wiki.libsdl.org/SDL_RenderClear)
-func (renderer *Renderer) Clear() error {
-	_ret := C.SDL_RenderClear(renderer.cptr())
+func (r *Renderer) Clear() error {
+	_ret := C.SDL_RenderClear(r.cptr())
 	if _ret < 0 {
 		return GetError()
 	}
 	return nil
 }
 
-// Event (https://wiki.libsdl.org/SDL_Event)
-type Event interface{}
-
-type CEvent struct {
-	Type uint32
-	_    [52]byte // padding
+// Present (https://wiki.libsdl.org/SDL_RenderPresent)
+func (r *Renderer) Present() {
+	C.SDL_RenderPresent(r.cptr())
 }
 
-// PollEvent (https://wiki.libsdl.org/SDL_PollEvent)
-func PollEvent() Event {
-	var cevent C.SDL_Event
-	ret := C.SDL_PollEvent(&cevent)
-	if ret == 0 {
-		return nil
+// SetDrawColor (https://wiki.libsdl.org/SDL_SetRenderDrawColor)
+func (r *Renderer) SetDrawColor(re, g, b, a uint8) error {
+	_r := C.Uint8(re)
+	_g := C.Uint8(g)
+	_b := C.Uint8(b)
+	_a := C.Uint8(a)
+	_ret := C.SDL_SetRenderDrawColor(r.cptr(), _r, _g, _b, _a)
+	if _ret < 0 {
+		return GetError()
 	}
-	return goEvent((*CEvent)(unsafe.Pointer(&cevent)))
+	return nil
 }
 
-func goEvent(cevent *CEvent) Event {
-	switch cevent.Type {
-	case WINDOWEVENT:
-		return (*WindowEvent)(unsafe.Pointer(cevent))
-	case SYSWMEVENT:
-		return (*SysWMEvent)(unsafe.Pointer(cevent))
-	case KEYDOWN:
-		return (*KeyDownEvent)(unsafe.Pointer(cevent))
-	case KEYUP:
-		return (*KeyUpEvent)(unsafe.Pointer(cevent))
-	case TEXTEDITING:
-		return (*TextEditingEvent)(unsafe.Pointer(cevent))
-	case TEXTINPUT:
-		return (*TextInputEvent)(unsafe.Pointer(cevent))
-	case MOUSEMOTION:
-		return (*MouseMotionEvent)(unsafe.Pointer(cevent))
-	case MOUSEBUTTONDOWN, MOUSEBUTTONUP:
-		return (*MouseButtonEvent)(unsafe.Pointer(cevent))
-	case MOUSEWHEEL:
-		return (*MouseWheelEvent)(unsafe.Pointer(cevent))
-	case JOYAXISMOTION:
-		return (*JoyAxisEvent)(unsafe.Pointer(cevent))
-	case JOYBALLMOTION:
-		return (*JoyBallEvent)(unsafe.Pointer(cevent))
-	case JOYHATMOTION:
-		return (*JoyHatEvent)(unsafe.Pointer(cevent))
-	case JOYBUTTONDOWN, JOYBUTTONUP:
-		return (*JoyButtonEvent)(unsafe.Pointer(cevent))
-	case JOYDEVICEADDED, JOYDEVICEREMOVED:
-		return (*JoyDeviceEvent)(unsafe.Pointer(cevent))
-	case CONTROLLERAXISMOTION:
-		return (*ControllerAxisEvent)(unsafe.Pointer(cevent))
-	case CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP:
-		return (*ControllerButtonEvent)(unsafe.Pointer(cevent))
-	case CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED, CONTROLLERDEVICEREMAPPED:
-		return (*ControllerDeviceEvent)(unsafe.Pointer(cevent))
-	case FINGERDOWN, FINGERUP, FINGERMOTION:
-		return (*TouchFingerEvent)(unsafe.Pointer(cevent))
-	case DOLLARGESTURE, DOLLARRECORD:
-		return (*DollarGestureEvent)(unsafe.Pointer(cevent))
-	case MULTIGESTURE:
-		return (*MultiGestureEvent)(unsafe.Pointer(cevent))
-	case DROPFILE:
-		return (*DropEvent)(unsafe.Pointer(cevent))
-	case RENDER_TARGETS_RESET:
-		return (*RenderEvent)(unsafe.Pointer(cevent))
-	case QUIT:
-		return (*QuitEvent)(unsafe.Pointer(cevent))
-	case USEREVENT:
-		return (*UserEvent)(unsafe.Pointer(cevent))
-	case CLIPBOARDUPDATE:
-		return (*ClipboardEvent)(unsafe.Pointer(cevent))
-	default:
-		return (*CommonEvent)(unsafe.Pointer(cevent))
+// DrawPoint (https://wiki.libsdl.org/SDL_RenderDrawPoint)
+func (r *Renderer) DrawPoint(x, y int) error {
+	_ret := C.SDL_RenderDrawPoint(r.cptr(), C.int(x), C.int(y))
+	if _ret < 0 {
+		return GetError()
 	}
+	return nil
 }
 
-// QuitEvent (https://wiki.libsdl.org/SDL_QuitEvent)
-type QuitEvent struct {
-	Type      uint32
-	Timestamp uint32
+// DrawPoints (https://wiki.libsdl.org/SDL_RenderDrawPoints)
+func (r *Renderer) DrawPoints(points []Point) error {
+	_ret := C.SDL_RenderDrawPoints(r.cptr(), points[0].cptr(), C.int(len(points)))
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
 }
 
-type KeyUpEvent struct {
-	Type      uint32
-	Timestamp uint32
-	WindowID  uint32
-	State     uint8
-	Repeat    uint8
-	_         uint8 // padding
-	_         uint8 // padding
-	Keysym    Keysym
+// DrawLine (https://wiki.libsdl.org/SDL_RenderDrawLine)
+func (r *Renderer) DrawLine(x1, y1, x2, y2 int) error {
+	_x1 := C.int(x1)
+	_y1 := C.int(y1)
+	_x2 := C.int(x2)
+	_y2 := C.int(y2)
+	_ret := C.SDL_RenderDrawLine(r.cptr(), _x1, _y1, _x2, _y2)
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// DrawLines (https://wiki.libsdl.org/SDL_RenderDrawLines)
+func (r *Renderer) DrawLines(points []Point) error {
+	_ret := C.SDL_RenderDrawLines(r.cptr(), points[0].cptr(), C.int(len(points)))
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// DrawRect (https://wiki.libsdl.org/SDL_RenderDrawRect)
+func (r *Renderer) DrawRect(rect *Rect) error {
+	_ret := C.SDL_RenderDrawRect(r.cptr(), rect.cptr())
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// DrawRects (https://wiki.libsdl.org/SDL_RenderDrawRects)
+func (r *Renderer) DrawRects(rects []Rect) error {
+	_ret := C.SDL_RenderDrawRects(r.cptr(), rects[0].cptr(), C.int(len(rects)))
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// FillRect (https://wiki.libsdl.org/SDL_RenderFillRect)
+func (r *Renderer) FillRect(rect *Rect) error {
+	_ret := C.SDL_RenderFillRect(r.cptr(), rect.cptr())
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// FillRects (https://wiki.libsdl.org/SDL_RenderFillRects)
+func (r *Renderer) FillRects(rects []Rect) error {
+	_ret := C.SDL_RenderFillRects(r.cptr(), rects[0].cptr(), C.int(len(rects)))
+	if _ret < 0 {
+		return GetError()
+	}
+	return nil
+}
+
+// Destroy (https://wiki.libsdl.org/SDL_DestroyRenderer)
+func (r *Renderer) Destroy() {
+	C.SDL_DestroyRenderer(r.cptr())
 }

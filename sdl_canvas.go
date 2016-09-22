@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/forestgiant/go-sdl2/sdl"
 )
 
 // Wraps the Drawable to track whether or not it has been initialized
@@ -96,120 +96,136 @@ func (sdlCanvas *SDLCanvas) AddKeyDownHandler(handler KeyHandler) {
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (sdlCanvas *SDLCanvas) Run() int {
-	if sdlCanvas.width == 0 {
-		sdlCanvas.width = defaultWidth
-	}
 
-	if sdlCanvas.height == 0 {
-		sdlCanvas.height = defaultHeight
-	}
-
-	var err error
-	sdl.CallQueue <- func() {
-		sdlCanvas.window, err = sdl.CreateWindow(
-			windowTitle,
-			sdl.WINDOWPOS_UNDEFINED,
-			sdl.WINDOWPOS_UNDEFINED,
-			sdlCanvas.Width(),
-			sdlCanvas.Height(),
-			sdl.WINDOW_OPENGL,
-		)
-
-		if sdlCanvas.fullscreen {
-			sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
-		} else {
-			sdlCanvas.window.SetFullscreen(0)
+	init := func() int {
+		if sdlCanvas.width == 0 {
+			sdlCanvas.width = defaultWidth
 		}
-	}
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
-		return 1
-	}
-	defer func() {
-		sdl.CallQueue <- func() {
-			sdlCanvas.window.Destroy()
+
+		if sdlCanvas.height == 0 {
+			sdlCanvas.height = defaultHeight
 		}
-	}()
 
-	sdl.CallQueue <- func() {
-		sdlCanvas.renderer, err = sdl.CreateRenderer(
-			sdlCanvas.window,
-			-1,
-			sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC,
-		)
-	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
-		return 2
-	}
-	defer func() {
+		var err error
 		sdl.CallQueue <- func() {
-			sdlCanvas.renderer.Destroy()
-		}
-	}()
+			sdlCanvas.window, err = sdl.CreateWindow(
+				windowTitle,
+				sdl.WINDOWPOS_UNDEFINED,
+				sdl.WINDOWPOS_UNDEFINED,
+				sdlCanvas.Width(),
+				sdlCanvas.Height(),
+				sdl.WINDOW_OPENGL,
+			)
 
-	sdl.CallQueue <- func() {
-		sdlCanvas.renderer.Clear()
-	}
-
-	running := true
-
-	var lastFrameTime = sdl.GetTicks()
-	for running {
-		sdl.CallQueue <- func() {
-			for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-				switch t := event.(type) {
-				case *sdl.QuitEvent:
-					running = false
-				case *sdl.KeyUpEvent:
-					switch t.Keysym.Sym {
-					case sdl.K_q:
-						running = false
-					case sdl.K_f:
-						sdlCanvas.fullscreen = !sdlCanvas.fullscreen
-						if sdlCanvas.fullscreen {
-							sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
-						} else {
-							sdlCanvas.window.SetFullscreen(0)
-						}
-					}
-
-					for _, handler := range sdlCanvas.keyUpHandlers {
-						handler(sdl.GetKeyName(t.Keysym.Sym))
-					}
-				case *sdl.KeyDownEvent:
-					for _, handler := range sdlCanvas.keyDownHandlers {
-						handler(sdl.GetKeyName(t.Keysym.Sym))
-					}
-				}
+			if sdlCanvas.fullscreen {
+				sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+			} else {
+				sdlCanvas.window.SetFullscreen(0)
 			}
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
+			return 1
+		}
 
-			sdlCanvas.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xFF)
+		sdl.CallQueue <- func() {
+			sdlCanvas.renderer, err = sdl.CreateRenderer(
+				sdlCanvas.window,
+				-1,
+				sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC,
+			)
+		}
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
+			return 2
+		}
+
+		sdl.CallQueue <- func() {
 			sdlCanvas.renderer.Clear()
 		}
 
-		for _, drawable := range sdlCanvas.drawables {
-			if drawable.drawable == nil {
-				continue
+		return 0
+	}
+
+	run := func() {
+		running := true
+		var lastFrameTime uint32
+
+		for running {
+			sdl.CallQueue <- func() {
+				for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+					switch t := event.(type) {
+					case *sdl.QuitEvent:
+						running = false
+					case *sdl.KeyUpEvent:
+						switch t.Keysym.Sym {
+						case sdl.K_q:
+							running = false
+						case sdl.K_f:
+							sdlCanvas.fullscreen = !sdlCanvas.fullscreen
+							if sdlCanvas.fullscreen {
+								sdlCanvas.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+							} else {
+								sdlCanvas.window.SetFullscreen(0)
+							}
+						}
+
+						for _, handler := range sdlCanvas.keyUpHandlers {
+							handler(sdl.GetKeyName(t.Keysym.Sym))
+						}
+					case *sdl.KeyDownEvent:
+						for _, handler := range sdlCanvas.keyDownHandlers {
+							handler(sdl.GetKeyName(t.Keysym.Sym))
+						}
+					}
+				}
+
+				sdlCanvas.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xFF)
+				sdlCanvas.renderer.Clear()
 			}
 
-			if !drawable.Initialized() {
-				drawable.Init(sdlCanvas)
+			for _, drawable := range sdlCanvas.drawables {
+				if drawable.drawable == nil {
+					continue
+				}
+
+				if !drawable.Initialized() {
+					drawable.Init(sdlCanvas)
+				}
+
+				drawable.Draw(sdlCanvas)
+				drawable.Update(sdlCanvas)
 			}
 
-			drawable.Draw(sdlCanvas)
-			drawable.Update(sdlCanvas)
-		}
-
-		sdl.CallQueue <- func() {
-			currentFrameTime := sdl.GetTicks()
-			sdlCanvas.renderer.Present()
-			if currentFrameTime-lastFrameTime < frameTime {
-				sdl.Delay(frameTime - (currentFrameTime - lastFrameTime))
+			sdl.CallQueue <- func() {
+				currentFrameTime := sdl.GetTicks()
+				if lastFrameTime == 0 {
+					lastFrameTime = currentFrameTime
+				}
+				sdlCanvas.renderer.Present()
+				if currentFrameTime-lastFrameTime < frameTime {
+					sdl.Delay(frameTime - (currentFrameTime - lastFrameTime))
+				}
+				lastFrameTime = currentFrameTime
 			}
-			lastFrameTime = currentFrameTime
 		}
 	}
+
+	go func() {
+		initOK := init()
+		if initOK != 0 {
+			os.Exit(initOK)
+		}
+		run()
+		sdl.CallQueue <- func() {
+			sdlCanvas.renderer.Destroy()
+			sdlCanvas.window.Destroy()
+		}
+		os.Exit(0)
+	}()
+
+	sdl.ProcessCalls()
+
 	return 0
 }
 

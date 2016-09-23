@@ -2,7 +2,6 @@ package main
 
 import (
 	"math"
-	"os"
 
 	"github.com/forestgiant/eff/eff"
 	"github.com/forestgiant/eff/sdl"
@@ -107,5 +106,5 @@ func main() {
 	canvas.AddDrawable(&s)
 
 	//Start the run loop
-	os.Exit(canvas.Run())
+	canvas.Run()
 }

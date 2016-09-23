@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"strconv"
 
 	"github.com/forestgiant/eff/eff"
@@ -54,5 +53,5 @@ func main() {
 	})
 
 	//Start the run loop
-	os.Exit(canvas.Run())
+	canvas.Run()
 }

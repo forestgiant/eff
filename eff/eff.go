@@ -70,7 +70,7 @@ type KeyHandler func(key string)
 type Canvas interface {
 	AddDrawable(drawable Drawable)
 	RemoveDrawable(drawable Drawable)
-	Run() int
+	Run()
 
 	DrawPoint(point Point, color Color)
 	DrawPoints(points []Point, color Color)

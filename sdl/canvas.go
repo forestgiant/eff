@@ -12,8 +12,10 @@ const (
 	defaultWidth  = 480
 	defaultHeight = 320
 	frameRate     = 90
-	frameTime     = 1000 / frameRate
 )
+
+var frameTimes [10]uint32
+var frameTimeIndex = 0
 
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
@@ -135,7 +137,6 @@ func (c *Canvas) Run() {
 
 	run := func() {
 		running := true
-		var lastFrameTime uint32
 
 		for running {
 			MainThread <- func() {
@@ -184,15 +185,38 @@ func (c *Canvas) Run() {
 			}
 
 			MainThread <- func() {
-				currentFrameTime := GetTicks()
-				if lastFrameTime == 0 {
-					lastFrameTime = currentFrameTime
+				calcFPS := func() float64 {
+					var total uint32
+					for i := 0; i < len(frameTimes); i++ {
+						total += frameTimes[i]
+					}
+
+					count := len(frameTimes)
+					if frameTimeIndex < len(frameTimes) {
+						count = frameTimeIndex
+					}
+					fmt.Println(count, "count")
+					fps := float64(total) / float64(count)
+
+					return 1000 / fps
 				}
+
 				c.renderer.Present()
-				if currentFrameTime-lastFrameTime < frameTime {
-					Delay(frameTime - (currentFrameTime - lastFrameTime))
+				frameTimeIndex++
+
+				lastFrameIndex := (frameTimeIndex%len(frameTimes) - 1)
+				if lastFrameIndex < 0 {
+					lastFrameIndex = len(frameTimes) - 1
 				}
-				lastFrameTime = currentFrameTime
+				// fmt.Println(frameTimeIndex, lastFrameIndex, "frameIndex, lastFrameIndex")
+
+				lastFrameTime := frameTimes[lastFrameIndex]
+				frameTimes[frameTimeIndex%len(frameTimes)] = GetTicks() - lastFrameTime
+				// fmt.Println(frameTimes[frameTimeIndex], " diff from last frame")
+
+				// Delay(1000 / frameRate)
+
+				fmt.Println(calcFPS(), " fps")
 			}
 		}
 	}

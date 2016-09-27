@@ -14,8 +14,9 @@ const (
 	frameRate     = 90
 )
 
-var frameTimes [10]uint32
-var frameTimeIndex = 0
+var startTime uint32
+var delta uint32
+var currentFPS uint32
 
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
@@ -82,7 +83,7 @@ func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (c *Canvas) Run() {
-
+	lastFPSPrintTime := GetTicks()
 	init := func() int {
 		if c.width == 0 {
 			c.width = defaultWidth
@@ -119,7 +120,8 @@ func (c *Canvas) Run() {
 			c.renderer, err = CreateRenderer(
 				c.window,
 				-1,
-				RendererAccelerated|RendererPresentVsync,
+				RendererAccelerated,
+				// RendererAccelerated|RendererPresentVsync,
 			)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
@@ -132,6 +134,7 @@ func (c *Canvas) Run() {
 			c.renderer.Clear()
 		}
 
+		startTime = GetTicks()
 		return 0
 	}
 
@@ -185,38 +188,19 @@ func (c *Canvas) Run() {
 			}
 
 			MainThread <- func() {
-				calcFPS := func() float64 {
-					var total uint32
-					for i := 0; i < len(frameTimes); i++ {
-						total += frameTimes[i]
-					}
-
-					count := len(frameTimes)
-					if frameTimeIndex < len(frameTimes) {
-						count = frameTimeIndex
-					}
-					fmt.Println(count, "count")
-					fps := float64(total) / float64(count)
-
-					return 1000 / fps
-				}
 
 				c.renderer.Present()
-				frameTimeIndex++
 
-				lastFrameIndex := (frameTimeIndex%len(frameTimes) - 1)
-				if lastFrameIndex < 0 {
-					lastFrameIndex = len(frameTimes) - 1
+				delta = GetTicks() - startTime
+				startTime = GetTicks()
+				if delta != 0 {
+					currentFPS = 1000 / delta
 				}
-				// fmt.Println(frameTimeIndex, lastFrameIndex, "frameIndex, lastFrameIndex")
+				if GetTicks()-lastFPSPrintTime >= 1000 {
+					fmt.Println(currentFPS, "fps")
+					lastFPSPrintTime = GetTicks()
+				}
 
-				lastFrameTime := frameTimes[lastFrameIndex]
-				frameTimes[frameTimeIndex%len(frameTimes)] = GetTicks() - lastFrameTime
-				// fmt.Println(frameTimes[frameTimeIndex], " diff from last frame")
-
-				// Delay(1000 / frameRate)
-
-				fmt.Println(calcFPS(), " fps")
 			}
 		}
 	}

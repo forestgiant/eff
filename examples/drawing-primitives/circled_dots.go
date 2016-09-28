@@ -31,7 +31,7 @@ type circleDots struct {
 }
 
 func (dot *circleDots) Init(canvas eff.Canvas) {
-	dotCount := 10000
+	dotCount := (canvas.Width() * canvas.Height()) / 100
 
 	pointOnCirlce := func(radius int, index int, totalPoints int, w int, h int) eff.Point {
 		cx := w / 2

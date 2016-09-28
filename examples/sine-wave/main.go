@@ -1,15 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/forestgiant/eff/eff"
 	"github.com/forestgiant/eff/sdl"
-)
-
-const (
-	cols = 50
-	rows = 50
 )
 
 type sineWaveDrawable struct {
@@ -25,6 +21,9 @@ type sineWaveDrawable struct {
 }
 
 func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
+	cols := int(math.Ceil(float64(canvas.Width()) / 100))
+	rows := int(math.Ceil(float64(canvas.Height()) / 100))
+	fmt.Println(cols, rows)
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
 	s.xFreq = 1
@@ -32,11 +31,12 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	s.xFreqDir = 1
 	s.yFreqDir = 1
 
-	cellWidth := math.Ceil(float64(canvas.Width()) / float64(cols))
-	cellHeight := math.Ceil(float64(canvas.Height()) / float64(rows))
+	cellWidth := int(math.Ceil(float64(canvas.Width()) / float64(cols)))
+	cellHeight := int(math.Ceil(float64(canvas.Height()) / float64(rows)))
+	fmt.Println(cellWidth, cellHeight)
 	// Create Columns
-	for i := 1; i < cols-1; i++ {
-		x := i * int(cellWidth)
+	for i := 0; i < cols-1; i++ {
+		x := i*cellWidth + cellWidth
 		for j := 0; j < canvas.Height(); j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (x), Y: (j)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (x), Y: (j)})
@@ -44,8 +44,8 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	}
 
 	// Create Rows
-	for i := 1; i < rows-1; i++ {
-		y := i * int(cellHeight)
+	for i := 0; i < rows-1; i++ {
+		y := i*cellHeight + cellHeight
 		for j := 0; j < canvas.Width(); j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (j), Y: (y)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (j), Y: (y)})

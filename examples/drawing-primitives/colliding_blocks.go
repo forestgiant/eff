@@ -32,7 +32,7 @@ type collidingBlocks struct {
 }
 
 func (c *collidingBlocks) Init(canvas eff.Canvas) {
-	blockCount := 5000
+	blockCount := (canvas.Width() * canvas.Height()) / 200
 	blockSize := 5
 	for i := 0; i < blockCount; i++ {
 		b := block{

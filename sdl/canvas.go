@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	windowTitle   = "Effulgent"
-	defaultWidth  = 480
-	defaultHeight = 320
-	frameRate     = 90
+	defaultWindowTitle = "Effulgent"
+	defaultWidth       = 480
+	defaultHeight      = 320
+	defaultFrameRate   = 90
 )
 
 var startTime uint32
@@ -28,6 +28,19 @@ type Canvas struct {
 	fullscreen      bool
 	keyUpHandlers   []eff.KeyHandler
 	keyDownHandlers []eff.KeyHandler
+	windowTitle     string
+	frameRate       int
+}
+
+// NewCanvas creates a new SDL canvas instance
+func NewCanvas(title string, width int, height int, frameRate int) *Canvas {
+	c := Canvas{}
+	c.windowTitle = title
+	c.width = width
+	c.height = height
+	c.frameRate = frameRate
+
+	return &c
 }
 
 // SetWidth set the width of the canvas, must be called prior to run
@@ -93,10 +106,18 @@ func (c *Canvas) Run() {
 			c.height = defaultHeight
 		}
 
+		if len(c.windowTitle) == 0 {
+			c.windowTitle = defaultWindowTitle
+		}
+
+		if c.frameRate == 0 {
+			c.frameRate = defaultFrameRate
+		}
+
 		var err error
 		MainThread <- func() {
 			c.window, err = CreateWindow(
-				windowTitle,
+				c.windowTitle,
 				WindowPosUndefined,
 				WindowPosUndefined,
 				c.Width(),

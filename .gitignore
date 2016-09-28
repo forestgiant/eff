@@ -24,4 +24,6 @@ _testmain.go
 *.prof
 
 drawing-primitives
+!drawing-primitives/
 sine-wave
+!sine-wave/

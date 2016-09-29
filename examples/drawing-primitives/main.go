@@ -19,7 +19,7 @@ func main() {
 	drawableIndex := 0
 
 	//Create Eff Canvas
-	canvas := sdl.NewCanvas("Drawing Primitives", 800, 480, 90, true)
+	canvas := sdl.NewCanvas("Drawing Primitives", 800, 480, 60, false)
 
 	setDrawable := func(index int) {
 		if index < 0 || index >= len(drawables) {

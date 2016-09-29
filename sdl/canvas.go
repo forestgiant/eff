@@ -217,7 +217,6 @@ func (c *Canvas) Run() {
 
 				printFPS := func() {
 					delta = GetTicks() - startTime
-					startTime = GetTicks()
 					if delta != 0 {
 						currentFPS = 1000 / delta
 					}
@@ -230,13 +229,18 @@ func (c *Canvas) Run() {
 				enforceFPS := func() {
 					timeBetweenFrames := GetTicks() - startTime
 					targetTimeBetweenFrames := 1000 / uint32(c.frameRate)
-					Delay(targetTimeBetweenFrames - timeBetweenFrames)
+
+					if timeBetweenFrames < targetTimeBetweenFrames {
+						Delay(targetTimeBetweenFrames - timeBetweenFrames)
+					}
+
 				}
 
 				c.renderer.Present()
-
-				printFPS()
 				enforceFPS()
+				printFPS()
+
+				startTime = GetTicks()
 			}
 		}
 	}

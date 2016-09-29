@@ -30,16 +30,17 @@ type Canvas struct {
 	keyDownHandlers []eff.KeyHandler
 	windowTitle     string
 	frameRate       int
+	useVsync        bool
 }
 
 // NewCanvas creates a new SDL canvas instance
-func NewCanvas(title string, width int, height int, frameRate int) *Canvas {
+func NewCanvas(title string, width int, height int, frameRate int, useVsync bool) *Canvas {
 	c := Canvas{}
 	c.windowTitle = title
 	c.width = width
 	c.height = height
 	c.frameRate = frameRate
-
+	c.useVsync = useVsync
 	return &c
 }
 
@@ -138,11 +139,15 @@ func (c *Canvas) Run() {
 		}
 
 		MainThread <- func() {
+			windowFlags := RendererAccelerated | RendererPresentVsync
+			if !c.useVsync {
+				windowFlags = RendererAccelerated
+			}
+
 			c.renderer, err = CreateRenderer(
 				c.window,
 				-1,
-				RendererAccelerated,
-				// RendererAccelerated|RendererPresentVsync,
+				uint32(windowFlags),
 			)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
@@ -210,18 +215,28 @@ func (c *Canvas) Run() {
 
 			MainThread <- func() {
 
+				printFPS := func() {
+					delta = GetTicks() - startTime
+					startTime = GetTicks()
+					if delta != 0 {
+						currentFPS = 1000 / delta
+					}
+					if GetTicks()-lastFPSPrintTime >= 1000 {
+						fmt.Println(currentFPS, "fps")
+						lastFPSPrintTime = GetTicks()
+					}
+				}
+
+				enforceFPS := func() {
+					timeBetweenFrames := GetTicks() - startTime
+					targetTimeBetweenFrames := 1000 / uint32(c.frameRate)
+					Delay(targetTimeBetweenFrames - timeBetweenFrames)
+				}
+
 				c.renderer.Present()
 
-				delta = GetTicks() - startTime
-				startTime = GetTicks()
-				if delta != 0 {
-					currentFPS = 1000 / delta
-				}
-				if GetTicks()-lastFPSPrintTime >= 1000 {
-					fmt.Println(currentFPS, "fps")
-					lastFPSPrintTime = GetTicks()
-				}
-
+				printFPS()
+				enforceFPS()
 			}
 		}
 	}

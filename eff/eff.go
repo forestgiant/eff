@@ -90,7 +90,8 @@ type Canvas interface {
 	FillRect(rect Rect, color Color)
 	FillRects(rect []Rect, color Color)
 
-	DrawText(text string, size int, font Font, color Color, point Point)
+	SetFont(font Font, size int)
+	DrawText(text string, color Color, point Point)
 
 	SetWidth(width int)
 	SetHeight(height int)

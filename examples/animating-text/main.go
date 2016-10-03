@@ -7,15 +7,20 @@ import (
 
 type textDrawable struct {
 	initialized bool
-	font        eff.Font
 }
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
-	t.font.Path = "../assets/vcr_osd_mono.ttf"
+	font := eff.Font{
+		Path: "../assets/vcr_osd_mono.ttf",
+	}
+
+	canvas.SetFont(font, 24)
+	t.initialized = true
 }
 
 func (t *textDrawable) Draw(canvas eff.Canvas) {
-	canvas.DrawText("hello, world!", 24, t.font, eff.RandomColor(), Point{X: 0, Y: 0})
+	textColor := eff.Color{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}
+	canvas.DrawText("hello, world!", textColor, eff.Point{X: 0, Y: 0})
 }
 
 func (t *textDrawable) Update(canvas eff.Canvas) {
@@ -30,6 +35,6 @@ func main() {
 	t := textDrawable{}
 	canvas := sdl.NewCanvas("Animating Text", 800, 540, 60, true)
 
-	canvas.AddDrawable(t)
+	canvas.AddDrawable(&t)
 	canvas.Run()
 }

@@ -12,6 +12,10 @@ import (
 	"unsafe"
 )
 
+func init() {
+	InitTTF()
+}
+
 // Point is a structure that defines a two demensional point.
 // (https://wiki.libsdl.org/SDL_Point)
 type Point struct {
@@ -48,20 +52,6 @@ type Color struct {
 
 func (a *Color) cptr() *C.SDL_Color {
 	return (*C.SDL_Color)(unsafe.Pointer(a))
-}
-
-// Surface SDL Surface (https://wiki.libsdl.org/SDL_Surface)
-type Surface C.SDL_Surface
-
-func (a *Surface) cptr() *C.SDL_Surface {
-	return (*C.SDL_Surface)(unsafe.Pointer(a))
-}
-
-// Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
-type Texture C.SDL_Texture
-
-func (a *Texture) cptr() *C.SDL_Texture {
-	return (*C.SDL_Texture)(unsafe.Pointer(a))
 }
 
 //MainThread manages the thread that SDL calls execute on

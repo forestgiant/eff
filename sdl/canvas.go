@@ -31,6 +31,7 @@ type Canvas struct {
 	windowTitle     string
 	frameRate       int
 	useVsync        bool
+	font            *Font
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -476,13 +477,21 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 	c.fullscreen = fullscreen
 }
 
+func (c *Canvas) SetFont(font eff.Font, size int) {
+	f, err := OpenFont(font.Path, size)
+	c.font = f
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
-func (c *Canvas) DrawText(text string, size int, font eff.Font, color eff.Color, point eff.Point) {
+func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
 	r := Rect{
 		X: int32(point.X),
 		Y: int32(point.Y),
-		W: int32(c.Width()),
-		H: int32(c.Height()),
+		W: int32(24 * len(text)),
+		H: 24,
 	}
 
 	rgba := Color{
@@ -492,8 +501,21 @@ func (c *Canvas) DrawText(text string, size int, font eff.Font, color eff.Color,
 		A: uint8(color.A),
 	}
 
-	f := OpenFont(font.Path, size)
-	s := RenderTextSolid(c.renderer, f, text, rgba)
-	t := c.renderer.CreateTextureFromSurface(s)
-	c.renderer.RenderCopy(t, r, r)
+	MainThread <- func() {
+		s, err := RenderTextSolid(c.font, text, rgba)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		t, err := c.renderer.CreateTextureFromSurface(s)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = c.renderer.RenderCopy(t, r, r)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }

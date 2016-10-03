@@ -21,6 +21,20 @@ const (
 	TextureModulateAlpha = C.SDL_TEXTUREMODULATE_ALPHA
 )
 
+// Surface SDL Surface (https://wiki.libsdl.org/SDL_Surface)
+type Surface C.SDL_Surface
+
+func (a *Surface) cptr() *C.SDL_Surface {
+	return (*C.SDL_Surface)(unsafe.Pointer(a))
+}
+
+// Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
+type Texture C.SDL_Texture
+
+func (a *Texture) cptr() *C.SDL_Texture {
+	return (*C.SDL_Texture)(unsafe.Pointer(a))
+}
+
 // Renderer (https://wiki.libsdl.org/SDL_CreateRenderer)
 type Renderer C.SDL_Renderer
 
@@ -146,11 +160,21 @@ func (r *Renderer) Destroy() {
 }
 
 // CreateTextureFromSurface (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
-func (r *Renderer) CreateTextureFromSurface(surface Surface) Texture {
-	return C.SDL_CreateTextureFromSurface(r.cptr(), surface.cptr())
+func (r *Renderer) CreateTextureFromSurface(surface *Surface) (*Texture, error) {
+	_texture := C.SDL_CreateTextureFromSurface(r.cptr(), surface.cptr())
+	if _texture == nil {
+		return nil, GetError()
+	}
+
+	return (*Texture)(unsafe.Pointer(_texture)), nil
 }
 
 // RenderCopy (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
-func (r *Renderer) RenderCopy(texture Texture, srcRect Rect, destRect Rect) {
-	C.SDL_RenderCopy(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr())
+func (r *Renderer) RenderCopy(texture *Texture, srcRect Rect, destRect Rect) error {
+	err := C.SDL_RenderCopy(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr())
+	if err < 0 {
+		return GetError()
+	}
+
+	return nil
 }

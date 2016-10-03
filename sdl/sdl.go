@@ -1,8 +1,9 @@
 package sdl
 
 // #cgo windows CFLAGS: -Ic:/mingw_dev_lib/include/SDL2
-// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2
+// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2 -lSDL2_ttf
 // #cgo linux freebsd darwin pkg-config: sdl2
+// #cgo linux freebsd darwin LDFLAGS: -lSDL2_ttf
 // #include "wrapper.h"
 import "C"
 import (
@@ -34,6 +35,33 @@ type Rect struct {
 
 func (a *Rect) cptr() *C.SDL_Rect {
 	return (*C.SDL_Rect)(unsafe.Pointer(a))
+}
+
+// Color defines a color using r, g, b, a values from 0-255
+// (https://wiki.libsdl.org/SDL_Color)
+type Color struct {
+	R uint8
+	G uint8
+	B uint8
+	A uint8
+}
+
+func (a *Color) cptr() *C.SDL_Color {
+	return (*C.SDL_Color)(unsafe.Pointer(a))
+}
+
+// Surface SDL Surface (https://wiki.libsdl.org/SDL_Surface)
+type Surface C.SDL_Surface
+
+func (a *Surface) cptr() *C.SDL_Surface {
+	return (*C.SDL_Surface)(unsafe.Pointer(a))
+}
+
+// Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
+type Texture C.SDL_Texture
+
+func (a *Texture) cptr() *C.SDL_Texture {
+	return (*C.SDL_Texture)(unsafe.Pointer(a))
 }
 
 //MainThread manages the thread that SDL calls execute on

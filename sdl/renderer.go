@@ -144,3 +144,13 @@ func (r *Renderer) FillRects(rects []Rect) error {
 func (r *Renderer) Destroy() {
 	C.SDL_DestroyRenderer(r.cptr())
 }
+
+// CreateTextureFromSurface (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
+func (r *Renderer) CreateTextureFromSurface(surface Surface) Texture {
+	return C.SDL_CreateTextureFromSurface(r.cptr(), surface.cptr())
+}
+
+// RenderCopy (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
+func (r *Renderer) RenderCopy(texture Texture, srcRect Rect, destRect Rect) {
+	C.SDL_RenderCopy(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr())
+}

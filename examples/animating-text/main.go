@@ -7,24 +7,35 @@ import (
 
 type textDrawable struct {
 	initialized bool
+	t           float64
+	text        string
+	textColor   eff.Color
 }
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
 	font := eff.Font{
-		Path: "../assets/vcr_osd_mono.ttf",
+		Path: "../assets/Jellee-Roman.ttf",
 	}
 
 	canvas.SetFont(font, 24)
+
+	t.text = "Effulgent, Effulgent, Effulgent, Effulgent"
 	t.initialized = true
 }
 
 func (t *textDrawable) Draw(canvas eff.Canvas) {
-	textColor := eff.Color{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}
-	canvas.DrawText("hello, world!", textColor, eff.Point{X: 0, Y: 0})
+	var index int
+	index = int(t.t*float64(len(t.text))) + 1
+	textColor := eff.RandomColor()
+
+	canvas.DrawText(t.text[:index], textColor, eff.Point{X: 0, Y: 0})
 }
 
 func (t *textDrawable) Update(canvas eff.Canvas) {
-
+	t.t += 0.01
+	if t.t > 1 {
+		t.t = 0
+	}
 }
 
 func (t *textDrawable) Initialized() bool {

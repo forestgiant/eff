@@ -57,3 +57,16 @@ func RenderTextSolid(font *Font, text string, color Color) (*Surface, error) {
 
 	return (*Surface)(unsafe.Pointer(_surface)), nil
 }
+
+// RenderTextBlended (https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC51)
+func RenderTextBlended(font *Font, text string, color Color) (*Surface, error) {
+	_text := C.CString(text)
+	_color := color.cptr()
+	_surface := C.TTF_RenderText_Blended(font, _text, *_color)
+
+	if _surface == nil {
+		return nil, GetTTFError()
+	}
+
+	return (*Surface)(unsafe.Pointer(_surface)), nil
+}

@@ -487,13 +487,6 @@ func (c *Canvas) SetFont(font eff.Font, size int) {
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
 func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
-	r := Rect{
-		X: int32(point.X),
-		Y: int32(point.Y),
-		W: int32(24 * len(text)),
-		H: 24,
-	}
-
 	rgba := Color{
 		R: uint8(color.R),
 		G: uint8(color.G),
@@ -502,7 +495,7 @@ func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
 	}
 
 	MainThread <- func() {
-		s, err := RenderTextSolid(c.font, text, rgba)
+		s, err := RenderTextBlended(c.font, text, rgba)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -513,6 +506,12 @@ func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
 			fmt.Println(err)
 		}
 
+		r := Rect{
+			X: int32(point.X),
+			Y: int32(point.Y),
+			W: int32(s.w),
+			H: int32(s.h),
+		}
 		err = c.renderer.RenderCopy(t, r, r)
 		if err != nil {
 			fmt.Println(err)

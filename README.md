@@ -7,7 +7,7 @@ The sdl package is a partial wrapper of sdl for go.  For a complete wrapper chec
 ###SDL setup
 * OSX: `brew install sdl2{,_mixer,_image,_ttf}`
 * Arch Linux: `sudo pacman -S sdl2{,_mixer,_image,_ttf}`
-* Ubuntu/Debian: `sudo apt-get install libsdl2{,_mixer,_image,_ttf}-dev`
+* Ubuntu/Debian: `sudo apt-get install libsdl2{,-mixer,-image,-ttf}-dev `
 
 ### Keyboard control
 * Press `f` to toggle fullscreen

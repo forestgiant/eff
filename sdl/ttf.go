@@ -4,7 +4,6 @@ package sdl
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
 
@@ -15,7 +14,6 @@ var ttfInitialized bool
 
 // InitTTF initialize the SDL_ttf
 func InitTTF() error {
-	fmt.Println("Initializing TTF")
 	if C.TTF_Init() == -1 {
 		return GetTTFError()
 	}
@@ -35,9 +33,7 @@ func GetTTFError() error {
 // OpenFont (https://www.libsdl.org/projects/SDL_ttf)
 func OpenFont(fontPath string, pointSize int) (*Font, error) {
 	_fontPath := C.CString(fontPath)
-	fmt.Println("Opening font")
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
-	fmt.Println("Done with font")
 
 	if _font == nil {
 		return nil, GetTTFError()

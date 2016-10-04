@@ -14,12 +14,12 @@ type textDrawable struct {
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
 	font := eff.Font{
-		Path: "../assets/Jellee-Roman.ttf",
+		Path: "../assets/fonts/Jellee-Roman.ttf",
 	}
 
 	canvas.SetFont(font, 24)
 
-	t.text = "Effulgent, Effulgent, Effulgent, Effulgent"
+	t.text = "Effulgent, Effulgent, Effulgent, Effulgent, Effulgent, Effulgent"
 	t.initialized = true
 }
 
@@ -32,7 +32,7 @@ func (t *textDrawable) Draw(canvas eff.Canvas) {
 }
 
 func (t *textDrawable) Update(canvas eff.Canvas) {
-	t.t += 0.01
+	t.t += 0.005
 	if t.t > 1 {
 		t.t = 0
 	}

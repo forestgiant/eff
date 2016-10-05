@@ -1,6 +1,7 @@
 package sdl
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -477,16 +478,22 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 	c.fullscreen = fullscreen
 }
 
-func (c *Canvas) SetFont(font eff.Font, size int) {
+// SetFont sets the font on the Canvas used for DrawText
+func (c *Canvas) SetFont(font eff.Font, size int) error {
 	f, err := OpenFont(font.Path, size)
 	c.font = f
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+	return nil
 }
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
-func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
+func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) error {
+	if c.font == nil {
+		return errors.New("Can't draw text no font set")
+	}
+
 	rgba := Color{
 		R: uint8(color.R),
 		G: uint8(color.G),
@@ -517,4 +524,6 @@ func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) {
 			fmt.Println(err)
 		}
 	}
+
+	return nil
 }

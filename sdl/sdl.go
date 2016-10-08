@@ -1,9 +1,9 @@
 package sdl
 
 // #cgo windows CFLAGS: -Ic:/mingw_dev_lib/include/SDL2
-// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2 -lSDL2_ttf
+// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2 -lSDL2_ttf -lSDL2_mixer
 // #cgo linux freebsd darwin pkg-config: sdl2
-// #cgo linux freebsd darwin LDFLAGS: -lSDL2_ttf
+// #cgo linux freebsd darwin LDFLAGS: -lSDL2_ttf -lSDL2_mixer
 // #include "wrapper.h"
 import "C"
 import (
@@ -14,6 +14,7 @@ import (
 
 func init() {
 	InitTTF()
+	InitMix()
 }
 
 // Point is a structure that defines a two demensional point.

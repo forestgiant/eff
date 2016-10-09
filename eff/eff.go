@@ -112,8 +112,3 @@ type Drawable interface {
 	Update(canvas Canvas)
 	Initialized() bool
 }
-
-// AudioPlayer interface describing methods for audio mixer objects
-type AudioPlayer interface {
-	PlayMusic(musicPath string)
-}

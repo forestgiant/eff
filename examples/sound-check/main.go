@@ -1,24 +1,31 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/forestgiant/eff/sdl"
 )
 
 func main() {
-
-	sound := flag.String("path", "", "path to wav file")
-	flag.Parse()
-	ap := sdl.AudioPlayer{}
-
-	if len(*sound) > 0 {
-		fmt.Println("Playing", *sound)
-		ap.PlayMusic(*sound)
-
-		for {
-		}
+	usage := "Usage sound-check <PATH_TO_WAV>"
+	if len(os.Args) < 2 {
+		fmt.Println(usage)
+		return
 	}
 
+	ext := path.Ext(os.Args[1])
+	ext = strings.ToLower(ext)
+
+	if ext != ".wav" {
+		fmt.Println(usage)
+		return
+	}
+
+	ap := sdl.NewAudioPlayer(os.Args[1], -1)
+	ap.Play()
+
+	select {}
 }

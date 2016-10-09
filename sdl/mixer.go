@@ -54,3 +54,18 @@ func PlayMusic(music *Music, loopCount int) error {
 
 	return nil
 }
+
+// PauseMusic (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC62)
+func PauseMusic() {
+	C.Mix_PauseMusic()
+}
+
+// ResumeMusic (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC63)
+func ResumeMusic() {
+	C.Mix_ResumeMusic()
+}
+
+// HaltMusic (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC67)
+func HaltMusic() {
+	C.Mix_HaltMusic()
+}

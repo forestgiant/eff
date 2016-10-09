@@ -25,7 +25,7 @@ func newPlayer(musicPath string) player {
 
 func (p *player) Init(c eff.Canvas) {
 	font := eff.Font{
-		Path: "../assets/fonts/Jellee-Roman.ttf",
+		Path: "../assets/fonts/vcr_osd_mono.ttf",
 	}
 	err := c.SetFont(font, 24)
 	if err != nil {
@@ -41,9 +41,15 @@ func (p *player) Initialized() bool {
 }
 
 func (p *player) Draw(c eff.Canvas) {
-	c.DrawText("Now Playing: "+path.Base(p.musicPath), eff.RandomColor(), eff.Point{X: 0, Y: 0})
-	c.DrawText("Press p to pause", eff.RandomColor(), eff.Point{X: 0, Y: 40})
-	c.DrawText("Press r to resume", eff.RandomColor(), eff.Point{X: 0, Y: 80})
+	margin := eff.Point{X: 10, Y: 10}
+	yPos := 0
+	c.DrawText("Now Playing: "+path.Base(p.musicPath), eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y})
+	yPos += 24 + margin.Y
+	c.DrawText("Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	yPos += 24 + margin.Y
+	c.DrawText("Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	yPos += 24 + margin.Y
+	c.DrawText("Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 }
 
 func (p *player) Update(c eff.Canvas) {

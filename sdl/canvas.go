@@ -513,13 +513,21 @@ func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) error {
 			fmt.Println(err)
 		}
 
+		r1 := Rect{
+			X: 0,
+			Y: 0,
+			W: int32(s.w),
+			H: int32(s.h),
+		}
+
 		r := Rect{
 			X: int32(point.X),
 			Y: int32(point.Y),
 			W: int32(s.w),
 			H: int32(s.h),
 		}
-		err = c.renderer.RenderCopy(t, r, r)
+
+		err = c.renderer.RenderCopy(t, r1, r)
 		if err != nil {
 			fmt.Println(err)
 		}

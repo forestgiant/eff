@@ -1,6 +1,7 @@
 package sdl
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -11,7 +12,7 @@ const (
 	defaultWindowTitle = "Effulgent"
 	defaultWidth       = 480
 	defaultHeight      = 320
-	defaultFrameRate   = 90
+	defaultFrameRate   = 60
 )
 
 var startTime uint32
@@ -31,6 +32,7 @@ type Canvas struct {
 	windowTitle     string
 	frameRate       int
 	useVsync        bool
+	font            *Font
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -69,7 +71,7 @@ func (c *Canvas) AddDrawable(drawable eff.Drawable) {
 	c.drawables = append(c.drawables, drawable)
 }
 
-//RemoveDrawable removes struct from canvas that implements eff.Drawable
+// RemoveDrawable removes struct from canvas that implements eff.Drawable
 func (c *Canvas) RemoveDrawable(drawable eff.Drawable) {
 	index := -1
 	for i, d := range c.drawables {
@@ -85,12 +87,12 @@ func (c *Canvas) RemoveDrawable(drawable eff.Drawable) {
 	c.drawables = append(c.drawables[:index], c.drawables[index+1:]...)
 }
 
-//AddKeyUpHandler adds key up event handler to the canvas
+// AddKeyUpHandler adds key up event handler to the canvas
 func (c *Canvas) AddKeyUpHandler(handler eff.KeyHandler) {
 	c.keyUpHandlers = append(c.keyUpHandlers, handler)
 }
 
-//AddKeyDownHandler adds key down event handler to the canvas
+// AddKeyDownHandler adds key down event handler to the canvas
 func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 	c.keyDownHandlers = append(c.keyDownHandlers, handler)
 }
@@ -261,7 +263,7 @@ func (c *Canvas) Run() {
 	LockMain()
 }
 
-//DrawPoints draw a slice of points to the screen all the same color
+// DrawPoints draw a slice of points to the screen all the same color
 func (c *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
 	var sdlPoints []Point
 
@@ -281,7 +283,7 @@ func (c *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
 	}
 }
 
-//DrawPoint draw a point on the screen specifying what color
+// DrawPoint draw a point on the screen specifying what color
 func (c *Canvas) DrawPoint(point eff.Point, color eff.Color) {
 	MainThread <- func() {
 		c.renderer.SetDrawColor(
@@ -294,7 +296,7 @@ func (c *Canvas) DrawPoint(point eff.Point, color eff.Color) {
 	}
 }
 
-//DrawColorPoints draw a slide of colorPoints on the screen
+// DrawColorPoints draw a slide of colorPoints on the screen
 func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
 	MainThread <- func() {
 		for _, colorPoint := range colorPoints {
@@ -310,7 +312,7 @@ func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
 	}
 }
 
-//FillRect draw a filled in rectangle to the screen
+// FillRect draw a filled in rectangle to the screen
 func (c *Canvas) FillRect(rect eff.Rect, color eff.Color) {
 	sdlRect := Rect{
 		X: int32(rect.X),
@@ -331,7 +333,7 @@ func (c *Canvas) FillRect(rect eff.Rect, color eff.Color) {
 	}
 }
 
-//FillRects draw a slice of filled rectangles to the screen all the same color
+// FillRects draw a slice of filled rectangles to the screen all the same color
 func (c *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
 	var sdlRects []Rect
 
@@ -358,7 +360,7 @@ func (c *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
 	}
 }
 
-//DrawRect draw an outlined rectangle to the screen with a color
+// DrawRect draw an outlined rectangle to the screen with a color
 func (c *Canvas) DrawRect(rect eff.Rect, color eff.Color) {
 	sdlRect := Rect{
 		X: int32(rect.X),
@@ -379,7 +381,7 @@ func (c *Canvas) DrawRect(rect eff.Rect, color eff.Color) {
 	}
 }
 
-//DrawColorRects draw a slice of color rectangles to the screen
+// DrawColorRects draw a slice of color rectangles to the screen
 func (c *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
 	MainThread <- func() {
 		for _, colorRect := range colorRects {
@@ -402,7 +404,7 @@ func (c *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
 	}
 }
 
-//DrawRects draw a slice of rectangles to the screen all the same color
+// DrawRects draw a slice of rectangles to the screen all the same color
 func (c *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
 	var sdlRects []Rect
 
@@ -429,7 +431,7 @@ func (c *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
 	}
 }
 
-//DrawLine draw a line of to the screen with a color
+// DrawLine draw a line of to the screen with a color
 func (c *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
 	MainThread <- func() {
 		c.renderer.SetDrawColor(
@@ -442,7 +444,7 @@ func (c *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
 	}
 }
 
-//DrawLines a slice of lines to the screen all the same color
+// DrawLines a slice of lines to the screen all the same color
 func (c *Canvas) DrawLines(points []eff.Point, color eff.Color) {
 	if len(points) == 0 {
 		return
@@ -466,12 +468,70 @@ func (c *Canvas) DrawLines(points []eff.Point, color eff.Color) {
 	}
 }
 
-//Fullscreen get the full screen state of the window
+// Fullscreen get the full screen state of the window
 func (c *Canvas) Fullscreen() bool {
 	return c.fullscreen
 }
 
-//SetFullscreen set the fullscreen state of the window
+// SetFullscreen set the fullscreen state of the window
 func (c *Canvas) SetFullscreen(fullscreen bool) {
 	c.fullscreen = fullscreen
+}
+
+// SetFont sets the font on the Canvas used for DrawText
+func (c *Canvas) SetFont(font eff.Font, size int) error {
+	f, err := OpenFont(font.Path, size)
+	c.font = f
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DrawText draws a string using a font to the screen, the point is the upper left hand corner
+func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) error {
+	if c.font == nil {
+		return errors.New("Can't draw text no font set")
+	}
+
+	rgba := Color{
+		R: uint8(color.R),
+		G: uint8(color.G),
+		B: uint8(color.B),
+		A: uint8(color.A),
+	}
+
+	MainThread <- func() {
+		s, err := RenderTextBlended(c.font, text, rgba)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		t, err := c.renderer.CreateTextureFromSurface(s)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		r1 := Rect{
+			X: 0,
+			Y: 0,
+			W: int32(s.w),
+			H: int32(s.h),
+		}
+
+		r := Rect{
+			X: int32(point.X),
+			Y: int32(point.Y),
+			W: int32(s.w),
+			H: int32(s.h),
+		}
+
+		err = c.renderer.RenderCopy(t, r1, r)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	return nil
 }

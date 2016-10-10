@@ -4,7 +4,7 @@ package sdl
 import "C"
 import "unsafe"
 
-//Window SDL window
+// Window SDL window
 type Window C.SDL_Window
 
 const (

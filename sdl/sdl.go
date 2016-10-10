@@ -1,8 +1,9 @@
 package sdl
 
 // #cgo windows CFLAGS: -Ic:/mingw_dev_lib/include/SDL2
-// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2
+// #cgo windows LDFLAGS: -Lc:/mingw_dev_lib/lib -lSDL2 -lSDL2_ttf
 // #cgo linux freebsd darwin pkg-config: sdl2
+// #cgo linux freebsd darwin LDFLAGS: -lSDL2_ttf
 // #include "wrapper.h"
 import "C"
 import (
@@ -10,6 +11,10 @@ import (
 	"runtime"
 	"unsafe"
 )
+
+func init() {
+	InitTTF()
+}
 
 // Point is a structure that defines a two demensional point.
 // (https://wiki.libsdl.org/SDL_Point)
@@ -34,6 +39,19 @@ type Rect struct {
 
 func (a *Rect) cptr() *C.SDL_Rect {
 	return (*C.SDL_Rect)(unsafe.Pointer(a))
+}
+
+// Color defines a color using r, g, b, a values from 0-255
+// (https://wiki.libsdl.org/SDL_Color)
+type Color struct {
+	R uint8
+	G uint8
+	B uint8
+	A uint8
+}
+
+func (a *Color) cptr() *C.SDL_Color {
+	return (*C.SDL_Color)(unsafe.Pointer(a))
 }
 
 //MainThread manages the thread that SDL calls execute on

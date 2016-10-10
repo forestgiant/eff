@@ -49,6 +49,11 @@ type ColorPoint struct {
 	Color
 }
 
+// Font describes a ttf font
+type Font struct {
+	Path string
+}
+
 // Equals test to see if two rectangles occupy the same location exactly
 func (r *Rect) Equals(otherRect Rect) bool {
 	return (r.X == otherRect.X &&
@@ -84,6 +89,9 @@ type Canvas interface {
 	DrawColorRects(colorRect []ColorRect)
 	FillRect(rect Rect, color Color)
 	FillRects(rect []Rect, color Color)
+
+	SetFont(font Font, size int) error
+	DrawText(text string, color Color, point Point) error
 
 	SetWidth(width int)
 	SetHeight(height int)

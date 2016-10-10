@@ -98,7 +98,7 @@ func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 }
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
-func (c *Canvas) Run() {
+func (c *Canvas) Run(setup eff.Fn) {
 	lastFPSPrintTime := GetTicks()
 	init := func() int {
 		if c.width == 0 {
@@ -248,12 +248,14 @@ func (c *Canvas) Run() {
 	}
 
 	go func() {
+		setup()
 		initOK := init()
 		if initOK != 0 {
 			os.Exit(initOK)
 		}
 		run()
 		MainThread <- func() {
+			// Clean up goes here
 			c.renderer.Destroy()
 			c.window.Destroy()
 		}

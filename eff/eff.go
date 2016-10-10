@@ -71,11 +71,13 @@ func (r *Rect) Intersects(otherRect Rect) bool {
 // KeyHandler function that is called when a key board event occurs
 type KeyHandler func(key string)
 
+type Fn func()
+
 // Canvas interface describing methods required for canvas renderers
 type Canvas interface {
 	AddDrawable(drawable Drawable)
 	RemoveDrawable(drawable Drawable)
-	Run()
+	Run(setup Fn)
 
 	DrawPoint(point Point, color Color)
 	DrawPoints(points []Point, color Color)

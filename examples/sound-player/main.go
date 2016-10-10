@@ -57,33 +57,34 @@ func (p *player) Update(c eff.Canvas) {
 }
 
 func main() {
-	usage := "Usage sound-player <PATH_TO_WAV>"
-	if len(os.Args) < 2 {
-		fmt.Println(usage)
-		return
-	}
-
-	ext := path.Ext(os.Args[1])
-	ext = strings.ToLower(ext)
-
-	if ext != ".wav" {
-		fmt.Println(usage)
-		return
-	}
-	player := newPlayer(os.Args[1])
 
 	canvas := sdl.NewCanvas("Sound Player", 800, 540, 60, true)
 
-	canvas.AddDrawable(&player)
-
-	canvas.AddKeyUpHandler(func(key string) {
-		switch key {
-		case "P":
-			player.audioPlayer.Pause()
-		case "R":
-			player.audioPlayer.Resume()
+	canvas.Run(func() {
+		usage := "Usage sound-player <PATH_TO_WAV>"
+		if len(os.Args) < 2 {
+			fmt.Println(usage)
+			os.Exit(1)
 		}
-	})
 
-	canvas.Run()
+		ext := path.Ext(os.Args[1])
+		ext = strings.ToLower(ext)
+
+		if ext != ".wav" {
+			fmt.Println(usage)
+			os.Exit(1)
+		}
+		player := newPlayer(os.Args[1])
+
+		canvas.AddDrawable(&player)
+
+		canvas.AddKeyUpHandler(func(key string) {
+			switch key {
+			case "P":
+				player.audioPlayer.Pause()
+			case "R":
+				player.audioPlayer.Resume()
+			}
+		})
+	})
 }

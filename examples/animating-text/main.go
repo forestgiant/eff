@@ -53,9 +53,8 @@ func (t *textDrawable) Initialized() bool {
 }
 
 func main() {
-	t := textDrawable{}
 	canvas := sdl.NewCanvas("Animating Text", 800, 540, 60, true)
-
-	canvas.AddDrawable(&t)
-	canvas.Run()
+	canvas.Run(func() {
+		canvas.AddDrawable(&textDrawable{})
+	})
 }

@@ -94,15 +94,14 @@ func (s *sineWaveDrawable) Initialized() bool {
 }
 
 func main() {
-	//Create drawables
-	s := sineWaveDrawable{}
-
 	//Create canvas
 	canvas := sdl.NewCanvas("Sine Wave", 800, 480, 1000, false)
-
-	//Add drawables to canvas
-	canvas.AddDrawable(&s)
-
 	//Start the run loop
-	canvas.Run()
+	canvas.Run(func() {
+		//Create drawables
+		s := sineWaveDrawable{}
+		//Add drawables to canvas
+		canvas.AddDrawable(&s)
+	})
+
 }

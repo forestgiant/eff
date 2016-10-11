@@ -247,7 +247,7 @@ func (c *Canvas) Run(setup eff.Fn) {
 		}
 	}
 
-	go func() {
+	LockMain(func() {
 		setup()
 		initOK := init()
 		if initOK != 0 {
@@ -260,9 +260,7 @@ func (c *Canvas) Run(setup eff.Fn) {
 			c.window.Destroy()
 		}
 		os.Exit(0)
-	}()
-
-	LockMain()
+	})
 }
 
 // DrawPoints draw a slice of points to the screen all the same color

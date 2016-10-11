@@ -9,7 +9,7 @@ The sdl package is a partial wrapper of sdl for go.  For a complete wrapper chec
 * Arch Linux: `sudo pacman -S sdl2{,_mixer,_image,_ttf}`
 * Ubuntu/Debian: `sudo apt-get install libsdl2{,-mixer,-image,-ttf}-dev `
 * Windows:
-    1. Install mingw <http://www.mingw.org/>, ensure the bin folder is in the windows path
+    1. Install mingw <http://www.mingw.org/>, ensure the `bin` folder is in the windows path
     2. Download the windows development sdl2 libraries:
         1. SDL2 <https://www.libsdl.org/download-2.0.php>
         2. SDL2_ttf <https://www.libsdl.org/projects/SDL_ttf/>

@@ -58,10 +58,12 @@ func (a *Color) cptr() *C.SDL_Color {
 //MainThread manages the thread that SDL calls execute on
 var MainThread = make(chan func())
 
-// LockMain calls runtime.LockOSThread on the calling thread.  This is intended to be the main thread since SDL on some platforms requires the main thread.  Use the MainThread channel to execute SDL calls.
-func LockMain() {
-	runtime.LockOSThread()
+type callback func()
 
+// LockMain calls runtime.LockOSThread on the calling thread.  This is intended to be the main thread since SDL on some platforms requires the main thread.  Use the MainThread channel to execute SDL calls.
+func LockMain(cb callback) {
+	runtime.LockOSThread()
+	go cb()
 	for {
 		f := <-MainThread
 		f()

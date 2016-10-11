@@ -10,8 +10,6 @@ import (
 // Music (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC86)
 type Music C.Mix_Music
 
-var mixInitialized = false
-
 // InitMix initalizes SDL_mixer
 func InitMix() error {
 	soundFreq := 44100
@@ -23,7 +21,6 @@ func InitMix() error {
 		return GetMixError()
 	}
 
-	mixInitialized = true
 	return nil
 }
 

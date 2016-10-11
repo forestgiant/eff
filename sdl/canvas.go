@@ -506,7 +506,7 @@ func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-
+		//TODO: This surface s needs to be freed
 		t, err := c.renderer.CreateTextureFromSurface(s)
 
 		if err != nil {

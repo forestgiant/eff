@@ -22,7 +22,7 @@ var currentFPS uint32
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
 	window          *Window
-	renderer        *Renderer
+	renderer        *renderer
 	drawables       []eff.Drawable
 	width           int
 	height          int
@@ -32,7 +32,7 @@ type Canvas struct {
 	windowTitle     string
 	frameRate       int
 	useVsync        bool
-	font            *Font
+	font            *font
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -99,7 +99,7 @@ func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (c *Canvas) Run(setup eff.Fn) {
-	lastFPSPrintTime := GetTicks()
+	lastFPSPrintTime := getTicks()
 	init := func() int {
 		if c.width == 0 {
 			c.width = defaultWidth
@@ -118,14 +118,14 @@ func (c *Canvas) Run(setup eff.Fn) {
 		}
 
 		var err error
-		MainThread <- func() {
-			c.window, err = CreateWindow(
+		mainThread <- func() {
+			c.window, err = createWindow(
 				c.windowTitle,
-				WindowPosUndefined,
-				WindowPosUndefined,
+				windowPosUndefined,
+				windowPosUndefined,
 				c.Width(),
 				c.Height(),
-				WindowOpenGl,
+				windowOpenGl,
 			)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -134,19 +134,19 @@ func (c *Canvas) Run(setup eff.Fn) {
 			}
 
 			if c.fullscreen {
-				c.window.SetFullscreen(WindowFullscreen)
+				c.window.setFullscreen(windowFullscreen)
 			} else {
-				c.window.SetFullscreen(0)
+				c.window.setFullscreen(0)
 			}
 		}
 
-		MainThread <- func() {
-			windowFlags := RendererAccelerated | RendererPresentVsync
+		mainThread <- func() {
+			windowFlags := rendererAccelerated | rendererPresentVsync
 			if !c.useVsync {
-				windowFlags = RendererAccelerated
+				windowFlags = rendererAccelerated
 			}
 
-			c.renderer, err = CreateRenderer(
+			c.renderer, err = createRenderer(
 				c.window,
 				-1,
 				uint32(windowFlags),
@@ -158,11 +158,11 @@ func (c *Canvas) Run(setup eff.Fn) {
 			}
 		}
 
-		MainThread <- func() {
-			c.renderer.Clear()
+		mainThread <- func() {
+			c.renderer.clear()
 		}
 
-		startTime = GetTicks()
+		startTime = getTicks()
 		return 0
 	}
 
@@ -170,36 +170,36 @@ func (c *Canvas) Run(setup eff.Fn) {
 		running := true
 
 		for running {
-			MainThread <- func() {
-				for event := PollEvent(); event != nil; event = PollEvent() {
+			mainThread <- func() {
+				for event := pollEvent(); event != nil; event = pollEvent() {
 					switch t := event.(type) {
-					case *QuitEvent:
+					case *quitEvent:
 						running = false
-					case *KeyUpEvent:
+					case *keyUpEvent:
 						switch t.Keysym.Sym {
-						case KeyQ:
+						case keyQ:
 							running = false
-						case KeyF:
+						case keyF:
 							c.fullscreen = !c.fullscreen
 							if c.fullscreen {
-								c.window.SetFullscreen(WindowFullscreen)
+								c.window.setFullscreen(windowFullscreen)
 							} else {
-								c.window.SetFullscreen(0)
+								c.window.setFullscreen(0)
 							}
 						}
 
 						for _, handler := range c.keyUpHandlers {
-							handler(GetKeyName(t.Keysym.Sym))
+							handler(getKeyName(t.Keysym.Sym))
 						}
-					case *KeyDownEvent:
+					case *keyDownEvent:
 						for _, handler := range c.keyDownHandlers {
-							handler(GetKeyName(t.Keysym.Sym))
+							handler(getKeyName(t.Keysym.Sym))
 						}
 					}
 				}
 
-				c.renderer.SetDrawColor(0x0, 0x0, 0x0, 0xFF)
-				c.renderer.Clear()
+				c.renderer.setDrawColor(0x0, 0x0, 0x0, 0xFF)
+				c.renderer.clear()
 			}
 
 			for _, drawable := range c.drawables {
@@ -215,232 +215,236 @@ func (c *Canvas) Run(setup eff.Fn) {
 				drawable.Update(c)
 			}
 
-			MainThread <- func() {
+			mainThread <- func() {
 
 				printFPS := func() {
-					delta = GetTicks() - startTime
+					delta = getTicks() - startTime
 					if delta != 0 {
 						currentFPS = 1000 / delta
 					}
-					if GetTicks()-lastFPSPrintTime >= 1000 {
+					if getTicks()-lastFPSPrintTime >= 1000 {
 						fmt.Println(currentFPS, "fps")
-						lastFPSPrintTime = GetTicks()
+						lastFPSPrintTime = getTicks()
 					}
 				}
 
 				enforceFPS := func() {
-					timeBetweenFrames := GetTicks() - startTime
+					timeBetweenFrames := getTicks() - startTime
 					targetTimeBetweenFrames := 1000 / uint32(c.frameRate)
 
 					if timeBetweenFrames < targetTimeBetweenFrames {
-						Delay(targetTimeBetweenFrames - timeBetweenFrames)
+						delay(targetTimeBetweenFrames - timeBetweenFrames)
 					}
 
 				}
 
-				c.renderer.Present()
+				c.renderer.present()
 				enforceFPS()
 				printFPS()
 
-				startTime = GetTicks()
+				startTime = getTicks()
 			}
 		}
 	}
 
-	LockMain(func() {
+	lockMain(func() {
 		setup()
 		initOK := init()
 		if initOK != 0 {
 			os.Exit(initOK)
 		}
 		run()
-		MainThread <- func() {
+		mainThread <- func() {
 			// Clean up goes here
-			c.renderer.Destroy()
-			c.window.Destroy()
+			c.renderer.destroy()
+			c.window.destroy()
+
+			//Quit SDL
+			quit()
 		}
+
 		os.Exit(0)
 	})
 }
 
 // DrawPoints draw a slice of points to the screen all the same color
 func (c *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
-	var sdlPoints []Point
+	var sdlPoints []point
 
-	for _, point := range points {
-		sdlPoints = append(sdlPoints, Point{X: int32(point.X), Y: int32(point.Y)})
+	for _, p := range points {
+		sdlPoints = append(sdlPoints, point{X: int32(p.X), Y: int32(p.Y)})
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.DrawPoints(sdlPoints)
+		c.renderer.drawPoints(sdlPoints)
 	}
 }
 
 // DrawPoint draw a point on the screen specifying what color
 func (c *Canvas) DrawPoint(point eff.Point, color eff.Color) {
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
-		c.renderer.DrawPoint(point.X, point.Y)
+		c.renderer.drawPoint(point.X, point.Y)
 	}
 }
 
 // DrawColorPoints draw a slide of colorPoints on the screen
 func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
-	MainThread <- func() {
+	mainThread <- func() {
 		for _, colorPoint := range colorPoints {
-			c.renderer.SetDrawColor(
+			c.renderer.setDrawColor(
 				uint8(colorPoint.R),
 				uint8(colorPoint.G),
 				uint8(colorPoint.B),
 				uint8(colorPoint.A),
 			)
 
-			c.renderer.DrawPoint(colorPoint.X, colorPoint.Y)
+			c.renderer.drawPoint(colorPoint.X, colorPoint.Y)
 		}
 	}
 }
 
 // FillRect draw a filled in rectangle to the screen
-func (c *Canvas) FillRect(rect eff.Rect, color eff.Color) {
-	sdlRect := Rect{
-		X: int32(rect.X),
-		Y: int32(rect.Y),
-		W: int32(rect.W),
-		H: int32(rect.H),
+func (c *Canvas) FillRect(r eff.Rect, color eff.Color) {
+	sdlRect := rect{
+		X: int32(r.X),
+		Y: int32(r.Y),
+		W: int32(r.W),
+		H: int32(r.H),
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.FillRect(&sdlRect)
+		c.renderer.fillRect(&sdlRect)
 	}
 }
 
 // FillRects draw a slice of filled rectangles to the screen all the same color
 func (c *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
-	var sdlRects []Rect
+	var sdlRects []rect
 
-	for _, rect := range rects {
+	for _, r := range rects {
 		sdlRects = append(sdlRects,
-			Rect{
-				X: int32(rect.X),
-				Y: int32(rect.Y),
-				W: int32(rect.W),
-				H: int32(rect.H),
+			rect{
+				X: int32(r.X),
+				Y: int32(r.Y),
+				W: int32(r.W),
+				H: int32(r.H),
 			},
 		)
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.FillRects(sdlRects)
+		c.renderer.fillRects(sdlRects)
 	}
 }
 
 // DrawRect draw an outlined rectangle to the screen with a color
-func (c *Canvas) DrawRect(rect eff.Rect, color eff.Color) {
-	sdlRect := Rect{
-		X: int32(rect.X),
-		Y: int32(rect.Y),
-		W: int32(rect.W),
-		H: int32(rect.H),
+func (c *Canvas) DrawRect(r eff.Rect, color eff.Color) {
+	sdlRect := rect{
+		X: int32(r.X),
+		Y: int32(r.Y),
+		W: int32(r.W),
+		H: int32(r.H),
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.DrawRect(&sdlRect)
+		c.renderer.drawRect(&sdlRect)
 	}
 }
 
 // DrawColorRects draw a slice of color rectangles to the screen
 func (c *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
-	MainThread <- func() {
+	mainThread <- func() {
 		for _, colorRect := range colorRects {
-			c.renderer.SetDrawColor(
+			c.renderer.setDrawColor(
 				uint8(colorRect.R),
 				uint8(colorRect.G),
 				uint8(colorRect.B),
 				uint8(colorRect.A),
 			)
 
-			sdlRect := Rect{
+			sdlRect := rect{
 				X: int32(colorRect.X),
 				Y: int32(colorRect.Y),
 				W: int32(colorRect.W),
 				H: int32(colorRect.H),
 			}
 
-			c.renderer.FillRect(&sdlRect)
+			c.renderer.fillRect(&sdlRect)
 		}
 	}
 }
 
 // DrawRects draw a slice of rectangles to the screen all the same color
 func (c *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
-	var sdlRects []Rect
+	var sdlRects []rect
 
-	for _, rect := range rects {
-		r := Rect{
-			X: int32(rect.X),
-			Y: int32(rect.Y),
-			W: int32(rect.W),
-			H: int32(rect.H),
+	for _, r := range rects {
+		r := rect{
+			X: int32(r.X),
+			Y: int32(r.Y),
+			W: int32(r.W),
+			H: int32(r.H),
 		}
 
 		sdlRects = append(sdlRects, r)
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.DrawRects(sdlRects)
+		c.renderer.drawRects(sdlRects)
 	}
 }
 
 // DrawLine draw a line of to the screen with a color
 func (c *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
-		c.renderer.DrawLine(p1.X, p1.Y, p2.X, p2.Y)
+		c.renderer.drawLine(p1.X, p1.Y, p2.X, p2.Y)
 	}
 }
 
@@ -449,22 +453,22 @@ func (c *Canvas) DrawLines(points []eff.Point, color eff.Color) {
 	if len(points) == 0 {
 		return
 	}
-	var sdlPoints []Point
+	var sdlPoints []point
 
-	for _, point := range points {
-		p := Point{X: int32(point.X), Y: int32(point.Y)}
+	for _, p := range points {
+		p := point{X: int32(p.X), Y: int32(p.Y)}
 		sdlPoints = append(sdlPoints, p)
 	}
 
-	MainThread <- func() {
-		c.renderer.SetDrawColor(
+	mainThread <- func() {
+		c.renderer.setDrawColor(
 			uint8(color.R),
 			uint8(color.G),
 			uint8(color.B),
 			uint8(color.A),
 		)
 
-		c.renderer.DrawLines(sdlPoints)
+		c.renderer.drawLines(sdlPoints)
 	}
 }
 
@@ -480,7 +484,7 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 
 // SetFont sets the font on the Canvas used for DrawText
 func (c *Canvas) SetFont(font eff.Font, size int) error {
-	f, err := OpenFont(font.Path, size)
+	f, err := openFont(font.Path, size)
 	c.font = f
 	if err != nil {
 		return err
@@ -489,45 +493,46 @@ func (c *Canvas) SetFont(font eff.Font, size int) error {
 }
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
-func (c *Canvas) DrawText(text string, color eff.Color, point eff.Point) error {
+func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
 	if c.font == nil {
 		return errors.New("Can't draw text no font set")
 	}
 
-	rgba := Color{
-		R: uint8(color.R),
-		G: uint8(color.G),
-		B: uint8(color.B),
-		A: uint8(color.A),
+	rgba := color{
+		R: uint8(col.R),
+		G: uint8(col.G),
+		B: uint8(col.B),
+		A: uint8(col.A),
 	}
 
-	MainThread <- func() {
-		s, err := RenderTextBlended(c.font, text, rgba)
+	mainThread <- func() {
+		s, err := renderTextBlended(c.font, text, rgba)
 		if err != nil {
 			fmt.Println(err)
 		}
-		//TODO: This surface s needs to be freed
-		t, err := c.renderer.CreateTextureFromSurface(s)
+		t, err := c.renderer.createTextureFromSurface(s)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		r1 := Rect{
+		r1 := rect{
 			X: 0,
 			Y: 0,
 			W: int32(s.w),
 			H: int32(s.h),
 		}
 
-		r := Rect{
+		r := rect{
 			X: int32(point.X),
 			Y: int32(point.Y),
 			W: int32(s.w),
 			H: int32(s.h),
 		}
 
-		err = c.renderer.RenderCopy(t, r1, r)
+		freeSurface(s)
+
+		err = c.renderer.renderCopy(t, r1, r)
 		if err != nil {
 			fmt.Println(err)
 		}

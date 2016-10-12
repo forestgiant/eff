@@ -8,27 +8,27 @@ import "unsafe"
 type Window C.SDL_Window
 
 const (
-	WindowFullscreen        = C.SDL_WINDOW_FULLSCREEN
-	WindowOpenGl            = C.SDL_WINDOW_OPENGL
-	WindowShown             = C.SDL_WINDOW_SHOWN
-	WindowHidden            = C.SDL_WINDOW_HIDDEN
-	WindowBorderless        = C.SDL_WINDOW_BORDERLESS
-	WindowResizable         = C.SDL_WINDOW_RESIZABLE
-	WindowMinimized         = C.SDL_WINDOW_MINIMIZED
-	WindowMaximized         = C.SDL_WINDOW_MAXIMIZED
-	WindowInputGrabbed      = C.SDL_WINDOW_INPUT_GRABBED
-	WindowInputFocus        = C.SDL_WINDOW_INPUT_FOCUS
-	WindowMouseFocus        = C.SDL_WINDOW_MOUSE_FOCUS
-	WindowFullscreenDesktop = C.SDL_WINDOW_FULLSCREEN_DESKTOP
-	WindowForeign           = C.SDL_WINDOW_FOREIGN
-	WindowAllowHighDPI      = C.SDL_WINDOW_ALLOW_HIGHDPI
+	windowFullscreen        = C.SDL_WINDOW_FULLSCREEN
+	windowOpenGl            = C.SDL_WINDOW_OPENGL
+	windowShown             = C.SDL_WINDOW_SHOWN
+	windowHidden            = C.SDL_WINDOW_HIDDEN
+	windowBorderless        = C.SDL_WINDOW_BORDERLESS
+	windowResizable         = C.SDL_WINDOW_RESIZABLE
+	windowMinimized         = C.SDL_WINDOW_MINIMIZED
+	windowMaximized         = C.SDL_WINDOW_MAXIMIZED
+	windowInputGrabbed      = C.SDL_WINDOW_INPUT_GRABBED
+	windowInputFocus        = C.SDL_WINDOW_INPUT_FOCUS
+	windowMouseFocus        = C.SDL_WINDOW_MOUSE_FOCUS
+	windowFullscreenDesktop = C.SDL_WINDOW_FULLSCREEN_DESKTOP
+	windowForeign           = C.SDL_WINDOW_FOREIGN
+	windowAllowHighDPI      = C.SDL_WINDOW_ALLOW_HIGHDPI
 )
 
 const (
-	WindowPosUndefinedMask = C.SDL_WINDOWPOS_UNDEFINED_MASK
-	WindowPosUndefined     = C.SDL_WINDOWPOS_UNDEFINED
-	WindowPosCenteredMask  = C.SDL_WINDOWPOS_CENTERED_MASK
-	WindowPosCentered      = C.SDL_WINDOWPOS_CENTERED
+	windowPosUndefinedMask = C.SDL_WINDOWPOS_UNDEFINED_MASK
+	windowPosUndefined     = C.SDL_WINDOWPOS_UNDEFINED
+	windowPosCenteredMask  = C.SDL_WINDOWPOS_CENTERED_MASK
+	windowPosCentered      = C.SDL_WINDOWPOS_CENTERED
 )
 
 func (w *Window) cptr() *C.SDL_Window {
@@ -36,24 +36,24 @@ func (w *Window) cptr() *C.SDL_Window {
 }
 
 // SetFullscreen (https://wiki.libsdl.org/SDL_SetWindowFullscreen)
-func (w *Window) SetFullscreen(flags uint32) error {
+func (w *Window) setFullscreen(flags uint32) error {
 	if C.SDL_SetWindowFullscreen(w.cptr(), C.Uint32(flags)) != 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // CreateWindow (https://wiki.libsdl.org/SDL_CreateWindow)
-func CreateWindow(title string, x int, y int, w int, h int, flags uint32) (*Window, error) {
+func createWindow(title string, x int, y int, w int, h int, flags uint32) (*Window, error) {
 	_title := C.CString(title)
 	var _window = C.SDL_CreateWindow(_title, C.int(x), C.int(y), C.int(w), C.int(h), C.Uint32(flags))
 	if _window == nil {
-		return nil, GetError()
+		return nil, getError()
 	}
 	return (*Window)(unsafe.Pointer(_window)), nil
 }
 
 // Destroy (https://wiki.libsdl.org/SDL_DestroyWindow)
-func (w *Window) Destroy() {
+func (w *Window) destroy() {
 	C.SDL_DestroyWindow(w.cptr())
 }

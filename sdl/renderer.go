@@ -7,173 +7,166 @@ import "unsafe"
 //Renderer SDL renderer
 
 const (
-	RendererSoftware      = C.SDL_RENDERER_SOFTWARE
-	RendererAccelerated   = C.SDL_RENDERER_ACCELERATED
-	RendererPresentVsync  = C.SDL_RENDERER_PRESENTVSYNC
-	RendererTargetTexture = C.SDL_RENDERER_TARGETTEXTURE
+	rendererSoftware      = C.SDL_RENDERER_SOFTWARE
+	rendererAccelerated   = C.SDL_RENDERER_ACCELERATED
+	rendererPresentVsync  = C.SDL_RENDERER_PRESENTVSYNC
+	rendererTargetTexture = C.SDL_RENDERER_TARGETTEXTURE
 
-	TextureAccessStatic    = C.SDL_TEXTUREACCESS_STATIC
-	TextureAccessStreaming = C.SDL_TEXTUREACCESS_STREAMING
-	TextureAccessTarget    = C.SDL_TEXTUREACCESS_TARGET
+	textureAccessStatic    = C.SDL_TEXTUREACCESS_STATIC
+	textureAccessStreaming = C.SDL_TEXTUREACCESS_STREAMING
+	textureAccessTarget    = C.SDL_TEXTUREACCESS_TARGET
 
-	TextureModulateNone  = C.SDL_TEXTUREMODULATE_NONE
-	TextureModulateColor = C.SDL_TEXTUREMODULATE_COLOR
-	TextureModulateAlpha = C.SDL_TEXTUREMODULATE_ALPHA
+	textureModulateNone  = C.SDL_TEXTUREMODULATE_NONE
+	textureModulateColor = C.SDL_TEXTUREMODULATE_COLOR
+	textureModulateAlpha = C.SDL_TEXTUREMODULATE_ALPHA
 )
 
-// Surface SDL Surface (https://wiki.libsdl.org/SDL_Surface)
-type Surface C.SDL_Surface
-
-func (a *Surface) cptr() *C.SDL_Surface {
-	return (*C.SDL_Surface)(unsafe.Pointer(a))
-}
-
 // Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
-type Texture C.SDL_Texture
+type texture C.SDL_Texture
 
-func (a *Texture) cptr() *C.SDL_Texture {
+func (a *texture) cptr() *C.SDL_Texture {
 	return (*C.SDL_Texture)(unsafe.Pointer(a))
 }
 
 // Renderer (https://wiki.libsdl.org/SDL_CreateRenderer)
-type Renderer C.SDL_Renderer
+type renderer C.SDL_Renderer
 
-func (r *Renderer) cptr() *C.SDL_Renderer {
+func (r *renderer) cptr() *C.SDL_Renderer {
 	return (*C.SDL_Renderer)(unsafe.Pointer(r))
 }
 
 // CreateRenderer (https://wiki.libsdl.org/SDL_CreateRenderer)
-func CreateRenderer(window *Window, index int, flags uint32) (*Renderer, error) {
+func createRenderer(window *Window, index int, flags uint32) (*renderer, error) {
 	_renderer := C.SDL_CreateRenderer(window.cptr(), C.int(index), C.Uint32(flags))
 	if _renderer == nil {
-		return nil, GetError()
+		return nil, getError()
 	}
-	return (*Renderer)(unsafe.Pointer(_renderer)), nil
+	return (*renderer)(unsafe.Pointer(_renderer)), nil
 }
 
 // Clear (https://wiki.libsdl.org/SDL_RenderClear)
-func (r *Renderer) Clear() error {
+func (r *renderer) clear() error {
 	_ret := C.SDL_RenderClear(r.cptr())
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // Present (https://wiki.libsdl.org/SDL_RenderPresent)
-func (r *Renderer) Present() {
+func (r *renderer) present() {
 	C.SDL_RenderPresent(r.cptr())
 }
 
 // SetDrawColor (https://wiki.libsdl.org/SDL_SetRenderDrawColor)
-func (r *Renderer) SetDrawColor(re, g, b, a uint8) error {
+func (r *renderer) setDrawColor(re, g, b, a uint8) error {
 	_r := C.Uint8(re)
 	_g := C.Uint8(g)
 	_b := C.Uint8(b)
 	_a := C.Uint8(a)
 	_ret := C.SDL_SetRenderDrawColor(r.cptr(), _r, _g, _b, _a)
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawPoint (https://wiki.libsdl.org/SDL_RenderDrawPoint)
-func (r *Renderer) DrawPoint(x, y int) error {
+func (r *renderer) drawPoint(x, y int) error {
 	_ret := C.SDL_RenderDrawPoint(r.cptr(), C.int(x), C.int(y))
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawPoints (https://wiki.libsdl.org/SDL_RenderDrawPoints)
-func (r *Renderer) DrawPoints(points []Point) error {
+func (r *renderer) drawPoints(points []point) error {
 	_ret := C.SDL_RenderDrawPoints(r.cptr(), points[0].cptr(), C.int(len(points)))
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawLine (https://wiki.libsdl.org/SDL_RenderDrawLine)
-func (r *Renderer) DrawLine(x1, y1, x2, y2 int) error {
+func (r *renderer) drawLine(x1, y1, x2, y2 int) error {
 	_x1 := C.int(x1)
 	_y1 := C.int(y1)
 	_x2 := C.int(x2)
 	_y2 := C.int(y2)
 	_ret := C.SDL_RenderDrawLine(r.cptr(), _x1, _y1, _x2, _y2)
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawLines (https://wiki.libsdl.org/SDL_RenderDrawLines)
-func (r *Renderer) DrawLines(points []Point) error {
+func (r *renderer) drawLines(points []point) error {
 	_ret := C.SDL_RenderDrawLines(r.cptr(), points[0].cptr(), C.int(len(points)))
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawRect (https://wiki.libsdl.org/SDL_RenderDrawRect)
-func (r *Renderer) DrawRect(rect *Rect) error {
+func (r *renderer) drawRect(rect *rect) error {
 	_ret := C.SDL_RenderDrawRect(r.cptr(), rect.cptr())
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // DrawRects (https://wiki.libsdl.org/SDL_RenderDrawRects)
-func (r *Renderer) DrawRects(rects []Rect) error {
+func (r *renderer) drawRects(rects []rect) error {
 	_ret := C.SDL_RenderDrawRects(r.cptr(), rects[0].cptr(), C.int(len(rects)))
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // FillRect (https://wiki.libsdl.org/SDL_RenderFillRect)
-func (r *Renderer) FillRect(rect *Rect) error {
+func (r *renderer) fillRect(rect *rect) error {
 	_ret := C.SDL_RenderFillRect(r.cptr(), rect.cptr())
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // FillRects (https://wiki.libsdl.org/SDL_RenderFillRects)
-func (r *Renderer) FillRects(rects []Rect) error {
+func (r *renderer) fillRects(rects []rect) error {
 	_ret := C.SDL_RenderFillRects(r.cptr(), rects[0].cptr(), C.int(len(rects)))
 	if _ret < 0 {
-		return GetError()
+		return getError()
 	}
 	return nil
 }
 
 // Destroy (https://wiki.libsdl.org/SDL_DestroyRenderer)
-func (r *Renderer) Destroy() {
+func (r *renderer) destroy() {
 	C.SDL_DestroyRenderer(r.cptr())
 }
 
 // CreateTextureFromSurface (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
-func (r *Renderer) CreateTextureFromSurface(surface *Surface) (*Texture, error) {
+func (r *renderer) createTextureFromSurface(surface *surface) (*texture, error) {
 	_texture := C.SDL_CreateTextureFromSurface(r.cptr(), surface.cptr())
 	if _texture == nil {
-		return nil, GetError()
+		return nil, getError()
 	}
 
-	return (*Texture)(unsafe.Pointer(_texture)), nil
+	return (*texture)(unsafe.Pointer(_texture)), nil
 }
 
 // RenderCopy (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
-func (r *Renderer) RenderCopy(texture *Texture, srcRect Rect, destRect Rect) error {
+func (r *renderer) renderCopy(texture *texture, srcRect rect, destRect rect) error {
 	err := C.SDL_RenderCopy(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr())
 	if err < 0 {
-		return GetError()
+		return getError()
 	}
 
 	return nil

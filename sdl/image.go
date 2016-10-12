@@ -10,15 +10,15 @@ import (
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)
 func InitImg() error {
 	flags := C.IMG_INIT_PNG | C.IMG_INIT_JPG
-	if C.IMG_Init(C.int(flag))&flags == 0 {
-		return GetMixError()
+	if C.IMG_Init(C.int(flags))&C.int(flags) == 0 {
+		return getImgError()
 	}
 
 	return nil
 }
 
 // GetImgError (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC45)
-func GetImgError() error {
+func getImgError() error {
 	if err := C.IMG_GetError(); err != nil {
 		return errors.New(C.GoString(err))
 	}
@@ -26,12 +26,12 @@ func GetImgError() error {
 }
 
 // LoadImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC11)
-func LoadImg(path string) (*Surface, error) {
+func loadImg(path string) (*surface, error) {
 	_path := C.CString(path)
-	_surface := IMG_Load("sample.png")
+	_surface := C.IMG_Load(_path)
 	if _surface == nil {
-		return nil, GetImgError()
+		return nil, getImgError()
 	}
 
-	return (*Surface)(unsafe.Pointer(_surface)), nil
+	return (*surface)(unsafe.Pointer(_surface)), nil
 }

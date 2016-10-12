@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// NewAudioPlayer Creates a new audio player instance, the music path is the path to a wav file
 func NewAudioPlayer(musicPath string, loopCount int) AudioPlayer {
 	ap := AudioPlayer{
 		musicPath: musicPath,
@@ -15,14 +16,15 @@ func NewAudioPlayer(musicPath string, loopCount int) AudioPlayer {
 	return ap
 }
 
+// AudioPlayer container for a music file
 type AudioPlayer struct {
 	musicPath string
 	loopCount int
-	music     *Music
+	music     *music
 }
 
 func (ap *AudioPlayer) load() {
-	music, err := LoadMusic(ap.musicPath)
+	music, err := loadMusic(ap.musicPath)
 
 	if err != nil {
 		fmt.Println(err)
@@ -31,13 +33,14 @@ func (ap *AudioPlayer) load() {
 	ap.music = music
 }
 
+// Play begins playing the loaded music
 func (ap *AudioPlayer) Play() error {
 	if ap.music == nil {
 		fmt.Println("cannot play, no music loaded")
 		return errors.New("no music loaded")
 
 	}
-	err := PlayMusic(ap.music, ap.loopCount)
+	err := playMusic(ap.music, ap.loopCount)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -45,26 +48,29 @@ func (ap *AudioPlayer) Play() error {
 	return nil
 }
 
+// Pause pauses the currently playing music
 func (ap *AudioPlayer) Pause() {
 	if ap.music == nil {
 		fmt.Println("cannot pause, no music loaded")
 		return
 	}
-	PauseMusic()
+	pauseMusic()
 }
 
+// Stop stops playing the currently playing music and resets the play head position to the beginning
 func (ap *AudioPlayer) Stop() {
 	if ap.music == nil {
 		fmt.Println("cannot stop, no music loaded")
 		return
 	}
-	HaltMusic()
+	haltMusic()
 }
 
+// Resume resumes the currently paused or stopped music
 func (ap *AudioPlayer) Resume() {
 	if ap.music == nil {
 		fmt.Println("cannot resume, no music loaded")
 		return
 	}
-	ResumeMusic()
+	resumeMusic()
 }

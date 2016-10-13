@@ -4,7 +4,7 @@ Effulgent Drawing API
 This API provides a way to easily create graphics programs in go.
 The sdl package is a partial wrapper of sdl for go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
 
-###SDL setup
+### SDL setup
 * OSX: `brew install sdl2{,_mixer,_image,_ttf}`
 * Arch Linux: `sudo pacman -S sdl2{,_mixer,_image,_ttf}`
 * Ubuntu/Debian: `sudo apt-get install libsdl2{,-mixer,-image,-ttf}-dev `
@@ -19,6 +19,48 @@ The sdl package is a partial wrapper of sdl for go.  For a complete wrapper chec
     4. Update the cgo comment at the top of sdl.go to ensure that the include path and lib path match where you extracted the libraries
     5. When building set the `GOARCH=386` and `CGO_ENABLED=1`. Use the `SET` command if you are using the normal windows command line and not git-bash
 
+### API Usage
+1. Create a struct that implements the eff.Drawable interface
+```
+type myDrawable struct {
+    initialized bool
+}
+func (m *myDrawable) Init(canvas eff.Canvas) {
+    // Initialize drawable here
+    // This is called every frame that drawable.Initialized() returns true
+    // Done initializing
+    m.initialized = true
+}
+func (m *myDrawable) Initialized() bool {
+    return m.initialized
+}
+func (m *myDrawable) Draw(canvas eff.Canvas) {
+    // This is called once per frame, the screen is cleared between calls
+    // Drawing code goes here
+}
+func (m *myDrawable) Update(canvas eff.Canvas) {
+    // This is called once per frame
+    // Add update logic here, 
+    // This typically does not call canvas drawing functions
+}
+```
+2. Create canvas in main functions
+```
+func main() {
+    width := 1920
+    height := 1080
+    frameRate := 60
+    useVsync := true
+    canvas := eff.NewCanvas("My Window", width, height, frameRate, useVsync)
+    // canvas.Run needs to be called on the Main thread
+    // This is for the event system to work on OSX
+    canvas.Run(func() {
+        // Setup code goes here
+        // Typically this is where you would instantiate your drawables
+        drawable := myDrawable{}
+        canvas.AddDrawable(&drawable)
+    })
+}
 ### Keyboard control
 * Press `f` to toggle fullscreen
 * Press `q` to quit the program

@@ -47,6 +47,10 @@ func (p *player) Draw(c eff.Canvas) {
 	yPos += 24 + margin.Y
 	c.DrawText("Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
+	c.DrawText("Press z to fade in", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	yPos += 24 + margin.Y
+	c.DrawText("Press x to fade out", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	yPos += 24 + margin.Y
 	c.DrawText("Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
 	c.DrawText("Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
@@ -84,6 +88,10 @@ func main() {
 				player.audioPlayer.Pause()
 			case "R":
 				player.audioPlayer.Resume()
+			case "Z":
+				player.audioPlayer.FadeIn(2000)
+			case "X":
+				player.audioPlayer.FadeOut(2000)
 			}
 		})
 	})

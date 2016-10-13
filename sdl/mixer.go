@@ -66,3 +66,19 @@ func resumeMusic() {
 func haltMusic() {
 	C.Mix_HaltMusic()
 }
+
+func fadeInMusic(music *music, loopCount int, fadeTimeMS int) error {
+	if C.Mix_FadeInMusic(music, C.int(loopCount), C.int(fadeTimeMS)) < 0 {
+		return getMixError()
+	}
+
+	return nil
+}
+
+func fadeOutMusic(fadeTimeMS int) error {
+	if C.Mix_FadeOutMusic(C.int(fadeTimeMS)) < 1 {
+		return getMixError()
+	}
+
+	return nil
+}

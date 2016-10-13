@@ -74,3 +74,26 @@ func (ap *AudioPlayer) Resume() {
 	}
 	resumeMusic()
 }
+
+func (ap *AudioPlayer) FadeIn(fadeTimeMS int) error {
+	if ap.music == nil {
+		fmt.Println("cannot fade in, no music loaded")
+		return errors.New("no music loaded")
+	}
+
+	err := fadeInMusic(ap.music, ap.loopCount, fadeTimeMS)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (ap *AudioPlayer) FadeOut(fadeTimeMS int) {
+	if ap.music == nil {
+		fmt.Println("cannot fade out, no music loaded")
+		return
+	}
+
+	fadeOutMusic(fadeTimeMS)
+}

@@ -15,6 +15,7 @@ import (
 func init() {
 	initTTF()
 	initMix()
+	initImg()
 }
 
 // Point is a structure that defines a two demensional point.

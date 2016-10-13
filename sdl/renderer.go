@@ -28,6 +28,10 @@ func (a *texture) cptr() *C.SDL_Texture {
 	return (*C.SDL_Texture)(unsafe.Pointer(a))
 }
 
+func (a *texture) destroy() {
+	C.SDL_DestroyTexture(a.cptr())
+}
+
 // Renderer (https://wiki.libsdl.org/SDL_CreateRenderer)
 type renderer C.SDL_Renderer
 

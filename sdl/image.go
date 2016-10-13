@@ -7,8 +7,14 @@ import (
 	"unsafe"
 )
 
+type imageTex struct {
+	texture *texture
+	w       int32
+	h       int32
+}
+
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)
-func InitImg() error {
+func initImg() error {
 	flags := C.IMG_INIT_PNG | C.IMG_INIT_JPG
 	if C.IMG_Init(C.int(flags))&C.int(flags) == 0 {
 		return getImgError()

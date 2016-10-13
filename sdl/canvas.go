@@ -33,6 +33,7 @@ type Canvas struct {
 	frameRate       int
 	useVsync        bool
 	font            *font
+	images          map[*eff.Image]*imageTex
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -43,6 +44,7 @@ func NewCanvas(title string, width int, height int, frameRate int, useVsync bool
 	c.height = height
 	c.frameRate = frameRate
 	c.useVsync = useVsync
+	c.images = make(map[*eff.Image]*imageTex)
 	return &c
 }
 
@@ -98,7 +100,7 @@ func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 }
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
-func (c *Canvas) Run(setup eff.Fn) {
+func (c *Canvas) Run(setup func()) {
 	lastFPSPrintTime := getTicks()
 	init := func() int {
 		if c.width == 0 {
@@ -213,6 +215,30 @@ func (c *Canvas) Run(setup eff.Fn) {
 
 				drawable.Draw(c)
 				drawable.Update(c)
+			}
+
+			mainThread <- func() {
+				for i, iT := range c.images {
+					if iT.texture == nil {
+						fmt.Println("texture is nil")
+						continue
+					}
+
+					r1 := rect{
+						X: 0,
+						Y: 0,
+						W: iT.w,
+						H: iT.h,
+					}
+
+					r := rect{
+						X: int32(i.Rect.X),
+						Y: int32(i.Rect.Y),
+						W: int32(i.Rect.W),
+						H: int32(i.Rect.H),
+					}
+					c.renderer.renderCopy(iT.texture, r1, r)
+				}
 			}
 
 			mainThread <- func() {
@@ -536,7 +562,53 @@ func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
 		if err != nil {
 			fmt.Println(err)
 		}
+
+		t.destroy()
 	}
 
 	return nil
+}
+
+// AddImage load and store an image in this canvas instance, set the image height and width to -1 and they will be replaced with the images native height and width
+func (c *Canvas) AddImage(i *eff.Image) {
+	if c.images[i] != nil {
+		//Texture already exists for this image
+		fmt.Println("Image already in the canvas")
+		return
+	}
+
+	// Load the texture
+	s, err := loadImg(i.Path)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if i.Rect.W == -1 {
+		i.Rect.W = int(s.w)
+	}
+
+	if i.Rect.H == -1 {
+		i.Rect.H = int(s.h)
+	}
+
+	t, err := c.renderer.createTextureFromSurface(s)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	c.images[i] = &imageTex{
+		texture: t,
+		w:       int32(s.w),
+		h:       int32(s.h),
+	}
+}
+
+// RemoveImage remove the image from this canvas instance
+func (c *Canvas) RemoveImage(i *eff.Image) {
+	if c.images[i] != nil {
+		iT := c.images[i]
+		delete(c.images, i)
+
+		iT.texture.destroy()
+	}
 }

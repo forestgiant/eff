@@ -14,8 +14,6 @@ type imageMover struct {
 	img         *eff.Image
 	xDir        int
 	yDir        int
-	scale       float64
-	scaleDir    float64
 	initialized bool
 	baseW       int
 	baseH       int

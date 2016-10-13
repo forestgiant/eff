@@ -1,5 +1,5 @@
 # eff
-Effulgent Drawing API
+Effulgent Media API
 ---
 This API provides a way to easily create graphics programs in go.
 The sdl package is a partial wrapper of sdl for go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
@@ -20,7 +20,7 @@ The sdl package is a partial wrapper of sdl for go.  For a complete wrapper chec
     5. When building set the `GOARCH=386` and `CGO_ENABLED=1`. Use the `SET` command if you are using the normal windows command line and not git-bash
 
 ### API Usage
-* Create a struct that implements the eff.Drawable interface
+#### Create a struct that implements the eff.Drawable interface
 ```
 type myDrawable struct {
     initialized bool
@@ -44,7 +44,7 @@ func (m *myDrawable) Update(canvas eff.Canvas) {
     // This typically does not call canvas drawing functions
 }
 ```
-* Create canvas in main functions
+#### Create canvas in main functions
 ```
 func main() {
     width := 1920

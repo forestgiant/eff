@@ -2,7 +2,7 @@
 Effulgent Drawing API
 ---
 This API provides a way to easily create graphics programs in go.
-The sdl package is a partial wrapper of sdl for go.  For a complete wrapper checkout out go-sdl2 <https://github.com/veandco/go-sdl2>
+The sdl package is a partial wrapper of sdl for go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
 
 ###SDL setup
 * OSX: `brew install sdl2{,_mixer,_image,_ttf}`

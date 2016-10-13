@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff"
 )
 
 const (
@@ -287,9 +287,8 @@ func (c *Canvas) Run(setup func()) {
 
 			//Quit SDL
 			quit()
+			close(mainDone) // stop mainThread
 		}
-
-		os.Exit(0)
 	})
 }
 

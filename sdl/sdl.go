@@ -8,6 +8,7 @@ package sdl
 import "C"
 import (
 	"errors"
+	"os"
 	"runtime"
 	"unsafe"
 )
@@ -65,16 +66,25 @@ func (a *surface) cptr() *C.SDL_Surface {
 
 // mainThread manages the thread that SDL calls execute on
 var mainThread = make(chan func())
+var mainDone = make(chan struct{})
 
 type callback func()
 
 // lockMain calls runtime.LockOSThread on the calling thread.  This is intended to be the main thread since SDL on some platforms requires the main thread.  Use the MainThread channel to execute SDL calls.
+// https://github.com/golang/go/wiki/LockOSThread
 func lockMain(cb callback) {
 	runtime.LockOSThread()
+	defer os.Exit(0)
+	defer runtime.UnlockOSThread()
+
 	go cb()
 	for {
-		f := <-mainThread
-		f()
+		select {
+		case f := <-mainThread:
+			f()
+		case <-mainDone:
+			return
+		}
 	}
 }
 

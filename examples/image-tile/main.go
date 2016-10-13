@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
 )
 
@@ -113,7 +113,7 @@ func (i *imageTiler) Update(c eff.Canvas) {
 }
 
 func main() {
-	canvas := sdl.NewCanvas("image tile", 1920, 1080, 60, true)
+	canvas := sdl.NewCanvas("image tile", 800, 540, 60, true)
 	canvas.Run(func() {
 		canvas.AddDrawable(&imageTiler{})
 	})

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
 )
 

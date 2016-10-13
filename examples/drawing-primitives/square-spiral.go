@@ -1,6 +1,6 @@
 package main
 
-import "github.com/forestgiant/eff/eff"
+import "github.com/forestgiant/eff"
 
 type squareSpiral struct {
 	color        eff.Color

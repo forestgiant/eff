@@ -20,7 +20,7 @@ The sdl package is a partial wrapper of sdl for go.  For a complete wrapper chec
     5. When building set the `GOARCH=386` and `CGO_ENABLED=1`. Use the `SET` command if you are using the normal windows command line and not git-bash
 
 ### API Usage
-1. Create a struct that implements the eff.Drawable interface
+* Create a struct that implements the eff.Drawable interface
 ```
 type myDrawable struct {
     initialized bool
@@ -44,7 +44,7 @@ func (m *myDrawable) Update(canvas eff.Canvas) {
     // This typically does not call canvas drawing functions
 }
 ```
-2. Create canvas in main functions
+* Create canvas in main functions
 ```
 func main() {
     width := 1920
@@ -61,6 +61,8 @@ func main() {
         canvas.AddDrawable(&drawable)
     })
 }
+```
+
 ### Keyboard control
 * Press `f` to toggle fullscreen
 * Press `q` to quit the program

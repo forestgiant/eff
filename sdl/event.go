@@ -6,15 +6,15 @@ import "unsafe"
 
 const (
 	// EventQuit (https://wiki.libsdl.org/SDL_EventType#SDL_QUIT)
-	EventQuit = C.SDL_QUIT
+	eventQuit = C.SDL_QUIT
 	// EventKeyDown (https://wiki.libsdl.org/SDL_KeyboardEvent)
-	EventKeyDown = C.SDL_KEYDOWN
+	eventKeyDown = C.SDL_KEYDOWN
 	// EventKeyUp (https://wiki.libsdl.org/SDL_KeyboardEvent)
-	EventKeyUp = C.SDL_KEYUP
+	eventKeyUp = C.SDL_KEYUP
 )
 
 // Event (https://wiki.libsdl.org/SDL_Event)
-type Event interface{}
+type event interface{}
 
 type cEvent struct {
 	Type uint32
@@ -22,7 +22,7 @@ type cEvent struct {
 }
 
 // PollEvent (https://wiki.libsdl.org/SDL_PollEvent)
-func PollEvent() Event {
+func pollEvent() event {
 	var cevent C.SDL_Event
 	ret := C.SDL_PollEvent(&cevent)
 	if ret == 0 {
@@ -31,27 +31,27 @@ func PollEvent() Event {
 	return goEvent((*cEvent)(unsafe.Pointer(&cevent)))
 }
 
-func goEvent(cevent *cEvent) Event {
+func goEvent(cevent *cEvent) event {
 	switch cevent.Type {
-	case EventKeyDown:
-		return (*KeyDownEvent)(unsafe.Pointer(cevent))
-	case EventKeyUp:
-		return (*KeyUpEvent)(unsafe.Pointer(cevent))
-	case EventQuit:
-		return (*QuitEvent)(unsafe.Pointer(cevent))
+	case eventKeyDown:
+		return (*keyDownEvent)(unsafe.Pointer(cevent))
+	case eventKeyUp:
+		return (*keyUpEvent)(unsafe.Pointer(cevent))
+	case eventQuit:
+		return (*quitEvent)(unsafe.Pointer(cevent))
 	default:
-		return (*CommonEvent)(unsafe.Pointer(cevent))
+		return (*commonEvent)(unsafe.Pointer(cevent))
 	}
 }
 
 // QuitEvent (https://wiki.libsdl.org/SDL_QuitEvent)
-type QuitEvent struct {
+type quitEvent struct {
 	Type      uint32
 	Timestamp uint32
 }
 
 // KeyUpEvent (https://wiki.libsdl.org/SDL_KeyboardEvent)
-type KeyUpEvent struct {
+type keyUpEvent struct {
 	Type      uint32
 	Timestamp uint32
 	WindowID  uint32
@@ -63,7 +63,7 @@ type KeyUpEvent struct {
 }
 
 // KeyDownEvent (https://wiki.libsdl.org/SDL_KeyboardEvent)
-type KeyDownEvent struct {
+type keyDownEvent struct {
 	Type      uint32
 	Timestamp uint32
 	WindowID  uint32
@@ -75,7 +75,7 @@ type KeyDownEvent struct {
 }
 
 // CommonEvent ()
-type CommonEvent struct {
+type commonEvent struct {
 	Type      uint32
 	Timestamp uint32
 }

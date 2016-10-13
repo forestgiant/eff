@@ -27,3 +27,13 @@ drawing-primitives
 !drawing-primitives/
 sine-wave
 !sine-wave/
+animating-text
+!animating-text/
+sound-check
+!sound-check/
+sound-player
+!sound-player/
+moving-image
+!moving-image/
+image-tile
+!image-tile/

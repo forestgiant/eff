@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/forestgiant/eff/eff"
+	"github.com/forestgiant/eff"
 )
 
 type dots struct {

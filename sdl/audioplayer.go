@@ -115,3 +115,31 @@ func (ap *AudioPlayer) FadeUnmute(fadeTimeMS int) {
 		}
 	}()
 }
+
+// FadeIn fades the music in from zero starts from the beginning
+func (ap *AudioPlayer) FadeIn(fadeTimeMS int) error {
+	if ap.music == nil {
+		fmt.Println("cannot fade in, no music loaded")
+		return errors.New("no music loaded")
+	}
+	err := fadeInMusic(ap.music, ap.loopCount, fadeTimeMS)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+// FadeOut fades the music down to zero and then stops playing
+func (ap *AudioPlayer) FadeOut(fadeTimeMS int) {
+	if ap.music == nil {
+		fmt.Println("cannot fade out, no music loaded")
+		return
+	}
+	fadeOutMusic(fadeTimeMS)
+}
+
+// Playing returns true if music is playing false otherwise
+func (ap *AudioPlayer) Playing() bool {
+	return musicPlaying()
+}

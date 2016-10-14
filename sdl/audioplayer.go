@@ -3,6 +3,7 @@ package sdl
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 // NewAudioPlayer Creates a new audio player instance, the music path is the path to a wav file
@@ -21,6 +22,7 @@ type AudioPlayer struct {
 	musicPath string
 	loopCount int
 	music     *music
+	volume    int
 }
 
 func (ap *AudioPlayer) load() {
@@ -75,25 +77,41 @@ func (ap *AudioPlayer) Resume() {
 	resumeMusic()
 }
 
-func (ap *AudioPlayer) FadeIn(fadeTimeMS int) error {
-	if ap.music == nil {
-		fmt.Println("cannot fade in, no music loaded")
-		return errors.New("no music loaded")
-	}
+// FadeMute fades the music volume to 0 over the argument time
+func (ap *AudioPlayer) FadeMute(fadeTimeMS int) {
+	frameTime := float64(1000) / float64(60)
+	stepCount := float64(fadeTimeMS) / frameTime
+	currentVolume := float64(volumeMusic(-1))
+	fadeAmount := float64(currentVolume) / stepCount
 
-	err := fadeInMusic(ap.music, ap.loopCount, fadeTimeMS)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	return nil
+	go func() {
+		for currentVolume > 0 {
+			currentVolume -= fadeAmount
+			if currentVolume < 0 {
+				currentVolume = 0
+			}
+
+			volumeMusic(int(currentVolume))
+			time.Sleep(time.Millisecond * time.Duration(frameTime))
+		}
+	}()
+
 }
 
-func (ap *AudioPlayer) FadeOut(fadeTimeMS int) {
-	if ap.music == nil {
-		fmt.Println("cannot fade out, no music loaded")
-		return
-	}
+// FadeUnmute fades the music volume to 128 over the argument time
+func (ap *AudioPlayer) FadeUnmute(fadeTimeMS int) {
+	targetVolume := float64(128)
+	frameTime := float64(1000) / float64(60)
+	stepCount := float64(fadeTimeMS) / frameTime
+	currentVolume := float64(volumeMusic(-1))
+	fadeAmount := (targetVolume - currentVolume) / stepCount
 
-	fadeOutMusic(fadeTimeMS)
+	go func() {
+		for currentVolume < targetVolume {
+			currentVolume += fadeAmount
+
+			volumeMusic(int(currentVolume))
+			time.Sleep(time.Millisecond * time.Duration(frameTime))
+		}
+	}()
 }

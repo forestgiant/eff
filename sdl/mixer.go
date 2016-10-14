@@ -82,3 +82,7 @@ func fadeOutMusic(fadeTimeMS int) error {
 
 	return nil
 }
+
+func volumeMusic(volume int) int {
+	return int(C.Mix_VolumeMusic(C.int(volume)))
+}

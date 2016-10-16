@@ -7,6 +7,8 @@ import (
 	"unsafe"
 )
 
+const maxVolume int = C.MIX_MAX_VOLUME
+
 // Music (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC86)
 type music C.Mix_Music
 

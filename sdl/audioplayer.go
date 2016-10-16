@@ -23,6 +23,7 @@ type AudioPlayer struct {
 	loopCount int
 	music     *music
 	volume    int
+	fading    bool
 }
 
 func (ap *AudioPlayer) load() {
@@ -77,43 +78,36 @@ func (ap *AudioPlayer) Resume() {
 	resumeMusic()
 }
 
-// FadeMute fades the music volume to 0 over the argument time
-func (ap *AudioPlayer) FadeMute(fadeTimeMS int) {
+// FadeVolume fades the music volume to 0 over the argument time
+func (ap *AudioPlayer) FadeVolume(fadeTimeMS int, percentage float64) {
+	if ap.fading {
+		return
+	}
+
+	if percentage < 0 || percentage > 1 {
+		fmt.Println("invalid volume", percentage)
+		return
+	}
+
 	frameTime := float64(1000) / float64(60)
 	stepCount := float64(fadeTimeMS) / frameTime
 	currentVolume := float64(volumeMusic(-1))
-	fadeAmount := float64(currentVolume) / stepCount
+	newVolume := float64(maxVolume) * percentage
+	fadeAmount := (newVolume - currentVolume) / stepCount
+	steps := 0
 
 	go func() {
-		for currentVolume > 0 {
-			currentVolume -= fadeAmount
-			if currentVolume < 0 {
-				currentVolume = 0
-			}
-
-			volumeMusic(int(currentVolume))
-			time.Sleep(time.Millisecond * time.Duration(frameTime))
-		}
-	}()
-
-}
-
-// FadeUnmute fades the music volume to 128 over the argument time
-func (ap *AudioPlayer) FadeUnmute(fadeTimeMS int) {
-	targetVolume := float64(128)
-	frameTime := float64(1000) / float64(60)
-	stepCount := float64(fadeTimeMS) / frameTime
-	currentVolume := float64(volumeMusic(-1))
-	fadeAmount := (targetVolume - currentVolume) / stepCount
-
-	go func() {
-		for currentVolume < targetVolume {
+		ap.fading = true
+		for steps < int(stepCount) {
 			currentVolume += fadeAmount
 
 			volumeMusic(int(currentVolume))
 			time.Sleep(time.Millisecond * time.Duration(frameTime))
+			steps++
 		}
+		ap.fading = false
 	}()
+
 }
 
 // FadeIn fades the music in from zero starts from the beginning
@@ -142,4 +136,14 @@ func (ap *AudioPlayer) FadeOut(fadeTimeMS int) {
 // Playing returns true if music is playing false otherwise
 func (ap *AudioPlayer) Playing() bool {
 	return musicPlaying()
+}
+
+// SetVolume adjusts the volume of the currently playing music, percentage is a normalized value between 0-1
+func (ap *AudioPlayer) SetVolume(percentage float64) {
+	if percentage < 0 || percentage > 1 {
+		fmt.Println("invalid volume", percentage)
+		return
+	}
+
+	volumeMusic(int(float64(maxVolume) * percentage))
 }

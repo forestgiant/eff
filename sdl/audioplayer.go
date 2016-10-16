@@ -23,7 +23,7 @@ type AudioPlayer struct {
 	loopCount int
 	music     *music
 	volume    int
-	fading    bool
+	quitFade  chan struct{}
 }
 
 func (ap *AudioPlayer) load() {
@@ -80,9 +80,10 @@ func (ap *AudioPlayer) Resume() {
 
 // FadeVolume fades the music volume to 0 over the argument time
 func (ap *AudioPlayer) FadeVolume(fadeTimeMS int, percentage float64) {
-	if ap.fading {
-		return
+	if ap.quitFade != nil {
+		close(ap.quitFade)
 	}
+	ap.quitFade = make(chan struct{})
 
 	if percentage < 0 || percentage > 1 {
 		fmt.Println("invalid volume", percentage)
@@ -96,18 +97,20 @@ func (ap *AudioPlayer) FadeVolume(fadeTimeMS int, percentage float64) {
 	fadeAmount := (newVolume - currentVolume) / stepCount
 	steps := 0
 
-	go func() {
-		ap.fading = true
+	go func(quit chan struct{}) {
 		for steps < int(stepCount) {
-			currentVolume += fadeAmount
+			select {
+			case <-quit:
+				return
+			default:
+				currentVolume += fadeAmount
 
-			volumeMusic(int(currentVolume))
-			time.Sleep(time.Millisecond * time.Duration(frameTime))
-			steps++
+				volumeMusic(int(currentVolume))
+				time.Sleep(time.Millisecond * time.Duration(frameTime))
+				steps++
+			}
 		}
-		ap.fading = false
-	}()
-
+	}(ap.quitFade)
 }
 
 // FadeIn fades the music in from zero starts from the beginning

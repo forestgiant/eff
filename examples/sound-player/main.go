@@ -89,9 +89,9 @@ func main() {
 			case "R":
 				player.audioPlayer.Resume()
 			case "Z":
-				player.audioPlayer.FadeVolume(5000, 1)
+				player.audioPlayer.FadeVolume(100, 1)
 			case "X":
-				player.audioPlayer.FadeVolume(5000, 0)
+				player.audioPlayer.FadeVolume(500, 0)
 			}
 		})
 	})

@@ -8,7 +8,6 @@ package sdl
 import "C"
 import (
 	"errors"
-	"os"
 	"runtime"
 	"unsafe"
 )
@@ -74,7 +73,6 @@ type callback func()
 // https://github.com/golang/go/wiki/LockOSThread
 func lockMain(cb callback) {
 	runtime.LockOSThread()
-	defer os.Exit(0)
 	defer runtime.UnlockOSThread()
 
 	go cb()

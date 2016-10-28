@@ -62,7 +62,7 @@ func (p *player) Update(c eff.Canvas) {
 
 func main() {
 
-	canvas := sdl.NewCanvas("Sound Player", 800, 540, 60, true)
+	canvas := sdl.NewCanvas("Sound Player", 800, 540, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 
 	canvas.Run(func() {
 		usage := "Usage sound-player <PATH_TO_WAV>"

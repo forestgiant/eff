@@ -34,10 +34,11 @@ type Canvas struct {
 	useVsync        bool
 	font            *font
 	images          map[*eff.Image]*imageTex
+	clearColor      eff.Color
 }
 
 // NewCanvas creates a new SDL canvas instance
-func NewCanvas(title string, width int, height int, frameRate int, useVsync bool) *Canvas {
+func NewCanvas(title string, width int, height int, clearColor eff.Color, frameRate int, useVsync bool) *Canvas {
 	c := Canvas{}
 	c.windowTitle = title
 	c.width = width
@@ -45,6 +46,7 @@ func NewCanvas(title string, width int, height int, frameRate int, useVsync bool
 	c.frameRate = frameRate
 	c.useVsync = useVsync
 	c.images = make(map[*eff.Image]*imageTex)
+	c.clearColor = clearColor
 	return &c
 }
 
@@ -161,6 +163,7 @@ func (c *Canvas) Run(setup func()) {
 		}
 
 		mainThread <- func() {
+			c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))
 			c.renderer.clear()
 		}
 
@@ -200,7 +203,7 @@ func (c *Canvas) Run(setup func()) {
 					}
 				}
 
-				c.renderer.setDrawColor(0x0, 0x0, 0x0, 0xFF)
+				c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))
 				c.renderer.clear()
 			}
 

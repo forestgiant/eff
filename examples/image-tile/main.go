@@ -113,7 +113,7 @@ func (i *imageTiler) Update(c eff.Canvas) {
 }
 
 func main() {
-	canvas := sdl.NewCanvas("image tile", 800, 540, 60, true)
+	canvas := sdl.NewCanvas("image tile", 800, 540, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 	canvas.Run(func() {
 		canvas.AddDrawable(&imageTiler{})
 	})

@@ -9,7 +9,7 @@ import (
 
 func main() {
 	//Create Eff Canvas
-	canvas := sdl.NewCanvas("Drawing Primitives", 800, 480, 60, true)
+	canvas := sdl.NewCanvas("Drawing Primitives", 800, 480, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 
 	//Start the run loop
 	canvas.Run(func() {

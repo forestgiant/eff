@@ -571,6 +571,47 @@ func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
 	return nil
 }
 
+// GetTextSize this uses the currently set font to determine the size of string rendered with that font, does not actually add the text to the canvas
+func (c *Canvas) GetTextSize(text string) (int, int, error) {
+	if c.font == nil {
+		return -1, -1, errors.New("Can't get text size no font set")
+	}
+
+	errChan := make(chan error)
+	sizeChan := make(chan point)
+
+	rgba := color{
+		R: 0xFF,
+		G: 0xFF,
+		B: 0xFF,
+		A: 0xFF,
+	}
+
+	mainThread <- func() {
+		s, err := renderTextBlended(c.font, text, rgba)
+		if err != nil {
+			errChan <- err
+		}
+
+		p := point{}
+		p.X = int32(s.w)
+		p.Y = int32(s.h)
+
+		freeSurface(s)
+
+		sizeChan <- p
+	}
+
+	for {
+		select {
+		case e := <-errChan:
+			return -1, -1, e
+		case p := <-sizeChan:
+			return int(p.X), int(p.Y), nil
+		}
+	}
+}
+
 // AddImage load and store an image in this canvas instance, set the image height and width to -1 and they will be replaced with the images native height and width
 func (c *Canvas) AddImage(i *eff.Image) {
 	if c.images[i] != nil {

@@ -29,6 +29,7 @@ type Canvas interface {
 
 	SetFont(font Font, size int) error
 	DrawText(text string, color Color, point Point) error
+	GetTextSize(text string) (int, int, error)
 
 	SetWidth(width int)
 	SetHeight(height int)

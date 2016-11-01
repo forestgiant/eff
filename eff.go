@@ -29,6 +29,26 @@ func RandomColor() Color {
 	}
 }
 
+// Black returns a color struct that is black
+func Black() Color {
+	return Color{
+		R: 0x00,
+		G: 0x00,
+		B: 0x00,
+		A: 0xFF,
+	}
+}
+
+// White returns a color struct that is white
+func White() Color {
+	return Color{
+		R: 0xFF,
+		G: 0xFF,
+		B: 0xFF,
+		A: 0xFF,
+	}
+}
+
 // Rect container for rectangle
 type Rect struct {
 	X int

@@ -21,20 +21,24 @@ var currentFPS uint32
 
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
-	window          *Window
-	renderer        *renderer
-	drawables       []eff.Drawable
-	width           int
-	height          int
-	fullscreen      bool
-	keyUpHandlers   []eff.KeyHandler
-	keyDownHandlers []eff.KeyHandler
-	windowTitle     string
-	frameRate       int
-	useVsync        bool
-	font            *font
-	images          map[*eff.Image]*imageTex
-	clearColor      eff.Color
+	window             *Window
+	renderer           *renderer
+	drawables          []eff.Drawable
+	width              int
+	height             int
+	fullscreen         bool
+	keyUpHandlers      []eff.KeyHandler
+	keyDownHandlers    []eff.KeyHandler
+	mouseDownHandlers  []eff.MouseButtonHandler
+	mouseUpHandlers    []eff.MouseButtonHandler
+	mouseWheelHandlers []eff.MouseWheelHandler
+	mouseMoveHandlers  []eff.MouseMoveHandler
+	windowTitle        string
+	frameRate          int
+	useVsync           bool
+	font               *font
+	images             map[*eff.Image]*imageTex
+	clearColor         eff.Color
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -70,6 +74,11 @@ func (c *Canvas) Height() int {
 	return c.height
 }
 
+// SetClearColor sets the clear color of the canvas
+func (c *Canvas) SetClearColor(color eff.Color) {
+	c.clearColor = color
+}
+
 // AddDrawable adds a struct that implements the eff.Drawable interface
 func (c *Canvas) AddDrawable(drawable eff.Drawable) {
 	c.drawables = append(c.drawables, drawable)
@@ -99,6 +108,22 @@ func (c *Canvas) AddKeyUpHandler(handler eff.KeyHandler) {
 // AddKeyDownHandler adds key down event handler to the canvas
 func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 	c.keyDownHandlers = append(c.keyDownHandlers, handler)
+}
+
+func (c *Canvas) AddMouseDownHandler(handler eff.MouseButtonHandler) {
+	c.mouseDownHandlers = append(c.mouseDownHandlers, handler)
+}
+
+func (c *Canvas) AddMouseUpHandler(handler eff.MouseButtonHandler) {
+	c.mouseUpHandlers = append(c.mouseUpHandlers, handler)
+}
+
+func (c *Canvas) AddMouseMoveHandler(handler eff.MouseMoveHandler) {
+	c.mouseMoveHandlers = append(c.mouseMoveHandlers, handler)
+}
+
+func (c *Canvas) AddMouseWheelHandler(handler eff.MouseWheelHandler) {
+	c.mouseWheelHandlers = append(c.mouseWheelHandlers, handler)
 }
 
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
@@ -200,7 +225,30 @@ func (c *Canvas) Run(setup func()) {
 						for _, handler := range c.keyDownHandlers {
 							handler(getKeyName(t.Keysym.Sym))
 						}
+					case *mouseDownEvent:
+						leftState := t.Button == mouseLeft
+						middleState := t.Button == mouseMiddle
+						rightState := t.Button == mouseRight
+						for _, handler := range c.mouseDownHandlers {
+							handler(leftState, middleState, rightState)
+						}
+					case *mouseUpEvent:
+						leftState := t.Button == mouseLeft
+						middleState := t.Button == mouseMiddle
+						rightState := t.Button == mouseRight
+						for _, handler := range c.mouseUpHandlers {
+							handler(leftState, middleState, rightState)
+						}
+					case *mouseMotionEvent:
+						for _, handler := range c.mouseMoveHandlers {
+							handler(int(t.X), int(t.Y))
+						}
+					case *mouseWheelEvent:
+						for _, handler := range c.mouseWheelHandlers {
+							handler(int(t.X), int(t.Y))
+						}
 					}
+
 				}
 
 				c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))

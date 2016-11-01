@@ -39,3 +39,5 @@ image-tile
 !image-tile/
 moving-text
 !moving-text/
+mouse-events
+!mouse-events/

@@ -11,6 +11,11 @@ const (
 	eventKeyDown = C.SDL_KEYDOWN
 	// EventKeyUp (https://wiki.libsdl.org/SDL_KeyboardEvent)
 	eventKeyUp = C.SDL_KEYUP
+
+	eventMouseMotion     = C.SDL_MOUSEMOTION
+	eventMouseButtonDown = C.SDL_MOUSEBUTTONDOWN
+	eventMouseButtonUp   = C.SDL_MOUSEBUTTONUP
+	eventMouseWheel      = C.SDL_MOUSEWHEEL
 )
 
 // Event (https://wiki.libsdl.org/SDL_Event)
@@ -39,9 +44,23 @@ func goEvent(cevent *cEvent) event {
 		return (*keyUpEvent)(unsafe.Pointer(cevent))
 	case eventQuit:
 		return (*quitEvent)(unsafe.Pointer(cevent))
+	case eventMouseButtonDown:
+		return (*mouseDownEvent)(unsafe.Pointer(cevent))
+	case eventMouseButtonUp:
+		return (*mouseUpEvent)(unsafe.Pointer(cevent))
+	case eventMouseMotion:
+		return (*mouseMotionEvent)(unsafe.Pointer(cevent))
+	case eventMouseWheel:
+		return (*mouseWheelEvent)(unsafe.Pointer(cevent))
 	default:
 		return (*commonEvent)(unsafe.Pointer(cevent))
 	}
+}
+
+// CommonEvent ()
+type commonEvent struct {
+	Type      uint32
+	Timestamp uint32
 }
 
 // QuitEvent (https://wiki.libsdl.org/SDL_QuitEvent)
@@ -74,9 +93,54 @@ type keyDownEvent struct {
 	Keysym    Keysym
 }
 
-// CommonEvent ()
-type commonEvent struct {
+// MouseMotionEvent (https://wiki.libsdl.org/SDL_MouseMotionEvent)
+type mouseMotionEvent struct {
 	Type      uint32
 	Timestamp uint32
+	WindowID  uint32
+	Which     uint32
+	State     uint32
+	X         int32
+	Y         int32
+	XRel      int32
+	YRel      int32
 }
-type cKeyboardEvent C.SDL_KeyboardEvent
+
+// MouseButtonEvent (https://wiki.libsdl.org/SDL_MouseButtonEvent)
+type mouseUpEvent struct {
+	Type      uint32
+	Timestamp uint32
+	WindowID  uint32
+	Which     uint32
+	Button    uint8
+	State     uint8
+	Clicks    uint8 // padding
+	_         uint8 // padding
+	X         int32
+	Y         int32
+}
+
+// MouseButtonEvent (https://wiki.libsdl.org/SDL_MouseButtonEvent)
+type mouseDownEvent struct {
+	Type      uint32
+	Timestamp uint32
+	WindowID  uint32
+	Which     uint32
+	Button    uint8
+	State     uint8
+	Clicks    uint8 // padding
+	_         uint8 // padding
+	X         int32
+	Y         int32
+}
+
+// MouseWheelEvent (https://wiki.libsdl.org/SDL_MouseWheelEvent)
+type mouseWheelEvent struct {
+	Type      uint32
+	Timestamp uint32
+	WindowID  uint32
+	Which     uint32
+	X         int32
+	Y         int32
+	Direction uint32
+}

@@ -56,7 +56,7 @@ func (b *button) MouseOut() {
 	b.mouseOver = false
 	b.mouseDown = false
 	b.bgColor = b.defaultBGColor
-	b.bgColor = b.defaultTextColor
+	b.textColor = b.defaultTextColor
 }
 
 func (b *button) IsMouseOver() bool { return b.mouseOver }
@@ -89,13 +89,13 @@ func newButton(text string, rect eff.Rect) button {
 
 type buttonTest struct {
 	initialized bool
-	buttons     []button
+	buttons     []*button
 	middleText  string
 }
 
 func (b *buttonTest) Init(c eff.Canvas) {
 	font := eff.Font{
-		Path: "../assets/fonts/Jellee-Roman.ttf",
+		Path: "../assets/fonts/roboto/Roboto-Bold.ttf",
 	}
 	err := c.SetFont(font, 15)
 	if err != nil {
@@ -112,22 +112,22 @@ func (b *buttonTest) Init(c eff.Canvas) {
 	buttonHeight := 30
 	topLeftButton := newButton("NW", eff.Rect{X: padding, Y: padding, W: buttonWidth, H: buttonHeight})
 	topLeftButton.clickHandler = clickHandler
-	b.buttons = append(b.buttons, topLeftButton)
+	b.buttons = append(b.buttons, &topLeftButton)
 	c.AddClickable(&topLeftButton)
 
 	bottomLeftButton := newButton("SW", eff.Rect{X: padding, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight})
 	bottomLeftButton.clickHandler = clickHandler
-	b.buttons = append(b.buttons, bottomLeftButton)
+	b.buttons = append(b.buttons, &bottomLeftButton)
 	c.AddClickable(&bottomLeftButton)
 
 	topRightButton := newButton("NE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight})
 	topRightButton.clickHandler = clickHandler
-	b.buttons = append(b.buttons, topRightButton)
+	b.buttons = append(b.buttons, &topRightButton)
 	c.AddClickable(&topRightButton)
 
 	bottonRightButton := newButton("SE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight})
 	bottonRightButton.clickHandler = clickHandler
-	b.buttons = append(b.buttons, bottonRightButton)
+	b.buttons = append(b.buttons, &bottonRightButton)
 	c.AddClickable(&bottonRightButton)
 
 	b.middleText = "NW"

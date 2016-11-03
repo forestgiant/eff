@@ -63,6 +63,10 @@ func (b *Button) Draw(c eff.Canvas) {
 		drawFunc = b.DrawDefault
 	}
 
+	if drawFunc == nil {
+		drawFunc = b.DrawDefault
+	}
+
 	if drawFunc != nil {
 		drawFunc(b, c)
 	}

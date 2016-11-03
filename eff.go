@@ -87,3 +87,8 @@ func (r *Rect) Intersects(otherRect Rect) bool {
 	return (int(math.Abs(float64(r.X-otherRect.X)))*2 < (r.W + otherRect.W)) &&
 		(int(math.Abs(float64(r.Y-otherRect.Y)))*2 < (r.H + otherRect.H))
 }
+
+// Inside check to see if a point inside of this rectangle
+func (r *Rect) Inside(p Point) bool {
+	return (p.X > r.X) && (p.X < (r.X + r.W)) && (p.Y > r.Y) && (p.Y < (r.Y + r.H))
+}

@@ -1,0 +1,121 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/button"
+	"github.com/forestgiant/eff/sdl"
+)
+
+type buttonTest struct {
+	initialized bool
+	buttons     []*button.Button
+	middleText  string
+}
+
+func (b *buttonTest) Init(c eff.Canvas) {
+	font := eff.Font{
+		Path: "../assets/fonts/roboto/Roboto-Bold.ttf",
+	}
+	err := c.SetFont(font, 15)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	clickHandler := func(button *button.Button) {
+		b.middleText = button.Text
+	}
+
+	drawButton := func(text string, rect eff.Rect, bgColor eff.Color, textColor eff.Color, c eff.Canvas) {
+		tW, tH, err := c.GetTextSize(text)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		textPoint := eff.Point{
+			X: rect.X + ((rect.W - tW) / 2),
+			Y: rect.Y + ((rect.H - tH) / 2),
+		}
+		c.FillRect(rect, bgColor)
+		c.DrawText(text, textColor, textPoint)
+	}
+
+	drawDefault := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0xDD, G: 0xDD, B: 0xDD, A: 0xFF}
+		textColor := eff.Black()
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
+	}
+
+	drawDown := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0x3F, G: 0x54, B: 0x7F, A: 0xFF}
+		textColor := eff.Color{R: 0xF5, G: 0x87, B: 0x35, A: 0xFF}
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
+	}
+
+	drawOver := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0x99, G: 0x9F, B: 0xAD, A: 0xFF}
+		textColor := eff.White()
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
+	}
+
+	padding := 20
+	buttonWidth := 100
+	buttonHeight := 30
+	topLeftButton := button.NewButton("NW", eff.Rect{X: padding, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	b.buttons = append(b.buttons, &topLeftButton)
+	c.AddClickable(&topLeftButton)
+
+	bottomLeftButton := button.NewButton("SW", eff.Rect{X: padding, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	b.buttons = append(b.buttons, &bottomLeftButton)
+	c.AddClickable(&bottomLeftButton)
+
+	topRightButton := button.NewButton("NE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	b.buttons = append(b.buttons, &topRightButton)
+	c.AddClickable(&topRightButton)
+
+	bottonRightButton := button.NewButton("SE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	b.buttons = append(b.buttons, &bottonRightButton)
+	c.AddClickable(&bottonRightButton)
+
+	b.middleText = "NW"
+	b.initialized = true
+}
+
+func (b *buttonTest) Initialized() bool {
+	return b.initialized
+}
+
+func (b *buttonTest) Draw(c eff.Canvas) {
+	for _, button := range b.buttons {
+		button.Draw(c)
+	}
+
+	tW, tH, err := c.GetTextSize(b.middleText)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	textPoint := eff.Point{
+		X: (c.Width() - tW) / 2,
+		Y: (c.Height() - tH) / 2,
+	}
+	c.DrawText(b.middleText, eff.Black(), textPoint)
+}
+
+func (b *buttonTest) Update(c eff.Canvas) {
+
+}
+
+func main() {
+	canvas := sdl.NewCanvas("Clickables", 800, 540, eff.White(), 60, true)
+
+	canvas.Run(func() {
+		bt := buttonTest{}
+		canvas.AddDrawable(&bt)
+	})
+}

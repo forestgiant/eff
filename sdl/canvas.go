@@ -24,6 +24,7 @@ type Canvas struct {
 	window             *Window
 	renderer           *renderer
 	drawables          []eff.Drawable
+	clickables         []eff.Clickable
 	width              int
 	height             int
 	fullscreen         bool
@@ -100,6 +101,27 @@ func (c *Canvas) RemoveDrawable(drawable eff.Drawable) {
 	c.drawables = append(c.drawables[:index], c.drawables[index+1:]...)
 }
 
+// AddClickable adds a struct that implements the eff.Clickable interface
+func (c *Canvas) AddClickable(clickable eff.Clickable) {
+	c.clickables = append(c.clickables, clickable)
+}
+
+// RemoveClickable removes a struct that implements the eff.Clickable interface
+func (c *Canvas) RemoveClickable(clickable eff.Clickable) {
+	index := -1
+	for i, d := range c.clickables {
+		if d == clickable {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return
+	}
+
+	c.clickables = append(c.clickables[:index], c.clickables[index+1:]...)
+}
+
 // AddKeyUpHandler adds key up event handler to the canvas
 func (c *Canvas) AddKeyUpHandler(handler eff.KeyHandler) {
 	c.keyUpHandlers = append(c.keyUpHandlers, handler)
@@ -110,18 +132,22 @@ func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 	c.keyDownHandlers = append(c.keyDownHandlers, handler)
 }
 
+// AddMouseDownHandler adds mouse down event handler to canvas
 func (c *Canvas) AddMouseDownHandler(handler eff.MouseButtonHandler) {
 	c.mouseDownHandlers = append(c.mouseDownHandlers, handler)
 }
 
+// AddMouseUpHandler adds mouse up event handler to canvas
 func (c *Canvas) AddMouseUpHandler(handler eff.MouseButtonHandler) {
 	c.mouseUpHandlers = append(c.mouseUpHandlers, handler)
 }
 
+// AddMouseMoveHandler adds mouse move event handler to canvas
 func (c *Canvas) AddMouseMoveHandler(handler eff.MouseMoveHandler) {
 	c.mouseMoveHandlers = append(c.mouseMoveHandlers, handler)
 }
 
+// AddMouseWheelHandler adds mouse wheel event handler to canvas
 func (c *Canvas) AddMouseWheelHandler(handler eff.MouseWheelHandler) {
 	c.mouseWheelHandlers = append(c.mouseWheelHandlers, handler)
 }
@@ -229,20 +255,78 @@ func (c *Canvas) Run(setup func()) {
 						leftState := t.Button == mouseLeft
 						middleState := t.Button == mouseMiddle
 						rightState := t.Button == mouseRight
+
+						mousePoint := eff.Point{
+							X: int(t.X),
+							Y: int(t.Y),
+						}
+
 						for _, handler := range c.mouseDownHandlers {
 							handler(leftState, middleState, rightState)
 						}
+
+						for _, clickable := range c.clickables {
+							if clickable == nil {
+								continue
+							}
+
+							hb := clickable.Hitbox()
+							if hb.Inside(mousePoint) {
+								clickable.MouseDown(leftState, middleState, rightState)
+							}
+						}
+
 					case *mouseUpEvent:
 						leftState := t.Button == mouseLeft
 						middleState := t.Button == mouseMiddle
 						rightState := t.Button == mouseRight
+
+						mousePoint := eff.Point{
+							X: int(t.X),
+							Y: int(t.Y),
+						}
+
 						for _, handler := range c.mouseUpHandlers {
 							handler(leftState, middleState, rightState)
 						}
-					case *mouseMotionEvent:
-						for _, handler := range c.mouseMoveHandlers {
-							handler(int(t.X), int(t.Y))
+
+						for _, clickable := range c.clickables {
+							if clickable == nil {
+								continue
+							}
+
+							hb := clickable.Hitbox()
+							if hb.Inside(mousePoint) {
+								clickable.MouseUp(leftState, middleState, rightState)
+							}
 						}
+					case *mouseMotionEvent:
+						mousePoint := eff.Point{
+							X: int(t.X),
+							Y: int(t.Y),
+						}
+
+						for _, handler := range c.mouseMoveHandlers {
+							handler(mousePoint.X, mousePoint.Y)
+						}
+
+						for _, clickable := range c.clickables {
+							if clickable == nil {
+								continue
+							}
+
+							hb := clickable.Hitbox()
+							if hb.Inside(mousePoint) {
+								if !clickable.IsMouseOver() {
+									clickable.MouseOver()
+								}
+							} else {
+								if clickable.IsMouseOver() {
+									clickable.MouseOut()
+								}
+							}
+						}
+
 					case *mouseWheelEvent:
 						for _, handler := range c.mouseWheelHandlers {
 							handler(int(t.X), int(t.Y))

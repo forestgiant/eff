@@ -5,91 +5,13 @@ import (
 	"os"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/button"
 	"github.com/forestgiant/eff/sdl"
 )
 
-type button struct {
-	rect             eff.Rect
-	defaultBGColor   eff.Color
-	defaultTextColor eff.Color
-	overBGColor      eff.Color
-	overTextColor    eff.Color
-	downBGColor      eff.Color
-	downTextColor    eff.Color
-	bgColor          eff.Color
-	textColor        eff.Color
-	text             string
-	mouseDown        bool
-	mouseOver        bool
-	clickHandler     func(b *button)
-}
-
-func (b *button) Hitbox() eff.Rect {
-	return b.rect
-}
-
-func (b *button) MouseDown(leftState bool, middleState bool, rightState bool) {
-	b.mouseDown = true
-	if leftState {
-		b.bgColor = b.downBGColor
-		b.textColor = b.downTextColor
-	}
-}
-
-func (b *button) MouseUp(leftState bool, middleState bool, rightState bool) {
-	if b.mouseDown {
-		b.mouseDown = false
-		b.clickHandler(b)
-	}
-
-	b.bgColor = b.overBGColor
-	b.textColor = b.overTextColor
-}
-
-func (b *button) MouseOver() {
-	b.mouseOver = true
-	b.bgColor = b.overBGColor
-	b.textColor = b.overTextColor
-}
-
-func (b *button) MouseOut() {
-	b.mouseOver = false
-	b.mouseDown = false
-	b.bgColor = b.defaultBGColor
-	b.textColor = b.defaultTextColor
-}
-
-func (b *button) IsMouseOver() bool { return b.mouseOver }
-
-func newButton(text string, rect eff.Rect) button {
-	defaultBG := eff.Color{R: 0xDD, G: 0xDD, B: 0xDD, A: 0xFF}
-	defaultText := eff.Black()
-
-	overBG := eff.Color{R: 0x99, G: 0x9F, B: 0xAD, A: 0xFF}
-	overText := eff.White()
-
-	downBG := eff.Color{R: 0x3F, G: 0x54, B: 0x7F, A: 0xFF}
-	downText := eff.Color{R: 0xF5, G: 0x87, B: 0x35, A: 0xFF}
-
-	b := button{
-		defaultBGColor:   defaultBG,
-		defaultTextColor: defaultText,
-		overBGColor:      overBG,
-		overTextColor:    overText,
-		downBGColor:      downBG,
-		downTextColor:    downText,
-		rect:             rect,
-		bgColor:          defaultBG,
-		textColor:        defaultText,
-		text:             text,
-	}
-
-	return b
-}
-
 type buttonTest struct {
 	initialized bool
-	buttons     []*button
+	buttons     []*button.Button
 	middleText  string
 }
 
@@ -103,30 +25,59 @@ func (b *buttonTest) Init(c eff.Canvas) {
 		os.Exit(1)
 	}
 
-	clickHandler := func(button *button) {
-		b.middleText = button.text
+	clickHandler := func(button *button.Button) {
+		b.middleText = button.Text
+	}
+
+	drawButton := func(text string, rect eff.Rect, bgColor eff.Color, textColor eff.Color, c eff.Canvas) {
+		tW, tH, err := c.GetTextSize(text)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		textPoint := eff.Point{
+			X: rect.X + ((rect.W - tW) / 2),
+			Y: rect.Y + ((rect.H - tH) / 2),
+		}
+		c.FillRect(rect, bgColor)
+		c.DrawText(text, textColor, textPoint)
+	}
+
+	drawDefault := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0xDD, G: 0xDD, B: 0xDD, A: 0xFF}
+		textColor := eff.Black()
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
+	}
+
+	drawDown := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0x3F, G: 0x54, B: 0x7F, A: 0xFF}
+		textColor := eff.Color{R: 0xF5, G: 0x87, B: 0x35, A: 0xFF}
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
+	}
+
+	drawOver := func(button *button.Button, c eff.Canvas) {
+		bgColor := eff.Color{R: 0x99, G: 0x9F, B: 0xAD, A: 0xFF}
+		textColor := eff.White()
+		drawButton(button.Text, button.Rect, bgColor, textColor, c)
 	}
 
 	padding := 20
 	buttonWidth := 100
 	buttonHeight := 30
-	topLeftButton := newButton("NW", eff.Rect{X: padding, Y: padding, W: buttonWidth, H: buttonHeight})
-	topLeftButton.clickHandler = clickHandler
+	topLeftButton := button.NewButton("NW", eff.Rect{X: padding, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &topLeftButton)
 	c.AddClickable(&topLeftButton)
 
-	bottomLeftButton := newButton("SW", eff.Rect{X: padding, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight})
-	bottomLeftButton.clickHandler = clickHandler
+	bottomLeftButton := button.NewButton("SW", eff.Rect{X: padding, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &bottomLeftButton)
 	c.AddClickable(&bottomLeftButton)
 
-	topRightButton := newButton("NE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight})
-	topRightButton.clickHandler = clickHandler
+	topRightButton := button.NewButton("NE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &topRightButton)
 	c.AddClickable(&topRightButton)
 
-	bottonRightButton := newButton("SE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight})
-	bottonRightButton.clickHandler = clickHandler
+	bottonRightButton := button.NewButton("SE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &bottonRightButton)
 	c.AddClickable(&bottonRightButton)
 
@@ -140,19 +91,7 @@ func (b *buttonTest) Initialized() bool {
 
 func (b *buttonTest) Draw(c eff.Canvas) {
 	for _, button := range b.buttons {
-		c.FillRect(button.rect, button.bgColor)
-		tW, tH, err := c.GetTextSize(button.text)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		textPoint := eff.Point{
-			X: button.rect.X + ((button.rect.W - tW) / 2),
-			Y: button.rect.Y + ((button.rect.H - tH) / 2),
-		}
-
-		c.DrawText(button.text, button.textColor, textPoint)
+		button.Draw(c)
 	}
 
 	tW, tH, err := c.GetTextSize(b.middleText)

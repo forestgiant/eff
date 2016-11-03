@@ -22,6 +22,10 @@ type Image struct {
 type Canvas interface {
 	AddDrawable(drawable Drawable)
 	RemoveDrawable(drawable Drawable)
+
+	AddClickable(clickable Clickable)
+	RemoveClickable(clickable Clickable)
+
 	Run(setup func())
 
 	DrawPoint(point Point, color Color)

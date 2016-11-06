@@ -1,4 +1,4 @@
-package main
+package drawables
 
 import (
 	"math/rand"
@@ -6,12 +6,12 @@ import (
 	"github.com/forestgiant/eff"
 )
 
-type rects struct {
+type Rects struct {
 	rects       []eff.Rect
 	initialized bool
 }
 
-func (r *rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
+func (r *Rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
 	var rects []eff.Rect
 	for i := 0; i < count; i++ {
 		r := eff.Rect{X: rand.Intn(maxX), Y: rand.Intn(maxY), W: rand.Intn(maxX / 2), H: rand.Intn(maxY / 2)}
@@ -21,17 +21,17 @@ func (r *rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
 	return rects
 }
 
-func (r *rects) Init(canvas eff.Canvas) {
+func (r *Rects) Init(canvas eff.Canvas) {
 	numRects := (canvas.Width() * canvas.Height()) / 10000
 	r.rects = r.randomRects(numRects, canvas.Width(), canvas.Height())
 	r.initialized = true
 }
 
-func (r *rects) Draw(canvas eff.Canvas) {
+func (r *Rects) Draw(canvas eff.Canvas) {
 	canvas.DrawRects(r.rects, eff.RandomColor())
 }
 
-func (r *rects) Update(canvas eff.Canvas) {
+func (r *Rects) Update(canvas eff.Canvas) {
 	updateRandomRects := func() {
 		for i := range r.rects {
 			r.rects[i].X = rand.Intn(canvas.Width())
@@ -44,6 +44,6 @@ func (r *rects) Update(canvas eff.Canvas) {
 	updateRandomRects()
 }
 
-func (r *rects) Initialized() bool {
+func (r *Rects) Initialized() bool {
 	return r.initialized
 }

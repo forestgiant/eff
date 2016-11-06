@@ -1,4 +1,4 @@
-package main
+package drawables
 
 import (
 	"math/rand"
@@ -6,12 +6,12 @@ import (
 	"github.com/forestgiant/eff"
 )
 
-type dots struct {
+type Dots struct {
 	points      []eff.Point
 	initialized bool
 }
 
-func (d *dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
+func (d *Dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
 	var points []eff.Point
 	for i := 0; i < count; i++ {
 		points = append(points, eff.Point{
@@ -22,18 +22,18 @@ func (d *dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
 	return points
 }
 
-func (d *dots) Init(canvas eff.Canvas) {
+func (d *Dots) Init(canvas eff.Canvas) {
 	numDots := (canvas.Width() * canvas.Height()) / 100
 	d.points = d.randomPoints(numDots, canvas.Width(), canvas.Height())
 	d.initialized = true
 }
 
-func (d *dots) Draw(canvas eff.Canvas) {
+func (d *Dots) Draw(canvas eff.Canvas) {
 	//Draw Points in a random color
 	canvas.DrawPoints(d.points, eff.RandomColor())
 }
 
-func (d *dots) Update(canvas eff.Canvas) {
+func (d *Dots) Update(canvas eff.Canvas) {
 	updateRandomPoints := func() {
 		for i := range d.points {
 			d.points[i].X = rand.Intn(canvas.Width())
@@ -44,6 +44,6 @@ func (d *dots) Update(canvas eff.Canvas) {
 	updateRandomPoints()
 }
 
-func (d *dots) Initialized() bool {
+func (d *Dots) Initialized() bool {
 	return d.initialized
 }

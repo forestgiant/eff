@@ -1,4 +1,4 @@
-package main
+package drawables
 
 import (
 	"math"
@@ -23,14 +23,14 @@ func (dot *twoPositionDot) linearInterpolate(normalizedPercentage float64) eff.P
 	}
 }
 
-type circleDots struct {
+type CircleDots struct {
 	t           float64
 	tDir        float64
 	dots        []twoPositionDot
 	initialized bool
 }
 
-func (dot *circleDots) Init(canvas eff.Canvas) {
+func (dot *CircleDots) Init(canvas eff.Canvas) {
 	dotCount := (canvas.Width() * canvas.Height()) / 100
 
 	pointOnCirlce := func(radius int, index int, totalPoints int, w int, h int) eff.Point {
@@ -60,7 +60,7 @@ func (dot *circleDots) Init(canvas eff.Canvas) {
 	dot.initialized = true
 }
 
-func (dot *circleDots) Draw(canvas eff.Canvas) {
+func (dot *CircleDots) Draw(canvas eff.Canvas) {
 	var colorPoints []eff.ColorPoint
 	for _, d := range dot.dots {
 		point := d.linearInterpolate(dot.t)
@@ -75,7 +75,7 @@ func (dot *circleDots) Draw(canvas eff.Canvas) {
 	canvas.DrawColorPoints(colorPoints)
 }
 
-func (dot *circleDots) Update(canvas eff.Canvas) {
+func (dot *CircleDots) Update(canvas eff.Canvas) {
 	diff := 0.005 * dot.tDir
 	dot.t += diff
 
@@ -84,6 +84,6 @@ func (dot *circleDots) Update(canvas eff.Canvas) {
 	}
 }
 
-func (dot *circleDots) Initialized() bool {
+func (dot *CircleDots) Initialized() bool {
 	return dot.initialized
 }

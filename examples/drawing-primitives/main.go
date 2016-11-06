@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/examples/drawing-primitives/drawables"
 	"github.com/forestgiant/eff/sdl"
 )
 
@@ -14,17 +15,17 @@ func main() {
 	//Start the run loop
 	canvas.Run(func() {
 		//Create drawables
-		var drawables []eff.Drawable
-		drawables = append(drawables, &dots{})
-		drawables = append(drawables, &rects{})
-		drawables = append(drawables, &collidingBlocks{})
-		drawables = append(drawables, &circleDots{})
-		drawables = append(drawables, &squareSpiral{})
+		var d []eff.Drawable
+		d = append(d, &drawables.Dots{})
+		d = append(d, &drawables.Rects{})
+		d = append(d, &drawables.CollidingBlocks{})
+		d = append(d, &drawables.CircleDots{})
+		d = append(d, &drawables.SquareSpiral{})
 
 		drawableIndex := 0
 
 		setDrawable := func(index int) {
-			if index < 0 || index >= len(drawables) {
+			if index < 0 || index >= len(d) {
 				return
 			}
 
@@ -32,17 +33,17 @@ func main() {
 				return
 			}
 
-			if len(drawables) > 0 && drawableIndex >= 0 {
-				canvas.RemoveDrawable(drawables[drawableIndex])
+			if len(d) > 0 && drawableIndex >= 0 {
+				canvas.RemoveDrawable(d[drawableIndex])
 			}
 
-			canvas.AddDrawable(drawables[index])
+			canvas.AddDrawable(d[index])
 
 			drawableIndex = index
 		}
 
 		//Add drawables to canvas
-		canvas.AddDrawable(drawables[0])
+		canvas.AddDrawable(d[0])
 
 		canvas.AddKeyUpHandler(func(key string) {
 

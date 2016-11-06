@@ -1,8 +1,8 @@
-package main
+package drawables
 
 import "github.com/forestgiant/eff"
 
-type squareSpiral struct {
+type SquareSpiral struct {
 	color        eff.Color
 	linePoints   []eff.Point
 	renderPoints []eff.Point
@@ -10,7 +10,7 @@ type squareSpiral struct {
 	initialized  bool
 }
 
-func (s *squareSpiral) Init(canvas eff.Canvas) {
+func (s *SquareSpiral) Init(canvas eff.Canvas) {
 	turnCount := 10
 	spiralSize := 5
 	separation := 5
@@ -57,11 +57,11 @@ func (s *squareSpiral) Init(canvas eff.Canvas) {
 	s.initialized = true
 }
 
-func (s *squareSpiral) Draw(canvas eff.Canvas) {
+func (s *SquareSpiral) Draw(canvas eff.Canvas) {
 	canvas.DrawLines(s.renderPoints, s.color)
 }
 
-func (s *squareSpiral) Update(canvas eff.Canvas) {
+func (s *SquareSpiral) Update(canvas eff.Canvas) {
 	s.t += 0.0006
 	if s.t > 1 {
 		s.t = 0
@@ -91,6 +91,6 @@ func (s *squareSpiral) Update(canvas eff.Canvas) {
 
 }
 
-func (s *squareSpiral) Initialized() bool {
+func (s *SquareSpiral) Initialized() bool {
 	return s.initialized
 }

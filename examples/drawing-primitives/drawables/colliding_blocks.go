@@ -1,4 +1,4 @@
-package main
+package drawables
 
 import (
 	"math/rand"
@@ -26,12 +26,12 @@ func (b *block) wallBounce(width int, height int) {
 	}
 }
 
-type collidingBlocks struct {
+type CollidingBlocks struct {
 	blocks      []block
 	initialized bool
 }
 
-func (c *collidingBlocks) Init(canvas eff.Canvas) {
+func (c *CollidingBlocks) Init(canvas eff.Canvas) {
 	blockCount := (canvas.Width() * canvas.Height()) / 200
 	blockSize := 5
 	for i := 0; i < blockCount; i++ {
@@ -56,7 +56,7 @@ func (c *collidingBlocks) Init(canvas eff.Canvas) {
 	c.initialized = true
 }
 
-func (c *collidingBlocks) Draw(canvas eff.Canvas) {
+func (c *CollidingBlocks) Draw(canvas eff.Canvas) {
 	var colorRects []eff.ColorRect
 	for _, block := range c.blocks {
 		colorRects = append(colorRects, block.colorRect)
@@ -65,7 +65,7 @@ func (c *collidingBlocks) Draw(canvas eff.Canvas) {
 	canvas.DrawColorRects(colorRects)
 }
 
-func (c *collidingBlocks) Update(canvas eff.Canvas) {
+func (c *CollidingBlocks) Update(canvas eff.Canvas) {
 	for i, block := range c.blocks {
 		block.applyDir()
 		block.wallBounce(canvas.Width(), canvas.Height())
@@ -73,6 +73,6 @@ func (c *collidingBlocks) Update(canvas eff.Canvas) {
 	}
 }
 
-func (c *collidingBlocks) Initialized() bool {
+func (c *CollidingBlocks) Initialized() bool {
 	return c.initialized
 }

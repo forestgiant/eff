@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	boxW = 100
-	boxH = 100
+	size       = 100
+	sizeChange = 50
 )
 
 type movingText struct {
@@ -24,6 +24,7 @@ type movingText struct {
 	vec         eff.Point
 	color       eff.Color
 	textColor   eff.Color
+	sizeDir     int
 }
 
 func (m *movingText) Init(c eff.Canvas) {
@@ -39,10 +40,10 @@ func (m *movingText) Init(c eff.Canvas) {
 	}
 
 	m.rect = eff.Rect{
-		X: rand.Intn(c.Width() - boxW),
-		Y: rand.Intn(c.Height() - boxH),
-		W: boxW,
-		H: boxH,
+		X: rand.Intn(c.Width() - size),
+		Y: rand.Intn(c.Height() - size),
+		W: size,
+		H: size,
 	}
 	m.vec = eff.Point{
 		X: 1,
@@ -52,6 +53,7 @@ func (m *movingText) Init(c eff.Canvas) {
 	m.color = eff.RandomColor()
 	m.textColor = eff.RandomColor()
 
+	m.sizeDir = 1
 	m.initialized = true
 }
 
@@ -77,20 +79,25 @@ func (m *movingText) Draw(c eff.Canvas) {
 }
 
 func (m *movingText) Update(c eff.Canvas) {
-	m.val += 10000
-	if m.val > 10000000 {
+	m.val += (100 + rand.Intn(1000))
+	if m.val > 100000 {
 		m.val = 0
 	}
 
 	m.rect.X += m.vec.X
-	if m.rect.X < 0 || m.rect.X+m.rect.W > c.Width() {
+	if m.rect.X < sizeChange || m.rect.X+m.rect.W > (c.Width()-(sizeChange*2)) {
 		m.vec.X *= -1
 	}
 	m.rect.Y += m.vec.Y
-	if m.rect.Y < 0 || m.rect.Y+m.rect.H > c.Height() {
+	if m.rect.Y < sizeChange || m.rect.Y+m.rect.H > (c.Height()-(sizeChange*2)) {
 		m.vec.Y *= -1
 	}
 
+	m.rect.W += m.sizeDir
+	m.rect.H += m.sizeDir
+	if m.rect.W > size+sizeChange || m.rect.W < size-sizeChange {
+		m.sizeDir *= -1
+	}
 }
 
 func main() {

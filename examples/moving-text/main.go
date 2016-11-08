@@ -9,6 +9,7 @@ import (
 
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
+	"github.com/forestgiant/eff/util"
 )
 
 const (
@@ -61,23 +62,23 @@ func (m *movingText) Initialized() bool {
 func (m *movingText) Draw(c eff.Canvas) {
 	c.FillRect(m.rect, m.color)
 	valText := strconv.Itoa(m.val)
-	textW, textH, err := c.GetTextSize(valText)
+	valText, err := util.EllipseText(valText, m.rect.W, c)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	centeredPoint := eff.Point{
-		X: m.rect.X + ((m.rect.W - textW) / 2),
-		Y: m.rect.Y + ((m.rect.H - textH) / 2),
+	centeredPoint, err := util.CenterTextInRect(valText, m.rect, c)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-
 	c.DrawText(valText, m.textColor, centeredPoint)
 }
 
 func (m *movingText) Update(c eff.Canvas) {
-	m.val++
-	if m.val > 1000 {
+	m.val += 10000
+	if m.val > 10000000 {
 		m.val = 0
 	}
 

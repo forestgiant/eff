@@ -19,27 +19,32 @@ var startTime uint32
 var delta uint32
 var currentFPS uint32
 
+// KeyEnumHandler function that is called when a key board event occurs
+type KeyEnumHandler func(key Keycode)
+
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
-	window             *Window
-	renderer           *renderer
-	drawables          []eff.Drawable
-	clickables         []eff.Clickable
-	width              int
-	height             int
-	fullscreen         bool
-	keyUpHandlers      []eff.KeyHandler
-	keyDownHandlers    []eff.KeyHandler
-	mouseDownHandlers  []eff.MouseButtonHandler
-	mouseUpHandlers    []eff.MouseButtonHandler
-	mouseWheelHandlers []eff.MouseWheelHandler
-	mouseMoveHandlers  []eff.MouseMoveHandler
-	windowTitle        string
-	frameRate          int
-	useVsync           bool
-	font               *font
-	images             map[*eff.Image]*imageTex
-	clearColor         eff.Color
+	window              *Window
+	renderer            *renderer
+	drawables           []eff.Drawable
+	clickables          []eff.Clickable
+	width               int
+	height              int
+	fullscreen          bool
+	keyUpHandlers       []eff.KeyHandler
+	keyDownHandlers     []eff.KeyHandler
+	keyDownEnumHandlers []KeyEnumHandler
+	keyUpEnumHandlers   []KeyEnumHandler
+	mouseDownHandlers   []eff.MouseButtonHandler
+	mouseUpHandlers     []eff.MouseButtonHandler
+	mouseWheelHandlers  []eff.MouseWheelHandler
+	mouseMoveHandlers   []eff.MouseMoveHandler
+	windowTitle         string
+	frameRate           int
+	useVsync            bool
+	font                *font
+	images              map[*eff.Image]*imageTex
+	clearColor          eff.Color
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -130,6 +135,16 @@ func (c *Canvas) AddKeyUpHandler(handler eff.KeyHandler) {
 // AddKeyDownHandler adds key down event handler to the canvas
 func (c *Canvas) AddKeyDownHandler(handler eff.KeyHandler) {
 	c.keyDownHandlers = append(c.keyDownHandlers, handler)
+}
+
+// AddKeyUpEnumHandler adds key up event handler to the canvas
+func (c *Canvas) AddKeyUpEnumHandler(handler KeyEnumHandler) {
+	c.keyUpEnumHandlers = append(c.keyUpEnumHandlers, handler)
+}
+
+// AddKeyDownEnumHandler adds key down event handler to the canvas
+func (c *Canvas) AddKeyDownEnumHandler(handler KeyEnumHandler) {
+	c.keyDownEnumHandlers = append(c.keyDownEnumHandlers, handler)
 }
 
 // AddMouseDownHandler adds mouse down event handler to canvas
@@ -233,9 +248,9 @@ func (c *Canvas) Run(setup func()) {
 						running = false
 					case *keyUpEvent:
 						switch t.Keysym.Sym {
-						case keyQ:
+						case KeyQ:
 							running = false
-						case keyF:
+						case KeyF:
 							c.fullscreen = !c.fullscreen
 							if c.fullscreen {
 								c.window.setFullscreen(windowFullscreen)
@@ -247,9 +262,15 @@ func (c *Canvas) Run(setup func()) {
 						for _, handler := range c.keyUpHandlers {
 							handler(getKeyName(t.Keysym.Sym))
 						}
+						for _, handler := range c.keyUpEnumHandlers {
+							handler(t.Keysym.Sym)
+						}
 					case *keyDownEvent:
 						for _, handler := range c.keyDownHandlers {
 							handler(getKeyName(t.Keysym.Sym))
+						}
+						for _, handler := range c.keyDownEnumHandlers {
+							handler(t.Keysym.Sym)
 						}
 					case *mouseDownEvent:
 						leftState := t.Button == mouseLeft

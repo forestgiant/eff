@@ -1,8 +1,11 @@
 package eff
 
 import (
+	"errors"
 	"math"
 	"math/rand"
+
+	"strconv"
 )
 
 // Point container for 2d points
@@ -47,6 +50,39 @@ func White() Color {
 		B: 0xFF,
 		A: 0xFF,
 	}
+}
+
+// ColorWithHex creates an eff color w/ a hex string in the formant "#FF00FF"
+func ColorWithHex(hex string) (Color, error) {
+	if hex[0] == '#' {
+		hex = hex[1:]
+	}
+
+	if len(hex) < 6 {
+		return Color{}, errors.New("Invalid hex color, too short")
+	}
+
+	r, err := strconv.ParseInt(hex[:2], 16, 32)
+	if err != nil {
+		return Color{}, err
+	}
+
+	g, err := strconv.ParseInt(hex[2:4], 16, 32)
+	if err != nil {
+		return Color{}, err
+	}
+
+	b, err := strconv.ParseInt(hex[4:6], 16, 32)
+	if err != nil {
+		return Color{}, err
+	}
+
+	return Color{
+		R: int(r),
+		G: int(g),
+		B: int(b),
+		A: 0xFF,
+	}, nil
 }
 
 // Rect container for rectangle

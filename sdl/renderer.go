@@ -19,6 +19,11 @@ const (
 	textureModulateNone  = C.SDL_TEXTUREMODULATE_NONE
 	textureModulateColor = C.SDL_TEXTUREMODULATE_COLOR
 	textureModulateAlpha = C.SDL_TEXTUREMODULATE_ALPHA
+
+	blendModeNone  = C.SDL_BLENDMODE_NONE
+	blendModeBlend = C.SDL_BLENDMODE_BLEND
+	blendModeAdd   = C.SDL_BLENDMODE_ADD
+	blendModeMod   = C.SDL_BLENDMODE_MOD
 )
 
 // Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
@@ -51,6 +56,15 @@ func createRenderer(window *Window, index int, flags uint32) (*renderer, error) 
 // Clear (https://wiki.libsdl.org/SDL_RenderClear)
 func (r *renderer) clear() error {
 	_ret := C.SDL_RenderClear(r.cptr())
+	if _ret < 0 {
+		return getError()
+	}
+	return nil
+}
+
+// setDrawBlendMode (https://wiki.libsdl.org/SDL_SetRenderDrawBlendMode)
+func (r *renderer) setDrawBlendMode(blendMode C.SDL_BlendMode) error {
+	_ret := C.SDL_SetRenderDrawBlendMode(r.cptr(), blendMode)
 	if _ret < 0 {
 		return getError()
 	}

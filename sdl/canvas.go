@@ -229,6 +229,7 @@ func (c *Canvas) Run(setup func()) {
 		}
 
 		mainThread <- func() {
+			c.renderer.setDrawBlendMode(blendModeBlend)
 			c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))
 			c.renderer.clear()
 		}

@@ -6,32 +6,51 @@ import (
 )
 
 type Tweener struct {
-	duration  time.Duration
-	startTime time.Time
-	update    func(float64)
-	repeat    bool
-	Done      bool
+	duration    time.Duration
+	startTime   time.Time
+	update      func(float64)
+	complete    func()
+	repeat      bool
+	repeatCount uint64
+	yoyo        bool
+	yoyoDir     bool
+	Done        bool
 }
 
 func (tweener *Tweener) Tween() {
 	elapsedTime := time.Now()
 	progress := float64(elapsedTime.UnixNano()-tweener.startTime.UnixNano()) / float64(tweener.duration.Nanoseconds())
-	if progress > 1 {
+	progress -= float64(tweener.repeatCount)
+	if tweener.yoyoDir {
+		progress = 1 - progress
+	}
+	if progress > 1 || progress < 0 {
 		if tweener.repeat {
-			progress = math.Mod(progress, float64(1))
+			tweener.repeatCount++
+			if tweener.yoyo {
+				tweener.yoyoDir = !tweener.yoyoDir
+			}
 		} else {
 			tweener.Done = true
 		}
 
+		if tweener.complete != nil {
+			tweener.complete()
+		}
 	}
-	tweener.update(math.Min(progress, 1))
+
+	progress = math.Min(progress, 1)
+	progress = math.Max(progress, 0)
+	tweener.update(progress)
 }
 
-func NewTweener(duration time.Duration, update func(float64), repeat bool) Tweener {
+func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func()) Tweener {
 	return Tweener{
 		duration:  duration,
 		startTime: time.Now(),
 		update:    update,
 		repeat:    repeat,
+		yoyo:      yoyo,
+		complete:  complete,
 	}
 }

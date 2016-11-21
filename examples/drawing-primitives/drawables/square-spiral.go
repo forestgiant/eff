@@ -1,13 +1,19 @@
 package drawables
 
-import "github.com/forestgiant/eff"
+import (
+	"time"
+
+	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/tween"
+)
 
 type SquareSpiral struct {
 	color        eff.Color
 	linePoints   []eff.Point
 	renderPoints []eff.Point
-	t            float64
-	initialized  bool
+	// t            float64
+	tweener     tween.Tweener
+	initialized bool
 }
 
 func (s *SquareSpiral) Init(canvas eff.Canvas) {
@@ -54,6 +60,31 @@ func (s *SquareSpiral) Init(canvas eff.Canvas) {
 	}
 	s.color = eff.RandomColor()
 
+	s.tweener = tween.NewTweener(time.Second*10, func(progress float64) {
+		percentage := float64(len(s.linePoints)) * progress
+		index := int(percentage)
+		diff := percentage - float64(index)
+
+		s.renderPoints = make([]eff.Point, index)
+		copy(s.renderPoints, s.linePoints[:index])
+
+		if diff > 0 {
+			if index < len(s.linePoints)-1 && index > 0 {
+				lastPoint := s.linePoints[index-1]
+				nextPoint := s.linePoints[index]
+
+				newPoint := eff.Point{
+					X: lastPoint.X + int(float64(nextPoint.X-lastPoint.X)*diff),
+					Y: lastPoint.Y + int(float64(nextPoint.Y-lastPoint.Y)*diff),
+				}
+
+				s.renderPoints = append(s.renderPoints, newPoint)
+			}
+		}
+	}, true, true, func() {
+		s.color = eff.RandomColor()
+	})
+
 	s.initialized = true
 }
 
@@ -62,33 +93,7 @@ func (s *SquareSpiral) Draw(canvas eff.Canvas) {
 }
 
 func (s *SquareSpiral) Update(canvas eff.Canvas) {
-	s.t += 0.0006
-	if s.t > 1 {
-		s.t = 0
-		s.color = eff.RandomColor()
-	}
-
-	percentage := float64(len(s.linePoints)) * s.t
-	index := int(percentage)
-	diff := percentage - float64(index)
-
-	s.renderPoints = make([]eff.Point, index)
-	copy(s.renderPoints, s.linePoints[:index])
-
-	if diff > 0 {
-		if index < len(s.linePoints)-1 && index > 0 {
-			lastPoint := s.linePoints[index-1]
-			nextPoint := s.linePoints[index]
-
-			newPoint := eff.Point{
-				X: lastPoint.X + int(float64(nextPoint.X-lastPoint.X)*diff),
-				Y: lastPoint.Y + int(float64(nextPoint.Y-lastPoint.Y)*diff),
-			}
-
-			s.renderPoints = append(s.renderPoints, newPoint)
-		}
-	}
-
+	s.tweener.Tween()
 }
 
 func (s *SquareSpiral) Initialized() bool {

@@ -3,8 +3,10 @@ package drawables
 import (
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/tween"
 )
 
 type twoPositionDot struct {
@@ -24,9 +26,9 @@ func (dot *twoPositionDot) linearInterpolate(normalizedPercentage float64) eff.P
 }
 
 type CircleDots struct {
-	t           float64
-	tDir        float64
 	dots        []twoPositionDot
+	colorDots   []eff.ColorPoint
+	tweener     tween.Tweener
 	initialized bool
 }
 
@@ -54,34 +56,28 @@ func (dot *CircleDots) Init(canvas eff.Canvas) {
 		}
 
 		dot.dots = append(dot.dots, d)
+		colorDot := eff.ColorPoint{
+			Point: d.linearInterpolate(0),
+			Color: eff.RandomColor(),
+		}
+		dot.colorDots = append(dot.colorDots, colorDot)
 	}
 
-	dot.tDir = 1
+	dot.tweener = tween.NewTweener(time.Second*2, func(progress float64) {
+		for i := range dot.colorDots {
+			dot.colorDots[i].Point = dot.dots[i].linearInterpolate(progress)
+		}
+	}, true, true, nil)
+
 	dot.initialized = true
 }
 
 func (dot *CircleDots) Draw(canvas eff.Canvas) {
-	var colorPoints []eff.ColorPoint
-	for _, d := range dot.dots {
-		point := d.linearInterpolate(dot.t)
-		colorPoints = append(colorPoints,
-			eff.ColorPoint{
-				Point: point,
-				Color: d.Color,
-			},
-		)
-	}
-
-	canvas.DrawColorPoints(colorPoints)
+	canvas.DrawColorPoints(dot.colorDots)
 }
 
 func (dot *CircleDots) Update(canvas eff.Canvas) {
-	diff := 0.005 * dot.tDir
-	dot.t += diff
-
-	if dot.t > 1 || dot.t < 0 {
-		dot.tDir *= -1
-	}
+	dot.tweener.Tween()
 }
 
 func (dot *CircleDots) Initialized() bool {

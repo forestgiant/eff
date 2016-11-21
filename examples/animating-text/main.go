@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
+	"time"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/tween"
 	"github.com/forestgiant/eff/sdl"
 )
 
 type textDrawable struct {
 	initialized bool
-	t           float64
 	text        string
+	tweener     tween.Tweener
+	index       int
 }
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
@@ -25,27 +29,27 @@ func (t *textDrawable) Init(canvas eff.Canvas) {
 		os.Exit(1)
 	}
 
+	t.index = 1
 	t.text = "Effulgent, Effulgent, Effulgent, Effulgent, Effulgent, Effulgent"
+	t.tweener = tween.NewTweener(time.Second*5, func(progress float64) {
+		t.index = int(progress * float64(len(t.text)))
+		t.index = int(math.Max(1, float64(t.index)))
+		t.index = int(math.Min(float64(len(t.text)), float64(t.index)))
+	}, true, false)
 	t.initialized = true
 }
 
 func (t *textDrawable) Draw(canvas eff.Canvas) {
-	var index int
-	index = int(t.t*float64(len(t.text))) + 1
 	textColor := eff.RandomColor()
-
-	err := canvas.DrawText(t.text[:index], textColor, eff.Point{X: 0, Y: 0})
-
+	err := canvas.DrawText(t.text[:t.index], textColor, eff.Point{X: 0, Y: 0})
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (t *textDrawable) Update(canvas eff.Canvas) {
-	t.t += 0.005
-	if t.t > 1 {
-		t.t = 0
-	}
+
+	t.tweener.Tween()
 }
 
 func (t *textDrawable) Initialized() bool {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/component/tween"
 	"github.com/forestgiant/eff/sdl"
 )
 
@@ -20,6 +21,7 @@ type imageTiler struct {
 	rows         int
 	cols         int
 	t            float64
+	tweener      tween.Tweener
 }
 
 func (i *imageTiler) Init(c eff.Canvas) {

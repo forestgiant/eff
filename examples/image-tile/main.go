@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/component/tween"
@@ -20,7 +21,7 @@ type imageTiler struct {
 	baseH        int
 	rows         int
 	cols         int
-	t            float64
+	index        int
 	tweener      tween.Tweener
 }
 
@@ -83,6 +84,9 @@ func (i *imageTiler) Init(c eff.Canvas) {
 		c.AddImage(img)
 	}
 
+	i.tweener = tween.NewTweener(time.Second*2, func(progress float64) {
+		i.index = int(progress * float64(len(i.imgs)))
+	}, true, false, nil)
 	i.initialized = true
 }
 
@@ -98,8 +102,7 @@ func (i *imageTiler) Draw(c eff.Canvas) {
 		img.Rect.H = 0
 	}
 
-	index := int(i.t*float64(len(i.imgs))) + 1
-	i.onScreenImgs = i.imgs[:index]
+	i.onScreenImgs = i.imgs[:i.index]
 
 	for _, img := range i.onScreenImgs {
 		img.Rect.W = i.baseW
@@ -108,10 +111,7 @@ func (i *imageTiler) Draw(c eff.Canvas) {
 }
 
 func (i *imageTiler) Update(c eff.Canvas) {
-	i.t += 0.01
-	if i.t > 1 {
-		i.t = 0
-	}
+	i.tweener.Tween()
 }
 
 func main() {

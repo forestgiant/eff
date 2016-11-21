@@ -35,7 +35,7 @@ func (t *textDrawable) Init(canvas eff.Canvas) {
 		t.index = int(progress * float64(len(t.text)))
 		t.index = int(math.Max(1, float64(t.index)))
 		t.index = int(math.Min(float64(len(t.text)), float64(t.index)))
-	}, true, false)
+	}, true, false, nil, nil)
 	t.initialized = true
 }
 

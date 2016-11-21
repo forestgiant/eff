@@ -86,7 +86,7 @@ func (i *imageTiler) Init(c eff.Canvas) {
 
 	i.tweener = tween.NewTweener(time.Second*2, func(progress float64) {
 		i.index = int(progress * float64(len(i.imgs)))
-	}, true, false, nil)
+	}, true, false, nil, nil)
 	i.initialized = true
 }
 

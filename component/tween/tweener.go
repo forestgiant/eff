@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+type EaseFunc func(float64) float64
+
 type Tweener struct {
 	duration    time.Duration
 	startTime   time.Time
@@ -15,6 +17,7 @@ type Tweener struct {
 	yoyo        bool
 	yoyoDir     bool
 	Done        bool
+	ease        EaseFunc
 }
 
 func (tweener *Tweener) Tween() {
@@ -41,10 +44,15 @@ func (tweener *Tweener) Tween() {
 
 	progress = math.Min(progress, 1)
 	progress = math.Max(progress, 0)
+
+	if tweener.ease != nil {
+		progress = tweener.ease(progress)
+	}
+
 	tweener.update(progress)
 }
 
-func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func()) Tweener {
+func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func(), ease EaseFunc) Tweener {
 	return Tweener{
 		duration:  duration,
 		startTime: time.Now(),
@@ -52,5 +60,6 @@ func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo 
 		repeat:    repeat,
 		yoyo:      yoyo,
 		complete:  complete,
+		ease:      ease,
 	}
 }

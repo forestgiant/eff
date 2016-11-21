@@ -67,7 +67,7 @@ func (dot *CircleDots) Init(canvas eff.Canvas) {
 		for i := range dot.colorDots {
 			dot.colorDots[i].Point = dot.dots[i].linearInterpolate(progress)
 		}
-	}, true, true, nil)
+	}, true, true, nil, nil)
 
 	dot.initialized = true
 }

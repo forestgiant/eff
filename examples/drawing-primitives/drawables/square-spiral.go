@@ -83,7 +83,7 @@ func (s *SquareSpiral) Init(canvas eff.Canvas) {
 		}
 	}, true, true, func() {
 		s.color = eff.RandomColor()
-	})
+	}, nil)
 
 	s.initialized = true
 }

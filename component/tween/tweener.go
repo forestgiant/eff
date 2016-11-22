@@ -59,6 +59,7 @@ func (tweener *Tweener) Tween() {
 
 func (tweener *Tweener) Reset() {
 	tweener.started = false
+	tweener.repeatCount = 0
 }
 
 func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func(), ease EaseFunc) Tweener {

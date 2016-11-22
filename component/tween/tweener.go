@@ -9,6 +9,7 @@ type EaseFunc func(float64) float64
 
 type Tweener struct {
 	duration    time.Duration
+	started     bool
 	startTime   time.Time
 	update      func(float64)
 	complete    func()
@@ -21,6 +22,10 @@ type Tweener struct {
 }
 
 func (tweener *Tweener) Tween() {
+	if !tweener.started {
+		tweener.started = true
+		tweener.startTime = time.Now()
+	}
 	elapsedTime := time.Now()
 	progress := float64(elapsedTime.UnixNano()-tweener.startTime.UnixNano()) / float64(tweener.duration.Nanoseconds())
 	progress -= float64(tweener.repeatCount)
@@ -52,14 +57,17 @@ func (tweener *Tweener) Tween() {
 	tweener.update(progress)
 }
 
+func (tweener *Tweener) Reset() {
+	tweener.started = false
+}
+
 func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func(), ease EaseFunc) Tweener {
 	return Tweener{
-		duration:  duration,
-		startTime: time.Now(),
-		update:    update,
-		repeat:    repeat,
-		yoyo:      yoyo,
-		complete:  complete,
-		ease:      ease,
+		duration: duration,
+		update:   update,
+		repeat:   repeat,
+		yoyo:     yoyo,
+		complete: complete,
+		ease:     ease,
 	}
 }

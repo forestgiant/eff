@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -25,19 +26,19 @@ type movingText struct {
 	color       eff.Color
 	textColor   eff.Color
 	sizeDir     int
+	font        eff.Font
 }
 
 func (m *movingText) Init(c eff.Canvas) {
 	rand.Seed(time.Now().UnixNano())
-	font := eff.Font{
-		Path: "../assets/fonts/Jellee-Roman.ttf",
+
+	font, err := c.OpenFont("../assets/fonts/Jellee-Roman.ttf", 24)
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	err := c.SetFont(font, 24)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	m.font = font
 
 	m.rect = eff.Rect{
 		X: rand.Intn(c.Width() - size),
@@ -64,18 +65,18 @@ func (m *movingText) Initialized() bool {
 func (m *movingText) Draw(c eff.Canvas) {
 	c.FillRect(m.rect, m.color)
 	valText := strconv.Itoa(m.val)
-	valText, err := util.EllipseText(valText, m.rect.W, c)
+	valText, err := util.EllipseText(m.font, valText, m.rect.W, c)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	centeredPoint, err := util.CenterTextInRect(valText, m.rect, c)
+	centeredPoint, err := util.CenterTextInRect(m.font, valText, m.rect, c)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	c.DrawText(valText, m.textColor, centeredPoint)
+	c.DrawText(m.font, valText, m.textColor, centeredPoint)
 }
 
 func (m *movingText) Update(c eff.Canvas) {

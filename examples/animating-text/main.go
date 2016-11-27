@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
-	"os"
 	"time"
 
 	"github.com/forestgiant/eff"
@@ -16,18 +16,15 @@ type textDrawable struct {
 	text        string
 	tweener     tween.Tweener
 	index       int
+	font        eff.Font
 }
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
-	font := eff.Font{
-		Path: "../assets/fonts/Jellee-Roman.ttf",
-	}
-
-	err := canvas.SetFont(font, 24)
+	font, err := canvas.OpenFont("../assets/fonts/Jellee-Roman.ttf", 24)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+	t.font = font
 
 	t.index = 1
 	t.text = "Effulgent, Effulgent, Effulgent, Effulgent, Effulgent, Effulgent"
@@ -41,7 +38,7 @@ func (t *textDrawable) Init(canvas eff.Canvas) {
 
 func (t *textDrawable) Draw(canvas eff.Canvas) {
 	textColor := eff.RandomColor()
-	err := canvas.DrawText(t.text[:t.index], textColor, eff.Point{X: 0, Y: 0})
+	err := canvas.DrawText(t.font, t.text[:t.index], textColor, eff.Point{X: 0, Y: 0})
 	if err != nil {
 		fmt.Println(err)
 	}

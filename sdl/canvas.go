@@ -42,7 +42,6 @@ type Canvas struct {
 	windowTitle         string
 	frameRate           int
 	useVsync            bool
-	font                *font
 	images              map[*eff.Image]*imageTex
 	clearColor          eff.Color
 }
@@ -664,19 +663,19 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 	c.fullscreen = fullscreen
 }
 
-// SetFont sets the font on the Canvas used for DrawText
-func (c *Canvas) SetFont(font eff.Font, size int) error {
-	f, err := openFont(font.Path, size)
-	c.font = f
+// OpenFont creates a eff.Font object, used for rendering text
+func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
+	f, err := openFont(path, size)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return f, nil
 }
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
-func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
-	if c.font == nil {
+func (c *Canvas) DrawText(font eff.Font, text string, col eff.Color, point eff.Point) error {
+	f := font.(*Font)
+	if f.sdlFont == nil {
 		return errors.New("Can't draw text no font set")
 	}
 
@@ -688,7 +687,7 @@ func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
 	}
 
 	mainThread <- func() {
-		s, err := renderTextBlended(c.font, text, rgba)
+		s, err := renderTextBlended(f, text, rgba)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -726,9 +725,10 @@ func (c *Canvas) DrawText(text string, col eff.Color, point eff.Point) error {
 }
 
 // GetTextSize this uses the currently set font to determine the size of string rendered with that font, does not actually add the text to the canvas
-func (c *Canvas) GetTextSize(text string) (int, int, error) {
-	if c.font == nil {
-		return -1, -1, errors.New("Can't get text size no font set")
+func (c *Canvas) GetTextSize(font eff.Font, text string) (int, int, error) {
+	f := font.(*Font)
+	if f.sdlFont == nil {
+		return -1, -1, errors.New("Can't get text size font not loaded")
 	}
 
 	errChan := make(chan error)
@@ -742,7 +742,7 @@ func (c *Canvas) GetTextSize(text string) (int, int, error) {
 	}
 
 	mainThread <- func() {
-		s, err := renderTextBlended(c.font, text, rgba)
+		s, err := renderTextBlended(f, text, rgba)
 		if err != nil {
 			errChan <- err
 		}

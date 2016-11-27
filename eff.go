@@ -106,8 +106,9 @@ type ColorPoint struct {
 }
 
 // Font describes a ttf font
-type Font struct {
-	Path string
+type Font interface {
+	Path() string
+	Size() int
 }
 
 // Equals test to see if two rectangles occupy the same location exactly

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/forestgiant/eff"
@@ -13,27 +14,25 @@ type buttonTest struct {
 	initialized bool
 	buttons     []*button.Button
 	middleText  string
+	font        eff.Font
 }
 
 func (b *buttonTest) Init(c eff.Canvas) {
-	font := eff.Font{
-		Path: "../assets/fonts/roboto/Roboto-Bold.ttf",
-	}
-	err := c.SetFont(font, 15)
+	font, err := c.OpenFont("../assets/fonts/roboto/Roboto-Bold.ttf", 15)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+
+	b.font = font
 
 	clickHandler := func(button *button.Button) {
 		b.middleText = button.Text
 	}
 
 	drawButton := func(text string, rect eff.Rect, bgColor eff.Color, textColor eff.Color, c eff.Canvas) {
-		tW, tH, err := c.GetTextSize(text)
+		tW, tH, err := c.GetTextSize(b.font, text)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		textPoint := eff.Point{
@@ -41,7 +40,7 @@ func (b *buttonTest) Init(c eff.Canvas) {
 			Y: rect.Y + ((rect.H - tH) / 2),
 		}
 		c.FillRect(rect, bgColor)
-		c.DrawText(text, textColor, textPoint)
+		c.DrawText(b.font, text, textColor, textPoint)
 	}
 
 	drawDefault := func(button *button.Button, c eff.Canvas) {
@@ -94,7 +93,7 @@ func (b *buttonTest) Draw(c eff.Canvas) {
 		button.Draw(c)
 	}
 
-	tW, tH, err := c.GetTextSize(b.middleText)
+	tW, tH, err := c.GetTextSize(b.font, b.middleText)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -104,7 +103,7 @@ func (b *buttonTest) Draw(c eff.Canvas) {
 		X: (c.Width() - tW) / 2,
 		Y: (c.Height() - tH) / 2,
 	}
-	c.DrawText(b.middleText, eff.Black(), textPoint)
+	c.DrawText(b.font, b.middleText, eff.Black(), textPoint)
 }
 
 func (b *buttonTest) Update(c eff.Canvas) {

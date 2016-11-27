@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -14,6 +15,7 @@ type player struct {
 	initialized bool
 	audioPlayer sdl.AudioPlayer
 	musicPath   string
+	font        eff.Font
 }
 
 func newPlayer(musicPath string) player {
@@ -24,14 +26,12 @@ func newPlayer(musicPath string) player {
 }
 
 func (p *player) Init(c eff.Canvas) {
-	font := eff.Font{
-		Path: "../assets/fonts/vcr_osd_mono.ttf",
-	}
-	err := c.SetFont(font, 24)
+
+	font, err := c.OpenFont("../assets/fonts/vcr_osd_mono.ttf", 24)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+	p.font = font
 	p.audioPlayer.Play()
 	p.initialized = true
 }
@@ -43,17 +43,17 @@ func (p *player) Initialized() bool {
 func (p *player) Draw(c eff.Canvas) {
 	margin := eff.Point{X: 10, Y: 10}
 	yPos := 0
-	c.DrawText("Now Playing: "+path.Base(p.musicPath), eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y})
+	c.DrawText(p.font, "Now Playing: "+path.Base(p.musicPath), eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y})
 	yPos += 24 + margin.Y
-	c.DrawText("Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	c.DrawText(p.font, "Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
-	c.DrawText("Press z to fade in", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	c.DrawText(p.font, "Press z to fade in", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
-	c.DrawText("Press x to fade out", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	c.DrawText(p.font, "Press x to fade out", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
-	c.DrawText("Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	c.DrawText(p.font, "Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 	yPos += 24 + margin.Y
-	c.DrawText("Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	c.DrawText(p.font, "Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
 }
 
 func (p *player) Update(c eff.Canvas) {
@@ -67,8 +67,7 @@ func main() {
 	canvas.Run(func() {
 		usage := "Usage sound-player <PATH_TO_WAV>"
 		if len(os.Args) < 2 {
-			fmt.Println(usage)
-			os.Exit(1)
+			log.Fatal(usage)
 		}
 
 		ext := path.Ext(os.Args[1])

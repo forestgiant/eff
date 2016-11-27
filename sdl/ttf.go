@@ -8,7 +8,19 @@ import (
 )
 
 // Font SDL TTF Font
-type font C.TTF_Font
+type Font struct {
+	path    string
+	size    int
+	sdlFont *C.TTF_Font
+}
+
+func (f *Font) Path() string {
+	return f.path
+}
+
+func (f *Font) Size() int {
+	return f.size
+}
 
 var ttfInitialized bool
 
@@ -31,21 +43,27 @@ func getTTFError() error {
 }
 
 // OpenFont (https://www.libsdl.org/projects/SDL_ttf)
-func openFont(fontPath string, pointSize int) (*font, error) {
+func openFont(fontPath string, pointSize int) (*Font, error) {
 	_fontPath := C.CString(fontPath)
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
 
 	if _font == nil {
 		return nil, getTTFError()
 	}
-	return (*font)(unsafe.Pointer(_font)), nil
+
+	f := Font{
+		path:    fontPath,
+		size:    pointSize,
+		sdlFont: (*C.TTF_Font)(unsafe.Pointer(_font)),
+	}
+	return &f, nil
 }
 
 // RenderTextSolid (https://www.libsdl.org/projects/SDL_ttf)
-func renderTextSolid(font *font, text string, c color) (*surface, error) {
+func renderTextSolid(font *Font, text string, c color) (*surface, error) {
 	_text := C.CString(text)
 	_color := c.cptr()
-	_surface := C.TTF_RenderText_Solid(font, _text, *_color)
+	_surface := C.TTF_RenderText_Solid(font.sdlFont, _text, *_color)
 
 	if _surface == nil {
 		return nil, getTTFError()
@@ -55,10 +73,10 @@ func renderTextSolid(font *font, text string, c color) (*surface, error) {
 }
 
 // RenderTextBlended (https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC51)
-func renderTextBlended(font *font, text string, c color) (*surface, error) {
+func renderTextBlended(font *Font, text string, c color) (*surface, error) {
 	_text := C.CString(text)
 	_color := c.cptr()
-	_surface := C.TTF_RenderText_Blended(font, _text, *_color)
+	_surface := C.TTF_RenderText_Blended(font.sdlFont, _text, *_color)
 
 	if _surface == nil {
 		return nil, getTTFError()

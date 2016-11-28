@@ -2,6 +2,8 @@ package util
 
 import (
 	"errors"
+	"log"
+	"strings"
 
 	"github.com/forestgiant/eff"
 )
@@ -44,4 +46,43 @@ func CenterTextInRect(font eff.Font, text string, rect eff.Rect, c eff.Canvas) (
 		X: rect.X + (rect.W-textW)/2,
 		Y: rect.Y + (rect.H-textH)/2,
 	}, nil
+}
+
+// GetMultilineText creates and array of strings that do not exceed the maxWidth.  Returns the slice of strings and the height of the text per line
+func GetMultilineText(font eff.Font, text string, maxWidth int, c eff.Canvas) ([]string, int) {
+	w, h, err := c.GetTextSize(font, text)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lineCount := w / maxWidth
+	maxRunesPerLine := len(text) / lineCount
+	checkSize := int(float64(maxRunesPerLine) * float64(0.75))
+
+	var lines []string
+	words := strings.Split(text, " ")
+	wordIndex := 0
+	for wordIndex < len(words) {
+		w := 0
+		line := ""
+		for w < maxWidth && wordIndex < len(words) {
+			if len(line) >= checkSize {
+				w, _, err = c.GetTextSize(font, line+words[wordIndex]+" ")
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if w < maxWidth {
+				line += words[wordIndex]
+				line += " "
+				wordIndex++
+			}
+		}
+
+		lines = append(lines, line)
+	}
+
+	return lines, h
+
 }

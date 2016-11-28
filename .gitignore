@@ -45,3 +45,5 @@ clickables
 !clickables/
 boilerplate
 !boilerplate/
+text-view
+!text-view/

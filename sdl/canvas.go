@@ -734,24 +734,15 @@ func (c *Canvas) GetTextSize(font eff.Font, text string) (int, int, error) {
 	errChan := make(chan error)
 	sizeChan := make(chan point)
 
-	rgba := color{
-		R: 0xFF,
-		G: 0xFF,
-		B: 0xFF,
-		A: 0xFF,
-	}
-
 	mainThread <- func() {
-		s, err := renderTextBlended(f, text, rgba)
+		w, h, err := sizeText(f, text)
 		if err != nil {
 			errChan <- err
 		}
 
 		p := point{}
-		p.X = int32(s.w)
-		p.Y = int32(s.h)
-
-		freeSurface(s)
+		p.X = int32(w)
+		p.Y = int32(h)
 
 		sizeChan <- p
 	}

@@ -84,3 +84,16 @@ func renderTextBlended(font *Font, text string, c color) (*surface, error) {
 
 	return (*surface)(unsafe.Pointer(_surface)), nil
 }
+
+// SizeText https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC39
+func sizeText(font *Font, text string) (int, int, error) {
+	_text := C.CString(text)
+	var _w C.int
+	var _h C.int
+	err := C.TTF_SizeText(font.sdlFont, _text, &_w, &_h)
+	if err != 0 {
+		return 0, 0, getTTFError()
+	}
+
+	return int(_w), int(_h), nil
+}

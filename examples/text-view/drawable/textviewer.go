@@ -43,7 +43,7 @@ func (t *TextViewer) Init(c eff.Canvas) {
 	}
 	t.font = font
 	t.initialized = true
-	minWidth := 15
+	minWidth := 5
 	t.textWidth = minWidth
 	t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, c)
 	t.tweener = tween.NewTweener(time.Second*5, func(progress float64) {

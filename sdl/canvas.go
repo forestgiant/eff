@@ -44,6 +44,7 @@ type Canvas struct {
 	useVsync            bool
 	images              map[*eff.Image]*imageTex
 	clearColor          eff.Color
+	scale               float64
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -194,8 +195,11 @@ func (c *Canvas) Run(setup func()) {
 				windowPosUndefined,
 				c.Width(),
 				c.Height(),
-				windowOpenGl,
+				windowOpenGl|windowAllowHighDPI,
 			)
+			drawableW, _ := c.window.getDrawableSize()
+			c.scale = float64(drawableW) / float64(c.Width())
+
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
 				// return 1
@@ -388,10 +392,10 @@ func (c *Canvas) Run(setup func()) {
 					}
 
 					r := rect{
-						X: int32(i.Rect.X),
-						Y: int32(i.Rect.Y),
-						W: int32(i.Rect.W),
-						H: int32(i.Rect.H),
+						X: int32(float64(i.Rect.X) * c.scale),
+						Y: int32(float64(i.Rect.Y) * c.scale),
+						W: int32(float64(i.Rect.W) * c.scale),
+						H: int32(float64(i.Rect.H) * c.scale),
 					}
 					c.renderer.renderCopy(iT.texture, r1, r)
 				}
@@ -453,7 +457,7 @@ func (c *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
 	var sdlPoints []point
 
 	for _, p := range points {
-		sdlPoints = append(sdlPoints, point{X: int32(p.X), Y: int32(p.Y)})
+		sdlPoints = append(sdlPoints, point{X: int32(float64(p.X) * c.scale), Y: int32(float64(p.Y) * c.scale)})
 	}
 
 	mainThread <- func() {
@@ -485,6 +489,9 @@ func (c *Canvas) DrawPoint(point eff.Point, color eff.Color) {
 func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
 	mainThread <- func() {
 		for _, colorPoint := range colorPoints {
+			colorPoint.X = int(float64(colorPoint.X) * c.scale)
+			colorPoint.Y = int(float64(colorPoint.Y) * c.scale)
+
 			c.renderer.setDrawColor(
 				uint8(colorPoint.R),
 				uint8(colorPoint.G),
@@ -500,10 +507,10 @@ func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
 // FillRect draw a filled in rectangle to the screen
 func (c *Canvas) FillRect(r eff.Rect, color eff.Color) {
 	sdlRect := rect{
-		X: int32(r.X),
-		Y: int32(r.Y),
-		W: int32(r.W),
-		H: int32(r.H),
+		X: int32(float64(r.X) * c.scale),
+		Y: int32(float64(r.Y) * c.scale),
+		W: int32(float64(r.W) * c.scale),
+		H: int32(float64(r.H) * c.scale),
 	}
 
 	mainThread <- func() {
@@ -548,10 +555,10 @@ func (c *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
 // DrawRect draw an outlined rectangle to the screen with a color
 func (c *Canvas) DrawRect(r eff.Rect, color eff.Color) {
 	sdlRect := rect{
-		X: int32(r.X),
-		Y: int32(r.Y),
-		W: int32(r.W),
-		H: int32(r.H),
+		X: int32(float64(r.X) * c.scale),
+		Y: int32(float64(r.Y) * c.scale),
+		W: int32(float64(r.W) * c.scale),
+		H: int32(float64(r.H) * c.scale),
 	}
 
 	mainThread <- func() {
@@ -578,10 +585,10 @@ func (c *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
 			)
 
 			sdlRect := rect{
-				X: int32(colorRect.X),
-				Y: int32(colorRect.Y),
-				W: int32(colorRect.W),
-				H: int32(colorRect.H),
+				X: int32(float64(colorRect.X) * c.scale),
+				Y: int32(float64(colorRect.Y) * c.scale),
+				W: int32(float64(colorRect.W) * c.scale),
+				H: int32(float64(colorRect.H) * c.scale),
 			}
 
 			c.renderer.fillRect(&sdlRect)
@@ -595,10 +602,10 @@ func (c *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
 
 	for _, r := range rects {
 		r := rect{
-			X: int32(r.X),
-			Y: int32(r.Y),
-			W: int32(r.W),
-			H: int32(r.H),
+			X: int32(float64(r.X) * c.scale),
+			Y: int32(float64(r.Y) * c.scale),
+			W: int32(float64(r.W) * c.scale),
+			H: int32(float64(r.H) * c.scale),
 		}
 
 		sdlRects = append(sdlRects, r)
@@ -625,7 +632,7 @@ func (c *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
 			uint8(color.B),
 			uint8(color.A),
 		)
-		c.renderer.drawLine(p1.X, p1.Y, p2.X, p2.Y)
+		c.renderer.drawLine(int(float64(p1.X)*c.scale), int(float64(p1.Y)*c.scale), int(float64(p2.X)*c.scale), int(float64(p2.Y)*c.scale))
 	}
 }
 
@@ -637,7 +644,7 @@ func (c *Canvas) DrawLines(points []eff.Point, color eff.Color) {
 	var sdlPoints []point
 
 	for _, p := range points {
-		p := point{X: int32(p.X), Y: int32(p.Y)}
+		p := point{X: int32(float64(p.X) * c.scale), Y: int32(float64(p.Y) * c.scale)}
 		sdlPoints = append(sdlPoints, p)
 	}
 
@@ -665,6 +672,7 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 
 // OpenFont creates a eff.Font object, used for rendering text
 func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
+	size = int(float64(size) * c.scale)
 	f, err := openFont(path, size)
 	if err != nil {
 		return nil, err
@@ -674,6 +682,8 @@ func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
 func (c *Canvas) DrawText(font eff.Font, text string, col eff.Color, point eff.Point) error {
+	point.X = int(float64(point.X) * c.scale)
+	point.Y = int(float64(point.Y) * c.scale)
 	f := font.(*Font)
 	if f.sdlFont == nil {
 		return errors.New("Can't draw text no font set")
@@ -741,8 +751,8 @@ func (c *Canvas) GetTextSize(font eff.Font, text string) (int, int, error) {
 		}
 
 		p := point{}
-		p.X = int32(w)
-		p.Y = int32(h)
+		p.X = int32(float64(w) / c.scale)
+		p.Y = int32(float64(h) / c.scale)
 
 		sizeChan <- p
 	}

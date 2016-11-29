@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/forestgiant/eff"
@@ -58,26 +59,27 @@ func GetMultilineText(font eff.Font, text string, maxWidth int, c eff.Canvas) ([
 	lineCount := w / maxWidth
 	maxRunesPerLine := len(text) / lineCount
 	checkSize := int(float64(maxRunesPerLine) * float64(0.75))
-
+	checkSize = int(math.Max(float64(checkSize), 1))
 	var lines []string
 	words := strings.Split(text, " ")
 	wordIndex := 0
 	for wordIndex < len(words) {
 		w := 0
 		line := ""
-		for w < maxWidth && wordIndex < len(words) {
+		for wordIndex < len(words) {
 			if len(line) >= checkSize {
 				w, _, err = c.GetTextSize(font, line+words[wordIndex]+" ")
+				if w > maxWidth {
+					break
+				}
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 
-			if w < maxWidth {
-				line += words[wordIndex]
-				line += " "
-				wordIndex++
-			}
+			line += words[wordIndex]
+			line += " "
+			wordIndex++
 		}
 
 		lines = append(lines, line)

@@ -23,7 +23,7 @@ func (d *Dots) randomPoints(count int, maxX int, maxY int) []eff.Point {
 }
 
 func (d *Dots) Init(canvas eff.Canvas) {
-	numDots := (canvas.Width() * canvas.Height()) / 100
+	numDots := (canvas.Width() * canvas.Height()) / 20
 	d.points = d.randomPoints(numDots, canvas.Width(), canvas.Height())
 	d.initialized = true
 }

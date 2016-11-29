@@ -22,7 +22,7 @@ func (r *Rects) randomRects(count int, maxX int, maxY int) []eff.Rect {
 }
 
 func (r *Rects) Init(canvas eff.Canvas) {
-	numRects := (canvas.Width() * canvas.Height()) / 10000
+	numRects := (canvas.Width() * canvas.Height()) / 1000
 	r.rects = r.randomRects(numRects, canvas.Width(), canvas.Height())
 	r.initialized = true
 }

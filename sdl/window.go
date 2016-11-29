@@ -53,6 +53,14 @@ func createWindow(title string, x int, y int, w int, h int, flags uint32) (*Wind
 	return (*Window)(unsafe.Pointer(_window)), nil
 }
 
+func (w *Window) getDrawableSize() (int, int) {
+	var _w C.int
+	var _h C.int
+	C.SDL_GL_GetDrawableSize(w.cptr(), &_w, &_h)
+
+	return int(_w), int(_h)
+}
+
 // Destroy (https://wiki.libsdl.org/SDL_DestroyWindow)
 func (w *Window) destroy() {
 	C.SDL_DestroyWindow(w.cptr())

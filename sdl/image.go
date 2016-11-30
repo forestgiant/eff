@@ -4,13 +4,54 @@ package sdl
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
+
+	"github.com/forestgiant/eff"
 )
 
-type imageTex struct {
-	texture *texture
-	w       int32
-	h       int32
+type Image struct {
+	Container
+
+	rect     eff.Rect
+	parent   eff.Container
+	scale    float64
+	renderer *renderer
+	texture  *texture
+}
+
+func (image *Image) Draw(canvas eff.Canvas) {
+	if image.texture == nil {
+		fmt.Println("image texture is nil")
+		return
+	}
+
+	r1 := rect{
+		X: 0,
+		Y: 0,
+		W: int32(image.rect.W),
+		H: int32(image.rect.H),
+	}
+
+	r := rect{
+		X: int32(float64(image.rect.X) * image.scale),
+		Y: int32(float64(image.rect.Y) * image.scale),
+		W: int32(float64(image.rect.W) * image.scale),
+		H: int32(float64(image.rect.H) * image.scale),
+	}
+	image.renderer.renderCopy(image.texture, r1, r)
+}
+
+func (image *Image) Rect() eff.Rect {
+	return image.rect
+}
+
+func (image *Image) SetParent(c eff.Container) {
+	image.parent = c
+}
+
+func (image *Image) Parent() eff.Container {
+	return image.parent
 }
 
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)

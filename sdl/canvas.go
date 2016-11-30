@@ -1,7 +1,6 @@
 package sdl
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -24,12 +23,12 @@ type KeyEnumHandler func(key Keycode)
 
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
+	Shape
+
 	window              *Window
-	renderer            *renderer
-	drawables           []eff.Drawable
+	windowTitle         string
+	clearColor          eff.Color
 	clickables          []eff.Clickable
-	width               int
-	height              int
 	fullscreen          bool
 	keyUpHandlers       []eff.KeyHandler
 	keyDownHandlers     []eff.KeyHandler
@@ -39,71 +38,30 @@ type Canvas struct {
 	mouseUpHandlers     []eff.MouseButtonHandler
 	mouseWheelHandlers  []eff.MouseWheelHandler
 	mouseMoveHandlers   []eff.MouseMoveHandler
-	windowTitle         string
 	frameRate           int
 	useVsync            bool
-	images              map[*eff.Image]*imageTex
-	clearColor          eff.Color
-	scale               float64
 }
 
 // NewCanvas creates a new SDL canvas instance
 func NewCanvas(title string, width int, height int, clearColor eff.Color, frameRate int, useVsync bool) *Canvas {
 	c := Canvas{}
 	c.windowTitle = title
-	c.width = width
-	c.height = height
+	c.rect = eff.Rect{
+		X: 0,
+		Y: 0,
+		W: width,
+		H: height,
+	}
+
 	c.frameRate = frameRate
 	c.useVsync = useVsync
-	c.images = make(map[*eff.Image]*imageTex)
 	c.clearColor = clearColor
 	return &c
-}
-
-// SetWidth set the width of the canvas, must be called prior to run
-func (c *Canvas) SetWidth(width int) {
-	c.width = width
-}
-
-// Width get the width of the canvas window
-func (c *Canvas) Width() int {
-	return c.width
-}
-
-// SetHeight set the height of the canvas, must be called prior to run
-func (c *Canvas) SetHeight(height int) {
-	c.height = height
-}
-
-// Height get the height of the canvas window
-func (c *Canvas) Height() int {
-	return c.height
 }
 
 // SetClearColor sets the clear color of the canvas
 func (c *Canvas) SetClearColor(color eff.Color) {
 	c.clearColor = color
-}
-
-// AddDrawable adds a struct that implements the eff.Drawable interface
-func (c *Canvas) AddDrawable(drawable eff.Drawable) {
-	c.drawables = append(c.drawables, drawable)
-}
-
-// RemoveDrawable removes struct from canvas that implements eff.Drawable
-func (c *Canvas) RemoveDrawable(drawable eff.Drawable) {
-	index := -1
-	for i, d := range c.drawables {
-		if d == drawable {
-			index = i
-			break
-		}
-	}
-	if index == -1 {
-		return
-	}
-
-	c.drawables = append(c.drawables[:index], c.drawables[index+1:]...)
 }
 
 // AddClickable adds a struct that implements the eff.Clickable interface
@@ -171,12 +129,12 @@ func (c *Canvas) AddMouseWheelHandler(handler eff.MouseWheelHandler) {
 func (c *Canvas) Run(setup func()) {
 	lastFPSPrintTime := getTicks()
 	init := func() int {
-		if c.width == 0 {
-			c.width = defaultWidth
+		if c.rect.W == 0 {
+			c.rect.W = defaultWidth
 		}
 
-		if c.height == 0 {
-			c.height = defaultHeight
+		if c.rect.H == 0 {
+			c.rect.H = defaultHeight
 		}
 
 		if len(c.windowTitle) == 0 {
@@ -193,12 +151,12 @@ func (c *Canvas) Run(setup func()) {
 				c.windowTitle,
 				windowPosUndefined,
 				windowPosUndefined,
-				c.Width(),
-				c.Height(),
+				c.rect.W,
+				c.rect.H,
 				windowOpenGl|windowAllowHighDPI,
 			)
 			drawableW, _ := c.window.getDrawableSize()
-			c.scale = float64(drawableW) / float64(c.Width())
+			c.scale = float64(drawableW) / float64(c.rect.W)
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -364,41 +322,12 @@ func (c *Canvas) Run(setup func()) {
 				c.renderer.clear()
 			}
 
-			for _, drawable := range c.drawables {
+			for _, drawable := range c.children {
 				if drawable == nil {
 					continue
 				}
 
-				if !drawable.Initialized() {
-					drawable.Init(c)
-				}
-
 				drawable.Draw(c)
-				drawable.Update(c)
-			}
-
-			mainThread <- func() {
-				for i, iT := range c.images {
-					if iT.texture == nil {
-						fmt.Println("texture is nil")
-						continue
-					}
-
-					r1 := rect{
-						X: 0,
-						Y: 0,
-						W: iT.w,
-						H: iT.h,
-					}
-
-					r := rect{
-						X: int32(float64(i.Rect.X) * c.scale),
-						Y: int32(float64(i.Rect.Y) * c.scale),
-						W: int32(float64(i.Rect.W) * c.scale),
-						H: int32(float64(i.Rect.H) * c.scale),
-					}
-					c.renderer.renderCopy(iT.texture, r1, r)
-				}
 			}
 
 			mainThread <- func() {
@@ -453,212 +382,6 @@ func (c *Canvas) Run(setup func()) {
 }
 
 // DrawPoints draw a slice of points to the screen all the same color
-func (c *Canvas) DrawPoints(points []eff.Point, color eff.Color) {
-	var sdlPoints []point
-
-	for _, p := range points {
-		sdlPoints = append(sdlPoints, point{X: int32(float64(p.X) * c.scale), Y: int32(float64(p.Y) * c.scale)})
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.drawPoints(sdlPoints)
-	}
-}
-
-// DrawPoint draw a point on the screen specifying what color
-func (c *Canvas) DrawPoint(point eff.Point, color eff.Color) {
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-		c.renderer.drawPoint(point.X, point.Y)
-	}
-}
-
-// DrawColorPoints draw a slide of colorPoints on the screen
-func (c *Canvas) DrawColorPoints(colorPoints []eff.ColorPoint) {
-	mainThread <- func() {
-		for _, colorPoint := range colorPoints {
-			colorPoint.X = int(float64(colorPoint.X) * c.scale)
-			colorPoint.Y = int(float64(colorPoint.Y) * c.scale)
-
-			c.renderer.setDrawColor(
-				uint8(colorPoint.R),
-				uint8(colorPoint.G),
-				uint8(colorPoint.B),
-				uint8(colorPoint.A),
-			)
-
-			c.renderer.drawPoint(colorPoint.X, colorPoint.Y)
-		}
-	}
-}
-
-// FillRect draw a filled in rectangle to the screen
-func (c *Canvas) FillRect(r eff.Rect, color eff.Color) {
-	sdlRect := rect{
-		X: int32(float64(r.X) * c.scale),
-		Y: int32(float64(r.Y) * c.scale),
-		W: int32(float64(r.W) * c.scale),
-		H: int32(float64(r.H) * c.scale),
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.fillRect(&sdlRect)
-	}
-}
-
-// FillRects draw a slice of filled rectangles to the screen all the same color
-func (c *Canvas) FillRects(rects []eff.Rect, color eff.Color) {
-	var sdlRects []rect
-
-	for _, r := range rects {
-		sdlRects = append(sdlRects,
-			rect{
-				X: int32(r.X),
-				Y: int32(r.Y),
-				W: int32(r.W),
-				H: int32(r.H),
-			},
-		)
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.fillRects(sdlRects)
-	}
-}
-
-// DrawRect draw an outlined rectangle to the screen with a color
-func (c *Canvas) DrawRect(r eff.Rect, color eff.Color) {
-	sdlRect := rect{
-		X: int32(float64(r.X) * c.scale),
-		Y: int32(float64(r.Y) * c.scale),
-		W: int32(float64(r.W) * c.scale),
-		H: int32(float64(r.H) * c.scale),
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.drawRect(&sdlRect)
-	}
-}
-
-// DrawColorRects draw a slice of color rectangles to the screen
-func (c *Canvas) DrawColorRects(colorRects []eff.ColorRect) {
-	mainThread <- func() {
-		for _, colorRect := range colorRects {
-			c.renderer.setDrawColor(
-				uint8(colorRect.R),
-				uint8(colorRect.G),
-				uint8(colorRect.B),
-				uint8(colorRect.A),
-			)
-
-			sdlRect := rect{
-				X: int32(float64(colorRect.X) * c.scale),
-				Y: int32(float64(colorRect.Y) * c.scale),
-				W: int32(float64(colorRect.W) * c.scale),
-				H: int32(float64(colorRect.H) * c.scale),
-			}
-
-			c.renderer.fillRect(&sdlRect)
-		}
-	}
-}
-
-// DrawRects draw a slice of rectangles to the screen all the same color
-func (c *Canvas) DrawRects(rects []eff.Rect, color eff.Color) {
-	var sdlRects []rect
-
-	for _, r := range rects {
-		r := rect{
-			X: int32(float64(r.X) * c.scale),
-			Y: int32(float64(r.Y) * c.scale),
-			W: int32(float64(r.W) * c.scale),
-			H: int32(float64(r.H) * c.scale),
-		}
-
-		sdlRects = append(sdlRects, r)
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.drawRects(sdlRects)
-	}
-}
-
-// DrawLine draw a line of to the screen with a color
-func (c *Canvas) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-		c.renderer.drawLine(int(float64(p1.X)*c.scale), int(float64(p1.Y)*c.scale), int(float64(p2.X)*c.scale), int(float64(p2.Y)*c.scale))
-	}
-}
-
-// DrawLines a slice of lines to the screen all the same color
-func (c *Canvas) DrawLines(points []eff.Point, color eff.Color) {
-	if len(points) == 0 {
-		return
-	}
-	var sdlPoints []point
-
-	for _, p := range points {
-		p := point{X: int32(float64(p.X) * c.scale), Y: int32(float64(p.Y) * c.scale)}
-		sdlPoints = append(sdlPoints, p)
-	}
-
-	mainThread <- func() {
-		c.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		c.renderer.drawLines(sdlPoints)
-	}
-}
 
 // Fullscreen get the full screen state of the window
 func (c *Canvas) Fullscreen() bool {
@@ -678,135 +401,4 @@ func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
 		return nil, err
 	}
 	return f, nil
-}
-
-// DrawText draws a string using a font to the screen, the point is the upper left hand corner
-func (c *Canvas) DrawText(font eff.Font, text string, col eff.Color, point eff.Point) error {
-	point.X = int(float64(point.X) * c.scale)
-	point.Y = int(float64(point.Y) * c.scale)
-	f := font.(*Font)
-	if f.sdlFont == nil {
-		return errors.New("Can't draw text no font set")
-	}
-
-	rgba := color{
-		R: uint8(col.R),
-		G: uint8(col.G),
-		B: uint8(col.B),
-		A: uint8(col.A),
-	}
-
-	mainThread <- func() {
-		s, err := renderTextBlended(f, text, rgba)
-		if err != nil {
-			fmt.Println(err)
-		}
-		t, err := c.renderer.createTextureFromSurface(s)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		r1 := rect{
-			X: 0,
-			Y: 0,
-			W: int32(s.w),
-			H: int32(s.h),
-		}
-
-		r := rect{
-			X: int32(point.X),
-			Y: int32(point.Y),
-			W: int32(s.w),
-			H: int32(s.h),
-		}
-
-		freeSurface(s)
-
-		err = c.renderer.renderCopy(t, r1, r)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		t.destroy()
-	}
-
-	return nil
-}
-
-// GetTextSize this uses the currently set font to determine the size of string rendered with that font, does not actually add the text to the canvas
-func (c *Canvas) GetTextSize(font eff.Font, text string) (int, int, error) {
-	f := font.(*Font)
-	if f.sdlFont == nil {
-		return -1, -1, errors.New("Can't get text size font not loaded")
-	}
-
-	errChan := make(chan error)
-	sizeChan := make(chan point)
-
-	mainThread <- func() {
-		w, h, err := sizeText(f, text)
-		if err != nil {
-			errChan <- err
-		}
-
-		p := point{}
-		p.X = int32(float64(w) / c.scale)
-		p.Y = int32(float64(h) / c.scale)
-
-		sizeChan <- p
-	}
-
-	for {
-		select {
-		case e := <-errChan:
-			return -1, -1, e
-		case p := <-sizeChan:
-			return int(p.X), int(p.Y), nil
-		}
-	}
-}
-
-// AddImage load and store an image in this canvas instance, set the image height and width to -1 and they will be replaced with the images native height and width
-func (c *Canvas) AddImage(i *eff.Image) {
-	if c.images[i] != nil {
-		//Texture already exists for this image
-		fmt.Println("Image already in the canvas")
-		return
-	}
-
-	// Load the texture
-	s, err := loadImg(i.Path)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if i.Rect.W == -1 {
-		i.Rect.W = int(s.w)
-	}
-
-	if i.Rect.H == -1 {
-		i.Rect.H = int(s.h)
-	}
-
-	t, err := c.renderer.createTextureFromSurface(s)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	c.images[i] = &imageTex{
-		texture: t,
-		w:       int32(s.w),
-		h:       int32(s.h),
-	}
-}
-
-// RemoveImage remove the image from this canvas instance
-func (c *Canvas) RemoveImage(i *eff.Image) {
-	if c.images[i] != nil {
-		iT := c.images[i]
-		delete(c.images, i)
-
-		iT.texture.destroy()
-	}
 }

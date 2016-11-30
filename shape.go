@@ -7,11 +7,11 @@ type Shape interface {
 	SetBackgroundColor(Color)
 	BackgroundColor() Color
 
+	DrawCalls() []func()
 	Clear()
 
 	DrawPoint(Point, Color)
 	DrawPoints([]Point, Color)
-	DrawColorPoints([]Point, []Color)
 
 	DrawLine(Point, Point, Color)
 	DrawLines([]Point, Color)
@@ -23,6 +23,4 @@ type Shape interface {
 	FillRect(Rect, Color)
 	FillRects([]Rect, Color)
 	FillColorRects([]Rect, []Color)
-
-	DrawCalls() []func()
 }

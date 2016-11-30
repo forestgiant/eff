@@ -3,7 +3,6 @@ package eff
 type Graphics interface {
 	DrawPoints(points []Point, color Color)
 	DrawPoint(Point, Color)
-	DrawColorPoints([]ColorPoint)
 
 	DrawRect(Rect, Color)
 	DrawRects([]Rect, Color)

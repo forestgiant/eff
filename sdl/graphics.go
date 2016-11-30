@@ -43,24 +43,24 @@ func (graphics *Graphics) DrawPoints(points []eff.Point, color eff.Color) {
 	}
 }
 
-// DrawColorPoints draw a slide of colorPoints on the screen
-func (graphics *Graphics) DrawColorPoints(colorPoints []eff.ColorPoint) {
-	mainThread <- func() {
-		for _, colorPoint := range colorPoints {
-			colorPoint.X = int(float64(colorPoint.X))
-			colorPoint.Y = int(float64(colorPoint.Y))
+// // DrawColorPoints draw a slide of colorPoints on the screen
+// func (graphics *Graphics) DrawColorPoints(colorPoints []eff.ColorPoint) {
+// 	mainThread <- func() {
+// 		for _, colorPoint := range colorPoints {
+// 			colorPoint.X = int(float64(colorPoint.X))
+// 			colorPoint.Y = int(float64(colorPoint.Y))
 
-			graphics.renderer.setDrawColor(
-				uint8(colorPoint.R),
-				uint8(colorPoint.G),
-				uint8(colorPoint.B),
-				uint8(colorPoint.A),
-			)
+// 			graphics.renderer.setDrawColor(
+// 				uint8(colorPoint.R),
+// 				uint8(colorPoint.G),
+// 				uint8(colorPoint.B),
+// 				uint8(colorPoint.A),
+// 			)
 
-			graphics.renderer.drawPoint(colorPoint.X, colorPoint.Y)
-		}
-	}
-}
+// 			graphics.renderer.drawPoint(colorPoint.X, colorPoint.Y)
+// 		}
+// 	}
+// }
 
 // FillRect draw a filled in rectangle to the screen
 func (graphics *Graphics) FillRect(r eff.Rect, color eff.Color) {

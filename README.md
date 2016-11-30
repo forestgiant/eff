@@ -1,8 +1,10 @@
 # eff
 Effulgent Media API
 ---
-This API provides a way to easily create graphics programs in go.
-The sdl package is a partial wrapper of sdl for go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
+This API provides a way to easily create graphics programs in Go. Providing a framework to create [games](#examples), 
+[ui](#examples), [animation](#examples), or any type of graphical application.
+
+The sdl package is a partial wrapper of sdl for Go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
 
 ### SDL setup
 * OSX: `brew install sdl2{,_mixer,_image,_ttf}`
@@ -66,3 +68,9 @@ func main() {
 ### Keyboard control
 * Press `f` to toggle fullscreen
 * Press `q` to quit the program
+
+### Examples
+* [Animating Text](https://github.com/forestgiant/eff/tree/master/examples/animating-text)
+* [Image Tiling](https://github.com/forestgiant/eff/tree/master/examples/image-tile)
+* [Tetris](https://github.com/thales17/eff-tetris)
+* [Text Layout](https://github.com/forestgiant/eff/tree/master/examples/text-view)

@@ -4,19 +4,25 @@ type Shape interface {
 	Drawable
 	Container
 
-	DrawPoints(points []Point, color Color)
-	DrawPoint(Point, Color)
-	DrawColorPoints([]ColorPoint)
+	SetBackgroundColor(Color)
+	BackgroundColor() Color
 
-	DrawRect(Rect, Color)
-	DrawRects([]Rect, Color)
-	FillRect(Rect, Color)
-	FillRects([]Rect, Color)
-	DrawColorRects([]ColorRect)
+	Clear()
+
+	DrawPoint(Point, Color)
+	DrawPoints([]Point, Color)
+	DrawColorPoints([]Point, []Color)
 
 	DrawLine(Point, Point, Color)
 	DrawLines([]Point, Color)
+	DrawColorLines([]Point, []Color)
 
-	DrawText(Font, string, Color, Point) error
-	GetTextSize(Font, string) (int, int, error)
+	StrokeRect(Rect, Color)
+	StrokeRects([]Rect, Color)
+	StrokeColorRects([]Rect, []Color)
+	FillRect(Rect, Color)
+	FillRects([]Rect, Color)
+	FillColorRects([]Rect, []Color)
+
+	DrawCalls() []func()
 }

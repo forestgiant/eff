@@ -7,12 +7,19 @@ type Drawable interface {
 	SetRect(Rect)
 	Rect() Rect
 
-	SetParent(Container)
-	Parent() Container
+	SetParent(Drawable)
+	Parent() Drawable
 
 	SetScale(float64)
 	Scale() float64
 
 	SetGraphics(Graphics)
 	Graphics() Graphics
+
+	SetUpdateHandler(func())
+	HandleUpdate()
+
+	AddChild(Drawable)
+	RemoveChild(Drawable)
+	Children() []Drawable
 }

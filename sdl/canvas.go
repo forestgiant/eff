@@ -27,7 +27,6 @@ type Canvas struct {
 
 	window              *Window
 	windowTitle         string
-	clearColor          eff.Color
 	clickables          []eff.Clickable
 	fullscreen          bool
 	keyUpHandlers       []eff.KeyHandler
@@ -55,13 +54,8 @@ func NewCanvas(title string, width int, height int, clearColor eff.Color, frameR
 
 	c.frameRate = frameRate
 	c.useVsync = useVsync
-	c.clearColor = clearColor
-	return &c
-}
 
-// SetClearColor sets the clear color of the canvas
-func (c *Canvas) SetClearColor(color eff.Color) {
-	c.clearColor = color
+	return &c
 }
 
 // AddClickable adds a struct that implements the eff.Clickable interface
@@ -177,7 +171,7 @@ func (c *Canvas) Run(setup func()) {
 				windowFlags = rendererAccelerated
 			}
 
-			c.renderer, err = createRenderer(
+			c.graphics.renderer, err = createRenderer(
 				c.window,
 				-1,
 				uint32(windowFlags),
@@ -190,9 +184,8 @@ func (c *Canvas) Run(setup func()) {
 		}
 
 		mainThread <- func() {
-			c.renderer.setDrawBlendMode(blendModeBlend)
-			c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))
-			c.renderer.clear()
+			c.graphics.renderer.setDrawBlendMode(blendModeBlend)
+			c.graphics.renderer.clear()
 		}
 
 		startTime = getTicks()
@@ -318,8 +311,7 @@ func (c *Canvas) Run(setup func()) {
 
 				}
 
-				c.renderer.setDrawColor(uint8(c.clearColor.R), uint8(c.clearColor.G), uint8(c.clearColor.B), uint8(c.clearColor.A))
-				c.renderer.clear()
+				c.graphics.renderer.clear()
 			}
 
 			for _, drawable := range c.children {
@@ -353,7 +345,7 @@ func (c *Canvas) Run(setup func()) {
 
 				}
 
-				c.renderer.present()
+				c.graphics.renderer.present()
 				enforceFPS()
 				printFPS()
 
@@ -371,7 +363,7 @@ func (c *Canvas) Run(setup func()) {
 		run()
 		mainThread <- func() {
 			// Clean up goes here
-			c.renderer.destroy()
+			c.graphics.renderer.destroy()
 			c.window.destroy()
 
 			//Quit SDL

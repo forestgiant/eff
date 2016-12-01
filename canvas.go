@@ -23,8 +23,6 @@ type Canvas interface {
 
 	OpenFont(path string, size int) (Font, error)
 
-	SetClearColor(color Color)
-
 	Fullscreen() bool
 	SetFullscreen(fullscreen bool)
 

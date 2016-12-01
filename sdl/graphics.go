@@ -43,24 +43,148 @@ func (graphics *Graphics) DrawPoints(points []eff.Point, color eff.Color) {
 	}
 }
 
-// // DrawColorPoints draw a slide of colorPoints on the screen
-// func (graphics *Graphics) DrawColorPoints(colorPoints []eff.ColorPoint) {
-// 	mainThread <- func() {
-// 		for _, colorPoint := range colorPoints {
-// 			colorPoint.X = int(float64(colorPoint.X))
-// 			colorPoint.Y = int(float64(colorPoint.Y))
+// DrawColorPoints draw a slide of colorPoints on the screen
+func (graphics *Graphics) DrawColorPoints(points []eff.Point, colors []eff.Color) {
+	if len(points) != len(colors) {
+		fmt.Println("length of points and length of colors mismatch")
+		return
+	}
 
-// 			graphics.renderer.setDrawColor(
-// 				uint8(colorPoint.R),
-// 				uint8(colorPoint.G),
-// 				uint8(colorPoint.B),
-// 				uint8(colorPoint.A),
-// 			)
+	mainThread <- func() {
+		for i := range points {
+			p := points[i]
+			c := colors[i]
+			graphics.renderer.setDrawColor(
+				uint8(c.R),
+				uint8(c.G),
+				uint8(c.B),
+				uint8(c.A),
+			)
 
-// 			graphics.renderer.drawPoint(colorPoint.X, colorPoint.Y)
-// 		}
-// 	}
-// }
+			graphics.renderer.drawPoint(p.X, p.Y)
+		}
+	}
+}
+
+// DrawLine draw a line of to the screen with a color
+func (graphics *Graphics) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
+	mainThread <- func() {
+		graphics.renderer.setDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+		graphics.renderer.drawLine(
+			int(float64(p1.X)),
+			int(float64(p1.Y)),
+			int(float64(p2.X)),
+			int(float64(p2.Y)),
+		)
+	}
+}
+
+// DrawLines a slice of lines to the screen all the same color
+func (graphics *Graphics) DrawLines(points []eff.Point, color eff.Color) {
+	if len(points) == 0 {
+		return
+	}
+	var sdlPoints []point
+
+	for _, p := range points {
+		p := point{X: int32(float64(p.X)), Y: int32(float64(p.Y))}
+		sdlPoints = append(sdlPoints, p)
+	}
+
+	mainThread <- func() {
+		graphics.renderer.setDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		graphics.renderer.drawLines(sdlPoints)
+	}
+}
+
+// StrokeRect draw an outlined rectangle to the screen with a color
+func (graphics *Graphics) StrokeRect(r eff.Rect, color eff.Color) {
+	sdlRect := rect{
+		X: int32(float64(r.X)),
+		Y: int32(float64(r.Y)),
+		W: int32(float64(r.W)),
+		H: int32(float64(r.H)),
+	}
+
+	mainThread <- func() {
+		graphics.renderer.setDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		graphics.renderer.drawRect(&sdlRect)
+	}
+}
+
+// StrokeRects draw a slice of rectangles to the screen all the same color
+func (graphics *Graphics) StrokeRects(rects []eff.Rect, color eff.Color) {
+	var sdlRects []rect
+
+	for _, r := range rects {
+		r := rect{
+			X: int32(float64(r.X)),
+			Y: int32(float64(r.Y)),
+			W: int32(float64(r.W)),
+			H: int32(float64(r.H)),
+		}
+
+		sdlRects = append(sdlRects, r)
+	}
+
+	mainThread <- func() {
+		graphics.renderer.setDrawColor(
+			uint8(color.R),
+			uint8(color.G),
+			uint8(color.B),
+			uint8(color.A),
+		)
+
+		graphics.renderer.drawRects(sdlRects)
+	}
+}
+
+// StrokeColorRects draw a slice of color rectangles to the screen
+func (graphics *Graphics) StrokeColorRects(rects []eff.Rect, colors []eff.Color) {
+	if len(rects) != len(colors) {
+		fmt.Println("length of rects and length of colors mismatch")
+		return
+	}
+
+	mainThread <- func() {
+		for i := range rects {
+			r := rects[i]
+			c := colors[i]
+			graphics.renderer.setDrawColor(
+				uint8(c.R),
+				uint8(c.G),
+				uint8(c.B),
+				uint8(c.A),
+			)
+
+			sdlRect := rect{
+				X: int32(float64(r.X)),
+				Y: int32(float64(r.Y)),
+				W: int32(float64(r.W)),
+				H: int32(float64(r.H)),
+			}
+
+			graphics.renderer.drawRect(&sdlRect)
+		}
+	}
+}
 
 // FillRect draw a filled in rectangle to the screen
 func (graphics *Graphics) FillRect(r eff.Rect, color eff.Color) {
@@ -110,116 +234,33 @@ func (graphics *Graphics) FillRects(rects []eff.Rect, color eff.Color) {
 	}
 }
 
-// DrawRect draw an outlined rectangle to the screen with a color
-func (graphics *Graphics) DrawRect(r eff.Rect, color eff.Color) {
-	sdlRect := rect{
-		X: int32(float64(r.X)),
-		Y: int32(float64(r.Y)),
-		W: int32(float64(r.W)),
-		H: int32(float64(r.H)),
+// FillColorRects draw a slice of color rectangles to the screen
+func (graphics *Graphics) FillColorRects(rects []eff.Rect, colors []eff.Color) {
+	if len(rects) != len(colors) {
+		fmt.Println("length of rects and length of colors mismatch")
+		return
 	}
 
 	mainThread <- func() {
-		graphics.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		graphics.renderer.drawRect(&sdlRect)
-	}
-}
-
-// DrawColorRects draw a slice of color rectangles to the screen
-func (graphics *Graphics) DrawColorRects(colorRects []eff.ColorRect) {
-	mainThread <- func() {
-		for _, colorRect := range colorRects {
+		for i := range rects {
+			r := rects[i]
+			c := colors[i]
 			graphics.renderer.setDrawColor(
-				uint8(colorRect.R),
-				uint8(colorRect.G),
-				uint8(colorRect.B),
-				uint8(colorRect.A),
+				uint8(c.R),
+				uint8(c.G),
+				uint8(c.B),
+				uint8(c.A),
 			)
 
 			sdlRect := rect{
-				X: int32(float64(colorRect.X)),
-				Y: int32(float64(colorRect.Y)),
-				W: int32(float64(colorRect.W)),
-				H: int32(float64(colorRect.H)),
+				X: int32(float64(r.X)),
+				Y: int32(float64(r.Y)),
+				W: int32(float64(r.W)),
+				H: int32(float64(r.H)),
 			}
 
 			graphics.renderer.fillRect(&sdlRect)
 		}
-	}
-}
-
-// DrawRects draw a slice of rectangles to the screen all the same color
-func (graphics *Graphics) DrawRects(rects []eff.Rect, color eff.Color) {
-	var sdlRects []rect
-
-	for _, r := range rects {
-		r := rect{
-			X: int32(float64(r.X)),
-			Y: int32(float64(r.Y)),
-			W: int32(float64(r.W)),
-			H: int32(float64(r.H)),
-		}
-
-		sdlRects = append(sdlRects, r)
-	}
-
-	mainThread <- func() {
-		graphics.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		graphics.renderer.drawRects(sdlRects)
-	}
-}
-
-// DrawLine draw a line of to the screen with a color
-func (graphics *Graphics) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
-	mainThread <- func() {
-		graphics.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-		graphics.renderer.drawLine(
-			int(float64(p1.X)),
-			int(float64(p1.Y)),
-			int(float64(p2.X)),
-			int(float64(p2.Y)),
-		)
-	}
-}
-
-// DrawLines a slice of lines to the screen all the same color
-func (graphics *Graphics) DrawLines(points []eff.Point, color eff.Color) {
-	if len(points) == 0 {
-		return
-	}
-	var sdlPoints []point
-
-	for _, p := range points {
-		p := point{X: int32(float64(p.X)), Y: int32(float64(p.Y))}
-		sdlPoints = append(sdlPoints, p)
-	}
-
-	mainThread <- func() {
-		graphics.renderer.setDrawColor(
-			uint8(color.R),
-			uint8(color.G),
-			uint8(color.B),
-			uint8(color.A),
-		)
-
-		graphics.renderer.drawLines(sdlPoints)
 	}
 }
 

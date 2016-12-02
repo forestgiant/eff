@@ -8,6 +8,11 @@ import (
 	"github.com/forestgiant/eff/sdl"
 )
 
+const (
+	width  = 800
+	height = 480
+)
+
 type sineWaveDrawable struct {
 	gridPoints     []eff.Point
 	origGridPoints []eff.Point
@@ -20,9 +25,9 @@ type sineWaveDrawable struct {
 	shape          sdl.Shape
 }
 
-func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
-	cols := int(math.Ceil(float64(canvas.Rect().W) / 100))
-	rows := int(math.Ceil(float64(canvas.Rect().H) / 100))
+func (s *sineWaveDrawable) Init() {
+	cols := int(math.Ceil(float64(width) / 100))
+	rows := int(math.Ceil(float64(height) / 100))
 	fmt.Println(cols, rows)
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
@@ -31,13 +36,13 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	s.xFreqDir = 1
 	s.yFreqDir = 1
 
-	cellWidth := int(math.Ceil(float64(canvas.Rect().W) / float64(cols)))
-	cellHeight := int(math.Ceil(float64(canvas.Rect().H) / float64(rows)))
+	cellWidth := int(math.Ceil(float64(width) / float64(cols)))
+	cellHeight := int(math.Ceil(float64(height) / float64(rows)))
 	fmt.Println(cellWidth, cellHeight)
 	// Create Columns
 	for i := 0; i < cols-1; i++ {
 		x := i*cellWidth + cellWidth
-		for j := 0; j < canvas.Rect().H; j++ {
+		for j := 0; j < height; j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (x), Y: (j)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (x), Y: (j)})
 		}
@@ -46,11 +51,18 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	// Create Rows
 	for i := 0; i < rows-1; i++ {
 		y := i*cellHeight + cellHeight
-		for j := 0; j < canvas.Rect().W; j++ {
+		for j := 0; j < width; j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (j), Y: (y)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (j), Y: (y)})
 		}
 	}
+
+	s.shape.SetRect(eff.Rect{
+		X: 0,
+		Y: 200,
+		W: width,
+		H: height,
+	})
 
 	s.shape.SetUpdateHandler(func() {
 		s.Update()
@@ -91,19 +103,17 @@ func (s *sineWaveDrawable) Update() {
 	}
 
 	updateDistortionState()
-
 	s.Draw()
 }
 
 func main() {
 	//Create canvas
-	canvas := sdl.NewCanvas("Sine Wave", 800, 480, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 1000, false)
+	canvas := sdl.NewCanvas("Sine Wave", 1024, 768, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 1000, false)
 	//Start the run loop
 	canvas.Run(func() {
 		//Create drawables
 		s := sineWaveDrawable{}
-		s.Init(canvas)
-		//Add drawables to canvas
+		s.Init()
 		canvas.AddChild(&s.shape)
 	})
 

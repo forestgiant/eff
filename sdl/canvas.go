@@ -52,10 +52,9 @@ func NewCanvas(title string, width int, height int, clearColor eff.Color, frameR
 		H: height,
 	}
 	c.bgColor = clearColor
-	c.scale = 1
 	c.frameRate = frameRate
 	c.useVsync = useVsync
-	c.graphics = &Graphics{}
+	c.graphics = NewGraphics()
 	return &c
 }
 
@@ -151,7 +150,7 @@ func (c *Canvas) Run(setup func()) {
 				windowOpenGl|windowAllowHighDPI,
 			)
 			drawableW, _ := c.window.getDrawableSize()
-			c.SetScale(float64(drawableW) / float64(c.rect.W))
+			c.graphics.scale = float64(drawableW) / float64(c.rect.W)
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -383,7 +382,7 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 
 // OpenFont creates a eff.Font object, used for rendering text
 func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
-	size = int(float64(size) * c.scale)
+	size = int(float64(size) * c.graphics.scale)
 	f, err := openFont(path, size)
 	if err != nil {
 		return nil, err

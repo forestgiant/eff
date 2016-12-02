@@ -9,10 +9,20 @@ import (
 
 type Graphics struct {
 	renderer *renderer
+	scale    float64
+}
+
+func NewGraphics() *Graphics {
+	g := Graphics{}
+
+	g.scale = 1
+
+	return &g
 }
 
 // DrawPoint draw a point on the screen specifying what color
 func (graphics *Graphics) DrawPoint(point eff.Point, color eff.Color) {
+	point = point.Scale(graphics.scale)
 	mainThread <- func() {
 		graphics.renderer.setDrawColor(
 			uint8(color.R),
@@ -26,9 +36,9 @@ func (graphics *Graphics) DrawPoint(point eff.Point, color eff.Color) {
 
 func (graphics *Graphics) DrawPoints(points []eff.Point, color eff.Color) {
 	var sdlPoints []point
-
+	scale := graphics.scale
 	for _, p := range points {
-		sdlPoints = append(sdlPoints, point{X: int32(float64(p.X)), Y: int32(float64(p.Y))})
+		sdlPoints = append(sdlPoints, point{X: int32(float64(p.X) * scale), Y: int32(float64(p.Y) * scale)})
 	}
 
 	mainThread <- func() {
@@ -50,6 +60,8 @@ func (graphics *Graphics) DrawColorPoints(points []eff.Point, colors []eff.Color
 		return
 	}
 
+	scale := graphics.scale
+
 	mainThread <- func() {
 		for i := range points {
 			p := points[i]
@@ -61,13 +73,16 @@ func (graphics *Graphics) DrawColorPoints(points []eff.Point, colors []eff.Color
 				uint8(c.A),
 			)
 
-			graphics.renderer.drawPoint(p.X, p.Y)
+			graphics.renderer.drawPoint(int(float64(p.X)*scale), int(float64(p.Y)*scale))
 		}
 	}
 }
 
 // DrawLine draw a line of to the screen with a color
 func (graphics *Graphics) DrawLine(p1 eff.Point, p2 eff.Point, color eff.Color) {
+	p1 = p1.Scale(graphics.scale)
+	p2 = p2.Scale(graphics.scale)
+
 	mainThread <- func() {
 		graphics.renderer.setDrawColor(
 			uint8(color.R),
@@ -90,9 +105,9 @@ func (graphics *Graphics) DrawLines(points []eff.Point, color eff.Color) {
 		return
 	}
 	var sdlPoints []point
-
+	scale := graphics.scale
 	for _, p := range points {
-		p := point{X: int32(float64(p.X)), Y: int32(float64(p.Y))}
+		p := point{X: int32(float64(p.X) * scale), Y: int32(float64(p.Y) * scale)}
 		sdlPoints = append(sdlPoints, p)
 	}
 
@@ -110,11 +125,12 @@ func (graphics *Graphics) DrawLines(points []eff.Point, color eff.Color) {
 
 // StrokeRect draw an outlined rectangle to the screen with a color
 func (graphics *Graphics) StrokeRect(r eff.Rect, color eff.Color) {
+	scale := graphics.scale
 	sdlRect := rect{
-		X: int32(float64(r.X)),
-		Y: int32(float64(r.Y)),
-		W: int32(float64(r.W)),
-		H: int32(float64(r.H)),
+		X: int32(float64(r.X) * scale),
+		Y: int32(float64(r.Y) * scale),
+		W: int32(float64(r.W) * scale),
+		H: int32(float64(r.H) * scale),
 	}
 
 	mainThread <- func() {
@@ -132,13 +148,13 @@ func (graphics *Graphics) StrokeRect(r eff.Rect, color eff.Color) {
 // StrokeRects draw a slice of rectangles to the screen all the same color
 func (graphics *Graphics) StrokeRects(rects []eff.Rect, color eff.Color) {
 	var sdlRects []rect
-
+	scale := graphics.scale
 	for _, r := range rects {
 		r := rect{
-			X: int32(float64(r.X)),
-			Y: int32(float64(r.Y)),
-			W: int32(float64(r.W)),
-			H: int32(float64(r.H)),
+			X: int32(float64(r.X) * scale),
+			Y: int32(float64(r.Y) * scale),
+			W: int32(float64(r.W) * scale),
+			H: int32(float64(r.H) * scale),
 		}
 
 		sdlRects = append(sdlRects, r)
@@ -162,7 +178,7 @@ func (graphics *Graphics) StrokeColorRects(rects []eff.Rect, colors []eff.Color)
 		fmt.Println("length of rects and length of colors mismatch")
 		return
 	}
-
+	scale := graphics.scale
 	mainThread <- func() {
 		for i := range rects {
 			r := rects[i]
@@ -175,10 +191,10 @@ func (graphics *Graphics) StrokeColorRects(rects []eff.Rect, colors []eff.Color)
 			)
 
 			sdlRect := rect{
-				X: int32(float64(r.X)),
-				Y: int32(float64(r.Y)),
-				W: int32(float64(r.W)),
-				H: int32(float64(r.H)),
+				X: int32(float64(r.X) * scale),
+				Y: int32(float64(r.Y) * scale),
+				W: int32(float64(r.W) * scale),
+				H: int32(float64(r.H) * scale),
 			}
 
 			graphics.renderer.drawRect(&sdlRect)
@@ -188,11 +204,12 @@ func (graphics *Graphics) StrokeColorRects(rects []eff.Rect, colors []eff.Color)
 
 // FillRect draw a filled in rectangle to the screen
 func (graphics *Graphics) FillRect(r eff.Rect, color eff.Color) {
+	scale := graphics.scale
 	sdlRect := rect{
-		X: int32(float64(r.X)),
-		Y: int32(float64(r.Y)),
-		W: int32(float64(r.W)),
-		H: int32(float64(r.H)),
+		X: int32(float64(r.X) * scale),
+		Y: int32(float64(r.Y) * scale),
+		W: int32(float64(r.W) * scale),
+		H: int32(float64(r.H) * scale),
 	}
 
 	mainThread <- func() {
@@ -210,14 +227,14 @@ func (graphics *Graphics) FillRect(r eff.Rect, color eff.Color) {
 // FillRects draw a slice of filled rectangles to the screen all the same color
 func (graphics *Graphics) FillRects(rects []eff.Rect, color eff.Color) {
 	var sdlRects []rect
-
+	scale := graphics.scale
 	for _, r := range rects {
 		sdlRects = append(sdlRects,
 			rect{
-				X: int32(r.X),
-				Y: int32(r.Y),
-				W: int32(r.W),
-				H: int32(r.H),
+				X: int32(float64(r.X) * scale),
+				Y: int32(float64(r.Y) * scale),
+				W: int32(float64(r.W) * scale),
+				H: int32(float64(r.H) * scale),
 			},
 		)
 	}
@@ -240,7 +257,7 @@ func (graphics *Graphics) FillColorRects(rects []eff.Rect, colors []eff.Color) {
 		fmt.Println("length of rects and length of colors mismatch")
 		return
 	}
-
+	scale := graphics.scale
 	mainThread <- func() {
 		for i := range rects {
 			r := rects[i]
@@ -253,10 +270,10 @@ func (graphics *Graphics) FillColorRects(rects []eff.Rect, colors []eff.Color) {
 			)
 
 			sdlRect := rect{
-				X: int32(float64(r.X)),
-				Y: int32(float64(r.Y)),
-				W: int32(float64(r.W)),
-				H: int32(float64(r.H)),
+				X: int32(float64(r.X) * scale),
+				Y: int32(float64(r.Y) * scale),
+				W: int32(float64(r.W) * scale),
+				H: int32(float64(r.H) * scale),
 			}
 
 			graphics.renderer.fillRect(&sdlRect)
@@ -266,8 +283,8 @@ func (graphics *Graphics) FillColorRects(rects []eff.Rect, colors []eff.Color) {
 
 // DrawText draws a string using a font to the screen, the point is the upper left hand corner
 func (graphics *Graphics) DrawText(font eff.Font, text string, col eff.Color, point eff.Point) error {
-	point.X = int(float64(point.X))
-	point.Y = int(float64(point.Y))
+	point.X = int(float64(point.X) * graphics.scale)
+	point.Y = int(float64(point.Y) * graphics.scale)
 	f := font.(*Font)
 	if f.sdlFont == nil {
 		return errors.New("Can't draw text no font set")

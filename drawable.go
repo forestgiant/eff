@@ -10,9 +10,6 @@ type Drawable interface {
 	SetParent(Drawable)
 	Parent() Drawable
 
-	SetScale(float64)
-	Scale() float64
-
 	SetGraphics(Graphics)
 	Graphics() Graphics
 

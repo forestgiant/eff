@@ -21,6 +21,13 @@ func (p *Point) Scale(s float64) Point {
 	}
 }
 
+func (p *Point) Offset(x int, y int) Point {
+	return Point{
+		X: p.X + x,
+		Y: p.Y + y,
+	}
+}
+
 func ScalePoints(points []Point, s float64) []Point {
 	var scaledPoints []Point
 	for _, p := range points {
@@ -28,6 +35,15 @@ func ScalePoints(points []Point, s float64) []Point {
 	}
 
 	return scaledPoints
+}
+
+func OffsetPoints(points []Point, x int, y int) []Point {
+	var offsetPoints []Point
+	for _, p := range points {
+		offsetPoints = append(offsetPoints, p.Offset(x, y))
+	}
+
+	return offsetPoints
 }
 
 // Color container for argb colors
@@ -118,6 +134,15 @@ func (r *Rect) Scale(s float64) Rect {
 	}
 }
 
+// func (r *Rect) Offset(x int, y int) Rect {
+// 	return Rect{
+// 		X: r.X + x,
+// 		Y: r.Y + y,
+// 		W: r.W,
+// 		H: r.H,
+// 	}
+// }
+
 func ScaleRects(rects []Rect, s float64) []Rect {
 	var scaledRects []Rect
 	for _, r := range rects {
@@ -126,6 +151,15 @@ func ScaleRects(rects []Rect, s float64) []Rect {
 
 	return scaledRects
 }
+
+// func OffsetRects(rects []Rect, x int, y int) []Rect {
+// 	var offsetRects []Rect
+// 	for _, r := range rects {
+// 		offsetRects = append(offsetRects, r.Offset(x, y))
+// 	}
+
+// 	return offsetRects
+// }
 
 // Font describes a ttf font
 type Font interface {

@@ -34,10 +34,10 @@ func (image *Image) Draw(canvas eff.Canvas) {
 	}
 
 	r := rect{
-		X: int32(float64(image.rect.X) * image.scale),
-		Y: int32(float64(image.rect.Y) * image.scale),
-		W: int32(float64(image.rect.W) * image.scale),
-		H: int32(float64(image.rect.H) * image.scale),
+		X: int32(float64(image.rect.X) * image.graphics.scale),
+		Y: int32(float64(image.rect.Y) * image.graphics.scale),
+		W: int32(float64(image.rect.W) * image.graphics.scale),
+		H: int32(float64(image.rect.H) * image.graphics.scale),
 	}
 	image.graphics.renderer.renderCopy(image.texture, r1, r)
 }

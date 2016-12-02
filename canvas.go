@@ -14,7 +14,7 @@ type MouseWheelHandler func(x int, y int)
 
 // Canvas interface describing methods required for canvas renderers
 type Canvas interface {
-	Shape
+	shape
 
 	AddClickable(clickable Clickable)
 	RemoveClickable(clickable Clickable)

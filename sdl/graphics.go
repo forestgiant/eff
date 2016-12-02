@@ -12,10 +12,10 @@ type Graphics struct {
 	scale    float64
 }
 
-func NewGraphics() *Graphics {
+func NewGraphics(r *renderer, s float64) *Graphics {
 	g := Graphics{}
-
-	g.scale = 1
+	g.renderer = r
+	g.scale = s
 
 	return &g
 }

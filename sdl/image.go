@@ -4,43 +4,41 @@ package sdl
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
-
-	"github.com/forestgiant/eff"
 )
 
-type Image struct {
-	drawable
+// type Image struct {
+// 	drawable
 
-	texture *texture
-}
+// 	texture  *texture
+// 	graphics *Graphics
+// }
 
-func (image *Image) Draw(canvas eff.Canvas) {
-	if image.graphics.renderer == nil {
-		return
-	}
+// func (image *Image) Draw(canvas eff.Canvas) {
+// 	if image.graphics.renderer == nil {
+// 		return
+// 	}
 
-	if image.texture == nil {
-		fmt.Println("image texture is nil")
-		return
-	}
+// 	if image.texture == nil {
+// 		fmt.Println("image texture is nil")
+// 		return
+// 	}
 
-	r1 := rect{
-		X: 0,
-		Y: 0,
-		W: int32(image.rect.W),
-		H: int32(image.rect.H),
-	}
+// 	r1 := rect{
+// 		X: 0,
+// 		Y: 0,
+// 		W: int32(image.rect.W),
+// 		H: int32(image.rect.H),
+// 	}
 
-	r := rect{
-		X: int32(float64(image.rect.X) * image.graphics.scale),
-		Y: int32(float64(image.rect.Y) * image.graphics.scale),
-		W: int32(float64(image.rect.W) * image.graphics.scale),
-		H: int32(float64(image.rect.H) * image.graphics.scale),
-	}
-	image.graphics.renderer.renderCopy(image.texture, r1, r)
-}
+// 	r := rect{
+// 		X: int32(float64(image.rect.X) * image.graphics.scale),
+// 		Y: int32(float64(image.rect.Y) * image.graphics.scale),
+// 		W: int32(float64(image.rect.W) * image.graphics.scale),
+// 		H: int32(float64(image.rect.H) * image.graphics.scale),
+// 	}
+// 	image.graphics.renderer.renderCopy(image.texture, r1, r)
+// }
 
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)
 func initImg() error {

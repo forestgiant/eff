@@ -3,6 +3,7 @@ package sdl
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/forestgiant/eff"
 )
@@ -23,7 +24,7 @@ type KeyEnumHandler func(key Keycode)
 
 // Canvas creates window and renderer and calls all drawable methods
 type Canvas struct {
-	Shape
+	eff.Shape
 
 	window              *Window
 	windowTitle         string
@@ -39,22 +40,22 @@ type Canvas struct {
 	mouseMoveHandlers   []eff.MouseMoveHandler
 	frameRate           int
 	useVsync            bool
+	sdlGraphics         *Graphics
 }
 
 // NewCanvas creates a new SDL canvas instance
 func NewCanvas(title string, width int, height int, clearColor eff.Color, frameRate int, useVsync bool) *Canvas {
 	c := Canvas{}
 	c.windowTitle = title
-	c.rect = eff.Rect{
+	c.SetRect(eff.Rect{
 		X: 0,
 		Y: 0,
 		W: width,
 		H: height,
-	}
-	c.bgColor = clearColor
+	})
+	c.SetBackgroundColor(clearColor)
 	c.frameRate = frameRate
 	c.useVsync = useVsync
-	c.graphics = NewGraphics()
 	return &c
 }
 
@@ -122,13 +123,15 @@ func (c *Canvas) AddMouseWheelHandler(handler eff.MouseWheelHandler) {
 // Run creates an infinite loop that renders all drawables, init is only call once and draw and update are called once per frame
 func (c *Canvas) Run(setup func()) {
 	lastFPSPrintTime := getTicks()
-	init := func() int {
-		if c.rect.W == 0 {
-			c.rect.W = defaultWidth
-		}
+	init := func(wg *sync.WaitGroup) int {
 
-		if c.rect.H == 0 {
-			c.rect.H = defaultHeight
+		if c.Rect().W == 0 || c.Rect().H == 0 {
+			c.SetRect(eff.Rect{
+				X: 0,
+				Y: 0,
+				W: defaultWidth,
+				H: defaultHeight,
+			})
 		}
 
 		if len(c.windowTitle) == 0 {
@@ -145,12 +148,12 @@ func (c *Canvas) Run(setup func()) {
 				c.windowTitle,
 				windowPosUndefined,
 				windowPosUndefined,
-				c.rect.W,
-				c.rect.H,
+				c.Rect().W,
+				c.Rect().H,
 				windowOpenGl|windowAllowHighDPI,
 			)
 			drawableW, _ := c.window.getDrawableSize()
-			c.graphics.scale = float64(drawableW) / float64(c.rect.W)
+			scale := float64(drawableW) / float64(c.Rect().W)
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -163,15 +166,13 @@ func (c *Canvas) Run(setup func()) {
 			} else {
 				c.window.setFullscreen(0)
 			}
-		}
 
-		mainThread <- func() {
 			windowFlags := rendererAccelerated | rendererPresentVsync
 			if !c.useVsync {
 				windowFlags = rendererAccelerated
 			}
 
-			c.graphics.renderer, err = createRenderer(
+			renderer, err := createRenderer(
 				c.window,
 				-1,
 				uint32(windowFlags),
@@ -181,11 +182,14 @@ func (c *Canvas) Run(setup func()) {
 				// return 2
 				return
 			}
-		}
 
-		mainThread <- func() {
-			c.graphics.renderer.setDrawBlendMode(blendModeBlend)
-			c.graphics.renderer.clear()
+			c.sdlGraphics = NewGraphics(renderer, scale)
+			c.sdlGraphics.renderer.setDrawBlendMode(blendModeBlend)
+			c.sdlGraphics.renderer.clear()
+
+			c.SetGraphics(c.sdlGraphics)
+
+			wg.Done()
 		}
 
 		startTime = getTicks()
@@ -311,7 +315,7 @@ func (c *Canvas) Run(setup func()) {
 
 				}
 
-				c.graphics.renderer.clear()
+				c.sdlGraphics.renderer.clear()
 			}
 
 			c.Draw(c)
@@ -340,7 +344,7 @@ func (c *Canvas) Run(setup func()) {
 
 				}
 
-				c.graphics.renderer.present()
+				c.sdlGraphics.renderer.present()
 				enforceFPS()
 				printFPS()
 
@@ -350,15 +354,19 @@ func (c *Canvas) Run(setup func()) {
 	}
 
 	lockMain(func() {
-		setup()
-		initOK := init()
+		var wg sync.WaitGroup
+		wg.Add(1)
+		initOK := init(&wg)
+		wg.Wait()
 		if initOK != 0 {
 			os.Exit(initOK)
 		}
+
+		setup()
 		run()
 		mainThread <- func() {
 			// Clean up goes here
-			c.graphics.renderer.destroy()
+			c.sdlGraphics.renderer.destroy()
 			c.window.destroy()
 
 			//Quit SDL
@@ -382,7 +390,7 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 
 // OpenFont creates a eff.Font object, used for rendering text
 func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
-	size = int(float64(size) * c.graphics.scale)
+	size = int(float64(size) * c.sdlGraphics.scale)
 	f, err := openFont(path, size)
 	if err != nil {
 		return nil, err

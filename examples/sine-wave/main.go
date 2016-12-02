@@ -13,7 +13,7 @@ const (
 	height = 480
 )
 
-type sineWaveDrawable struct {
+type sineWave struct {
 	gridPoints     []eff.Point
 	origGridPoints []eff.Point
 	tx             float32
@@ -22,10 +22,10 @@ type sineWaveDrawable struct {
 	yFreq          float32
 	xFreqDir       float32
 	yFreqDir       float32
-	shape          sdl.Shape
+	shape          eff.Shape
 }
 
-func (s *sineWaveDrawable) Init() {
+func (s *sineWave) Init() {
 	cols := int(math.Ceil(float64(width) / 100))
 	rows := int(math.Ceil(float64(height) / 100))
 	fmt.Println(cols, rows)
@@ -59,7 +59,7 @@ func (s *sineWaveDrawable) Init() {
 
 	s.shape.SetRect(eff.Rect{
 		X: 0,
-		Y: 200,
+		Y: 0,
 		W: width,
 		H: height,
 	})
@@ -69,13 +69,13 @@ func (s *sineWaveDrawable) Init() {
 	})
 }
 
-func (s *sineWaveDrawable) Draw() {
+func (s *sineWave) Draw() {
 	s.shape.Clear()
 	color := eff.Color{R: 0x00, G: 0xFF, B: 0x00, A: 0xFF}
 	s.shape.DrawPoints(s.gridPoints, color)
 }
 
-func (s *sineWaveDrawable) Update() {
+func (s *sineWave) Update() {
 	updateDistortionState := func() {
 		s.xFreq += (0.1) * s.xFreqDir
 		if s.xFreq > 25 || s.xFreq < 1 {
@@ -108,11 +108,10 @@ func (s *sineWaveDrawable) Update() {
 
 func main() {
 	//Create canvas
-	canvas := sdl.NewCanvas("Sine Wave", 1024, 768, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 1000, false)
+	canvas := sdl.NewCanvas("Sine Wave", 800, 480, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 1000, false)
 	//Start the run loop
 	canvas.Run(func() {
-		//Create drawables
-		s := sineWaveDrawable{}
+		s := sineWave{}
 		s.Init()
 		canvas.AddChild(&s.shape)
 	})

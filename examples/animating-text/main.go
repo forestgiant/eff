@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"time"
@@ -17,6 +16,7 @@ type textDrawable struct {
 	tweener     tween.Tweener
 	index       int
 	font        eff.Font
+	shape       eff.Shape
 }
 
 func (t *textDrawable) Init(canvas eff.Canvas) {
@@ -34,19 +34,23 @@ func (t *textDrawable) Init(canvas eff.Canvas) {
 		t.index = int(math.Min(float64(len(t.text)), float64(t.index)))
 	}, true, false, nil, nil)
 	t.initialized = true
+
+	t.shape.SetUpdateHandler(func() {
+		t.Update()
+	})
 }
 
-func (t *textDrawable) Draw(canvas eff.Canvas) {
+func (t *textDrawable) Draw() {
+	t.shape.Clear()
+
 	textColor := eff.RandomColor()
-	err := canvas.DrawText(t.font, t.text[:t.index], textColor, eff.Point{X: 0, Y: 0})
-	if err != nil {
-		fmt.Println(err)
-	}
+	t.shape.DrawText(t.font, t.text[:t.index], textColor, eff.Point{X: 0, Y: 0})
 }
 
-func (t *textDrawable) Update(canvas eff.Canvas) {
-
+func (t *textDrawable) Update() {
 	t.tweener.Tween()
+
+	t.Draw()
 }
 
 func (t *textDrawable) Initialized() bool {
@@ -56,6 +60,8 @@ func (t *textDrawable) Initialized() bool {
 func main() {
 	canvas := sdl.NewCanvas("Animating Text", 800, 540, eff.Color{R: 0xFF, B: 0xFF, G: 0xFF, A: 0xFF}, 60, true)
 	canvas.Run(func() {
-		canvas.AddDrawable(&textDrawable{})
+		t := textDrawable{}
+		t.Init(canvas)
+		canvas.AddChild(&t.shape)
 	})
 }

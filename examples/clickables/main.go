@@ -30,7 +30,7 @@ func (b *buttonTest) Init(c eff.Canvas) {
 	}
 
 	drawButton := func(text string, rect eff.Rect, bgColor eff.Color, textColor eff.Color, c eff.Canvas) {
-		tW, tH, err := c.GetTextSize(b.font, text)
+		tW, tH, err := c.Graphics().GetTextSize(b.font, text)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,15 +68,15 @@ func (b *buttonTest) Init(c eff.Canvas) {
 	b.buttons = append(b.buttons, &topLeftButton)
 	c.AddClickable(&topLeftButton)
 
-	bottomLeftButton := button.NewButton("SW", eff.Rect{X: padding, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	bottomLeftButton := button.NewButton("SW", eff.Rect{X: padding, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &bottomLeftButton)
 	c.AddClickable(&bottomLeftButton)
 
-	topRightButton := button.NewButton("NE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	topRightButton := button.NewButton("NE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &topRightButton)
 	c.AddClickable(&topRightButton)
 
-	bottonRightButton := button.NewButton("SE", eff.Rect{X: c.Width() - padding - buttonWidth, Y: c.Height() - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
+	bottonRightButton := button.NewButton("SE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, drawDefault, drawDown, drawOver, clickHandler)
 	b.buttons = append(b.buttons, &bottonRightButton)
 	c.AddClickable(&bottonRightButton)
 
@@ -93,15 +93,15 @@ func (b *buttonTest) Draw(c eff.Canvas) {
 		button.Draw(c)
 	}
 
-	tW, tH, err := c.GetTextSize(b.font, b.middleText)
+	tW, tH, err := c.Graphics().GetTextSize(b.font, b.middleText)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	textPoint := eff.Point{
-		X: (c.Width() - tW) / 2,
-		Y: (c.Height() - tH) / 2,
+		X: (c.Rect().W - tW) / 2,
+		Y: (c.Rect().H - tH) / 2,
 	}
 	c.DrawText(b.font, b.middleText, eff.Black(), textPoint)
 }

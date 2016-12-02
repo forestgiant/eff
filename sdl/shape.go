@@ -3,14 +3,10 @@ package sdl
 import "github.com/forestgiant/eff"
 
 type Shape struct {
-	rect          eff.Rect
-	parent        eff.Drawable
-	scale         float64
-	bgColor       eff.Color
-	drawCalls     []func()
-	graphics      *Graphics
-	children      []eff.Drawable
-	updateHandler func()
+	drawable
+
+	bgColor   eff.Color
+	drawCalls []func()
 }
 
 func (shape *Shape) Draw(canvas eff.Canvas) {
@@ -18,45 +14,15 @@ func (shape *Shape) Draw(canvas eff.Canvas) {
 		return
 	}
 
-	shape.graphics.FillRect(shape.rect, shape.bgColor)
+	shape.graphics.FillRect(shape.rect.Scale(shape.scale), shape.bgColor)
+
 	for _, fn := range shape.drawCalls {
 		fn()
 	}
-}
 
-func (shape *Shape) SetRect(r eff.Rect) {
-	shape.rect = r
-}
-
-func (shape *Shape) Rect() eff.Rect {
-	return shape.rect
-}
-
-func (shape *Shape) SetParent(d eff.Drawable) {
-	shape.parent = d
-}
-
-func (shape *Shape) Parent() eff.Drawable {
-	return shape.parent
-}
-
-func (shape *Shape) SetScale(s float64) {
-	shape.scale = s
-}
-
-func (shape *Shape) Scale() float64 {
-	return shape.scale
-}
-
-func (shape *Shape) SetGraphics(g eff.Graphics) {
-	sdlGraphics, ok := g.(*Graphics)
-	if ok {
-		shape.graphics = sdlGraphics
+	for _, child := range shape.children {
+		child.Draw(canvas)
 	}
-}
-
-func (shape *Shape) Graphics() eff.Graphics {
-	return shape.graphics
 }
 
 func (shape *Shape) SetBackgroundColor(c eff.Color) {
@@ -73,115 +39,78 @@ func (shape *Shape) Clear() {
 
 func (shape *Shape) DrawPoint(p eff.Point, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		p = p.Scale(shape.Scale())
 		shape.graphics.DrawPoint(p, c)
 	})
 }
 
 func (shape *Shape) DrawPoints(p []eff.Point, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		p = eff.ScalePoints(p, shape.Scale())
 		shape.graphics.DrawPoints(p, c)
 	})
 }
 
 func (shape *Shape) DrawColorPoints(p []eff.Point, c []eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		p = eff.ScalePoints(p, shape.Scale())
 		shape.graphics.DrawColorPoints(p, c)
 	})
 }
 
 func (shape *Shape) DrawLine(p1 eff.Point, p2 eff.Point, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		p1 = p1.Scale(shape.Scale())
+		p2 = p2.Scale(shape.Scale())
 		shape.graphics.DrawLine(p1, p2, c)
 	})
 }
 
 func (shape *Shape) DrawLines(p []eff.Point, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		p = eff.ScalePoints(p, shape.Scale())
 		shape.graphics.DrawLines(p, c)
 	})
 }
 
 func (shape *Shape) StrokeRect(r eff.Rect, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = r.Scale(shape.Scale())
 		shape.graphics.StrokeRect(r, c)
 	})
 }
 
 func (shape *Shape) StrokeRects(r []eff.Rect, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = eff.ScaleRects(r, shape.Scale())
 		shape.graphics.StrokeRects(r, c)
 	})
 }
 
 func (shape *Shape) StrokeColorRects(r []eff.Rect, c []eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = eff.ScaleRects(r, shape.Scale())
 		shape.graphics.StrokeColorRects(r, c)
 	})
 }
 
 func (shape *Shape) FillRect(r eff.Rect, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = r.Scale(shape.Scale())
 		shape.graphics.FillRect(r, c)
 	})
 }
 
 func (shape *Shape) FillRects(r []eff.Rect, c eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = eff.ScaleRects(r, shape.Scale())
 		shape.graphics.FillRects(r, c)
 	})
 }
 
 func (shape *Shape) FillColorRects(r []eff.Rect, c []eff.Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
+		r = eff.ScaleRects(r, shape.Scale())
 		shape.graphics.FillColorRects(r, c)
 	})
-}
-
-func (shape *Shape) SetUpdateHandler(handler func()) {
-	shape.updateHandler = handler
-}
-
-func (shape *Shape) HandleUpdate() {
-	if shape.updateHandler != nil {
-		shape.updateHandler()
-	}
-}
-
-func (shape *Shape) AddChild(d eff.Drawable) {
-	if d == nil {
-		return
-	}
-
-	d.SetParent(eff.Drawable(shape))
-	d.SetScale(shape.scale)
-	d.SetGraphics(shape.graphics)
-
-	shape.children = append(shape.children, d)
-}
-
-func (shape *Shape) RemoveChild(d eff.Drawable) {
-	if d == nil {
-		return
-	}
-
-	index := -1
-	for i, child := range shape.children {
-		if d == child {
-			index = i
-			break
-		}
-	}
-	if index == -1 {
-		return
-	}
-
-	shape.children[index].SetParent(nil)
-	shape.children[index].SetGraphics(nil)
-	shape.children[index].SetScale(1)
-
-	shape.children = append(shape.children[:index], shape.children[index+1:]...)
-}
-
-func (shape *Shape) Children() []eff.Drawable {
-	return shape.children
 }

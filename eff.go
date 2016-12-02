@@ -14,6 +14,22 @@ type Point struct {
 	Y int
 }
 
+func (p *Point) Scale(s float64) Point {
+	return Point{
+		X: int(float64(p.X) * s),
+		Y: int(float64(p.Y) * s),
+	}
+}
+
+func ScalePoints(points []Point, s float64) []Point {
+	var scaledPoints []Point
+	for _, p := range points {
+		scaledPoints = append(scaledPoints, p.Scale(s))
+	}
+
+	return scaledPoints
+}
+
 // Color container for argb colors
 type Color struct {
 	R int
@@ -93,16 +109,22 @@ type Rect struct {
 	H int
 }
 
-// ColorRect container for rectange and color
-type ColorRect struct {
-	Rect
-	Color
+func (r *Rect) Scale(s float64) Rect {
+	return Rect{
+		X: int(float64(r.X) * s),
+		Y: int(float64(r.Y) * s),
+		W: int(float64(r.W) * s),
+		H: int(float64(r.H) * s),
+	}
 }
 
-// ColorPoint container for point and color
-type ColorPoint struct {
-	Point
-	Color
+func ScaleRects(rects []Rect, s float64) []Rect {
+	var scaledRects []Rect
+	for _, r := range rects {
+		scaledRects = append(scaledRects, r.Scale(s))
+	}
+
+	return scaledRects
 }
 
 // Font describes a ttf font

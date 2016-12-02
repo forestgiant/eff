@@ -51,10 +51,11 @@ func NewCanvas(title string, width int, height int, clearColor eff.Color, frameR
 		W: width,
 		H: height,
 	}
-
+	c.bgColor = clearColor
+	c.scale = 1
 	c.frameRate = frameRate
 	c.useVsync = useVsync
-
+	c.graphics = &Graphics{}
 	return &c
 }
 
@@ -150,7 +151,7 @@ func (c *Canvas) Run(setup func()) {
 				windowOpenGl|windowAllowHighDPI,
 			)
 			drawableW, _ := c.window.getDrawableSize()
-			c.scale = float64(drawableW) / float64(c.rect.W)
+			c.SetScale(float64(drawableW) / float64(c.rect.W))
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -314,13 +315,8 @@ func (c *Canvas) Run(setup func()) {
 				c.graphics.renderer.clear()
 			}
 
-			for _, drawable := range c.children {
-				if drawable == nil {
-					continue
-				}
-
-				drawable.Draw(c)
-			}
+			c.Draw(c)
+			c.HandleUpdate()
 
 			mainThread <- func() {
 

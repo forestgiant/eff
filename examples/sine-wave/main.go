@@ -17,12 +17,12 @@ type sineWaveDrawable struct {
 	yFreq          float32
 	xFreqDir       float32
 	yFreqDir       float32
-	initialized    bool
+	shape          sdl.Shape
 }
 
 func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
-	cols := int(math.Ceil(float64(canvas.Width()) / 100))
-	rows := int(math.Ceil(float64(canvas.Height()) / 100))
+	cols := int(math.Ceil(float64(canvas.Rect().W) / 100))
+	rows := int(math.Ceil(float64(canvas.Rect().H) / 100))
 	fmt.Println(cols, rows)
 	s.tx = math.Pi / 9
 	s.ty = math.Pi / 4
@@ -31,13 +31,13 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	s.xFreqDir = 1
 	s.yFreqDir = 1
 
-	cellWidth := int(math.Ceil(float64(canvas.Width()) / float64(cols)))
-	cellHeight := int(math.Ceil(float64(canvas.Height()) / float64(rows)))
+	cellWidth := int(math.Ceil(float64(canvas.Rect().W) / float64(cols)))
+	cellHeight := int(math.Ceil(float64(canvas.Rect().H) / float64(rows)))
 	fmt.Println(cellWidth, cellHeight)
 	// Create Columns
 	for i := 0; i < cols-1; i++ {
 		x := i*cellWidth + cellWidth
-		for j := 0; j < canvas.Height(); j++ {
+		for j := 0; j < canvas.Rect().H; j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (x), Y: (j)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (x), Y: (j)})
 		}
@@ -46,20 +46,24 @@ func (s *sineWaveDrawable) Init(canvas eff.Canvas) {
 	// Create Rows
 	for i := 0; i < rows-1; i++ {
 		y := i*cellHeight + cellHeight
-		for j := 0; j < canvas.Width(); j++ {
+		for j := 0; j < canvas.Rect().W; j++ {
 			s.gridPoints = append(s.gridPoints, eff.Point{X: (j), Y: (y)})
 			s.origGridPoints = append(s.origGridPoints, eff.Point{X: (j), Y: (y)})
 		}
 	}
-	s.initialized = true
+
+	s.shape.SetUpdateHandler(func() {
+		s.Update()
+	})
 }
 
-func (s *sineWaveDrawable) Draw(canvas eff.Canvas) {
+func (s *sineWaveDrawable) Draw() {
+	s.shape.Clear()
 	color := eff.Color{R: 0x00, G: 0xFF, B: 0x00, A: 0xFF}
-	canvas.DrawPoints(s.gridPoints, color)
+	s.shape.DrawPoints(s.gridPoints, color)
 }
 
-func (s *sineWaveDrawable) Update(canvas eff.Canvas) {
+func (s *sineWaveDrawable) Update() {
 	updateDistortionState := func() {
 		s.xFreq += (0.1) * s.xFreqDir
 		if s.xFreq > 25 || s.xFreq < 1 {
@@ -82,15 +86,13 @@ func (s *sineWaveDrawable) Update(canvas eff.Canvas) {
 	}
 
 	for i, point := range s.origGridPoints {
-		newX, newY := sineWaveDistortXY(point.X, point.Y, canvas.Width(), canvas.Height())
+		newX, newY := sineWaveDistortXY(point.X, point.Y, 800, 480)
 		s.gridPoints[i] = eff.Point{X: newX, Y: newY}
 	}
 
 	updateDistortionState()
-}
 
-func (s *sineWaveDrawable) Initialized() bool {
-	return s.initialized
+	s.Draw()
 }
 
 func main() {
@@ -100,8 +102,9 @@ func main() {
 	canvas.Run(func() {
 		//Create drawables
 		s := sineWaveDrawable{}
+		s.Init(canvas)
 		//Add drawables to canvas
-		canvas.AddDrawable(&s)
+		canvas.AddChild(&s.shape)
 	})
 
 }

@@ -11,13 +11,9 @@ import (
 )
 
 type Image struct {
-	rect          eff.Rect
-	parent        eff.Drawable
-	scale         float64
-	graphics      *Graphics
-	texture       *texture
-	children      []eff.Drawable
-	updateHandler func()
+	drawable
+
+	texture *texture
 }
 
 func (image *Image) Draw(canvas eff.Canvas) {
@@ -44,90 +40,6 @@ func (image *Image) Draw(canvas eff.Canvas) {
 		H: int32(float64(image.rect.H) * image.scale),
 	}
 	image.graphics.renderer.renderCopy(image.texture, r1, r)
-}
-
-func (image *Image) SetUpdateHandler(handler func()) {
-	image.updateHandler = handler
-}
-
-func (image *Image) HandleUpdate() {
-	if image.updateHandler != nil {
-		image.updateHandler()
-	}
-}
-
-func (image *Image) AddChild(d eff.Drawable) {
-	if d == nil {
-		return
-	}
-
-	d.SetParent(eff.Drawable(image))
-	d.SetScale(image.scale)
-	d.SetGraphics(image.graphics)
-
-	image.children = append(image.children, d)
-}
-
-func (image *Image) RemoveChild(d eff.Drawable) {
-	if d == nil {
-		return
-	}
-
-	index := -1
-	for i, child := range image.children {
-		if d == child {
-			index = i
-			break
-		}
-	}
-	if index == -1 {
-		return
-	}
-
-	image.children[index].SetParent(nil)
-	image.children[index].SetGraphics(nil)
-	image.children[index].SetScale(1)
-
-	image.children = append(image.children[:index], image.children[index+1:]...)
-}
-
-func (image *Image) Children() []eff.Drawable {
-	return image.children
-}
-
-func (image *Image) Rect() eff.Rect {
-	return image.rect
-}
-
-func (image *Image) SetParent(d eff.Drawable) {
-	image.parent = d
-}
-
-func (image *Image) Parent() eff.Drawable {
-	return image.parent
-}
-
-func (image *Image) SetGraphics(g eff.Graphics) {
-	sdlGraphics, ok := g.(*Graphics)
-	if ok {
-		image.graphics = sdlGraphics
-	}
-}
-
-func (image *Image) Graphics() eff.Graphics {
-	return image.graphics
-}
-
-func (image *Image) SetScale(s float64) {
-	image.scale = s
-}
-
-func (image *Image) Scale() float64 {
-	return image.scale
-}
-
-func (image *Image) SetRect(r eff.Rect) {
-	image.rect = r
 }
 
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)

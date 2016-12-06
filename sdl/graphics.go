@@ -337,8 +337,12 @@ func (graphics *Graphics) DrawText(font eff.Font, text string, col eff.Color, po
 
 // GetTextSize this uses the currently set font to determine the size of string rendered with that font, does not actually add the text to the canvas
 func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, error) {
-	f := font.(*Font)
-	if f.sdlFont == nil {
+	// return 5, 5, nil
+	if font == nil {
+		return -1, -1, errors.New("Font is nil")
+	}
+	f, ok := font.(*Font)
+	if !ok {
 		return -1, -1, errors.New("Can't get text size font not loaded")
 	}
 
@@ -357,13 +361,11 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 
 		sizeChan <- p
 	}
-
-	for {
-		select {
-		case e := <-errChan:
-			return -1, -1, e
-		case p := <-sizeChan:
-			return int(p.X), int(p.Y), nil
-		}
+	select {
+	case e := <-errChan:
+		return -1, -1, e
+	case p := <-sizeChan:
+		return int(p.X), int(p.Y), nil
 	}
+
 }

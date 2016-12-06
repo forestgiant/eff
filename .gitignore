@@ -23,6 +23,8 @@ _testmain.go
 *.test
 *.prof
 
+cover.out
+
 drawing-primitives
 !drawing-primitives/
 sine-wave
@@ -47,3 +49,5 @@ boilerplate
 !boilerplate/
 text-view
 !text-view/
+
+

@@ -1,28 +1,8 @@
 package sdl
 
-import (
-	"fmt"
-	"os"
-	"testing"
-
-	"github.com/forestgiant/eff"
-)
-
-var testCanvas *Canvas
-
-func TestMain(m *testing.M) {
-	// Create testCanvas for all test to use
-	testCanvas = NewCanvas("test", 640, 480, eff.Black(), 60, true)
-	testCanvas.Run(
-	//
-	)
-	t := m.Run()
-	os.Exit(t)
-
-}
+import "testing"
 
 func TestGetTextSize(t *testing.T) {
-
 	var tests = []struct {
 		fontPath   string
 		text       string
@@ -35,7 +15,32 @@ func TestGetTextSize(t *testing.T) {
 			pointSize:  -1,
 			shouldFail: true,
 		},
+		{
+			fontPath:   "../examples/assets/fonts/roboto/Roboto-Medium.ttf",
+			text:       "text",
+			pointSize:  -1,
+			shouldFail: false,
+		},
+		{
+			fontPath:   "../examples/assets/fonts/roboto/Roboto-Medium.ttf",
+			text:       "text",
+			pointSize:  10,
+			shouldFail: false,
+		},
 	}
+
+	// Create listener for mainThread
+	closeChan := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case f := <-mainThread:
+				f()
+			case <-closeChan:
+				return
+			}
+		}
+	}()
 
 	for _, test := range tests {
 		g := &Graphics{}
@@ -44,10 +49,11 @@ func TestGetTextSize(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		w, h, err := g.GetTextSize(f, test.text)
+		_, _, err = g.GetTextSize(f, test.text)
 		if test.shouldFail != (err != nil) {
 			t.Fatal(err)
 		}
-		fmt.Println(w, h)
 	}
+
+	close(closeChan)
 }

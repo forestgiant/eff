@@ -44,6 +44,10 @@ func getTTFError() error {
 
 // OpenFont (https://www.libsdl.org/projects/SDL_ttf)
 func openFont(fontPath string, pointSize int) (*Font, error) {
+	if fontPath == "" {
+		return nil, errors.New("fontPath is empty")
+	}
+
 	_fontPath := C.CString(fontPath)
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
 

@@ -10,12 +10,20 @@ import (
 )
 
 // EllipseText returns a substring of argument text that does not exceed the argument width, if string is shortened '...' is added
-func EllipseText(font eff.Font, text string, width int, c eff.Canvas) (string, error) {
+func EllipseText(font eff.Font, text string, width int, g eff.Graphics) (string, error) {
 	if width <= 0 {
-		return "", errors.New("Invalid text width")
+		return "", errors.New("EllipseText Error: Invalid text width")
 	}
 
-	textW, _, err := c.GetTextSize(font, text)
+	if font == nil {
+		return "", errors.New("EllipseText Error: Font is nil")
+	}
+
+	if g == nil {
+		return "", errors.New("EllipseText Error: Graphics is nil")
+	}
+
+	textW, _, err := g.GetTextSize(font, text)
 	if err != nil {
 		return "", err
 	}
@@ -26,7 +34,7 @@ func EllipseText(font eff.Font, text string, width int, c eff.Canvas) (string, e
 
 	for textW > width {
 		text = text[:len(text)-1]
-		textW, _, err = c.GetTextSize(font, text+"...")
+		textW, _, err = g.GetTextSize(font, text+"...")
 		if err != nil {
 			return "", err
 		}
@@ -37,8 +45,8 @@ func EllipseText(font eff.Font, text string, width int, c eff.Canvas) (string, e
 }
 
 // CenterTextInRect finds the point that would center the text in the canvas, assumes the font is already set
-func CenterTextInRect(font eff.Font, text string, rect eff.Rect, c eff.Canvas) (eff.Point, error) {
-	textW, textH, err := c.GetTextSize(font, text)
+func CenterTextInRect(font eff.Font, text string, rect eff.Rect, g eff.Graphics) (eff.Point, error) {
+	textW, textH, err := g.GetTextSize(font, text)
 	if err != nil {
 		return eff.Point{}, err
 	}
@@ -50,8 +58,8 @@ func CenterTextInRect(font eff.Font, text string, rect eff.Rect, c eff.Canvas) (
 }
 
 // GetMultilineText creates and array of strings that do not exceed the maxWidth.  Returns the slice of strings and the height of the text per line
-func GetMultilineText(font eff.Font, text string, maxWidth int, c eff.Canvas) ([]string, int) {
-	w, h, err := c.GetTextSize(font, text)
+func GetMultilineText(font eff.Font, text string, maxWidth int, g eff.Graphics) ([]string, int) {
+	w, h, err := g.GetTextSize(font, text)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,7 +76,7 @@ func GetMultilineText(font eff.Font, text string, maxWidth int, c eff.Canvas) ([
 		line := ""
 		for wordIndex < len(words) {
 			if len(line) >= checkSize {
-				w, _, err = c.GetTextSize(font, line+words[wordIndex]+" ")
+				w, _, err = g.GetTextSize(font, line+words[wordIndex]+" ")
 				if w > maxWidth {
 					break
 				}

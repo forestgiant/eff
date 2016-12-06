@@ -16,17 +16,20 @@ type Drawable interface {
 	SetUpdateHandler(func())
 	HandleUpdate()
 
+	SetGraphicsReadyHandler(func())
+
 	AddChild(Drawable)
 	RemoveChild(Drawable)
 	Children() []Drawable
 }
 
 type drawable struct {
-	rect          Rect
-	parent        Drawable
-	graphics      Graphics
-	children      []Drawable
-	updateHandler func()
+	rect                 Rect
+	parent               Drawable
+	graphics             Graphics
+	children             []Drawable
+	updateHandler        func()
+	graphicsReadyHandler func()
 }
 
 func (d *drawable) SetRect(r Rect) {
@@ -47,6 +50,10 @@ func (d *drawable) Parent() Drawable {
 
 func (d *drawable) SetGraphics(g Graphics) {
 	d.graphics = g
+	if d.graphics != nil && d.graphicsReadyHandler != nil {
+		d.graphicsReadyHandler()
+	}
+
 	for _, child := range d.children {
 		child.SetGraphics(g)
 	}
@@ -64,9 +71,12 @@ func (d *drawable) AddChild(c Drawable) {
 	}
 
 	c.SetParent(Drawable(d))
-	c.SetGraphics(d.graphics)
 
 	d.children = append(d.children, c)
+
+	if d.graphics != nil {
+		c.SetGraphics(d.graphics)
+	}
 }
 
 func (d *drawable) RemoveChild(c Drawable) {
@@ -107,4 +117,8 @@ func (d *drawable) HandleUpdate() {
 	for _, child := range d.children {
 		child.HandleUpdate()
 	}
+}
+
+func (d *drawable) SetGraphicsReadyHandler(handler func()) {
+	d.graphicsReadyHandler = handler
 }

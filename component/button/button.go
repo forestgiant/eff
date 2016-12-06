@@ -1,7 +1,6 @@
 package button
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/forestgiant/eff"
@@ -99,9 +98,15 @@ func (b *Button) drawButton() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	textPoint, err := util.CenterTextInRect(b.font, b.Text, b.Rect(), b.Graphics())
+
+	textW, textH, err := b.Graphics().GetTextSize(b.font, text)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	textPoint := eff.Point{
+		X: (b.Rect().W - textW) / 2,
+		Y: (b.Rect().H - textH) / 2,
 	}
 
 	bgColor := b.defaultBGColor
@@ -113,8 +118,8 @@ func (b *Button) drawButton() {
 		bgColor = b.overBGColor
 		textColor = b.overTextColor
 	}
-	fmt.Println("Draw Button", b.Rect())
-	b.FillRect(b.Rect(), bgColor)
+	// b.FillRect(b.Rect(), bgColor)
+	b.SetBackgroundColor(bgColor)
 	b.DrawText(b.font, text, textColor, textPoint)
 }
 

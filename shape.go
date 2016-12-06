@@ -31,30 +31,20 @@ type Shape struct {
 }
 
 func (shape *Shape) offsetPoint(p Point) Point {
-	px := 0
-	py := 0
-	if shape.parent != nil {
-		px = shape.parent.Rect().X
-		py = shape.parent.Rect().Y
-	}
+	pr := shape.parentOffsetRect()
 	return Point{
-		X: p.X + shape.Rect().X + px,
-		Y: p.Y + shape.Rect().Y + py,
+		X: p.X + pr.X,
+		Y: p.Y + pr.Y,
 	}
 }
 
 func (shape *Shape) offsetPoints(points []Point) []Point {
-	px := 0
-	py := 0
-	if shape.parent != nil {
-		px = shape.parent.Rect().X
-		py = shape.parent.Rect().Y
-	}
+	pr := shape.parentOffsetRect()
 	var offsetPoints []Point
 	for _, p := range points {
 		offsetPoints = append(offsetPoints, Point{
-			X: p.X + shape.Rect().X + px,
-			Y: p.Y + shape.Rect().Y + py,
+			X: p.X + pr.X,
+			Y: p.Y + pr.Y,
 		})
 	}
 
@@ -62,32 +52,22 @@ func (shape *Shape) offsetPoints(points []Point) []Point {
 }
 
 func (shape *Shape) offsetRect(r Rect) Rect {
-	px := 0
-	py := 0
-	if shape.parent != nil {
-		px = shape.parent.Rect().X
-		py = shape.parent.Rect().Y
-	}
+	pr := shape.parentOffsetRect()
 	return Rect{
-		X: r.X + shape.Rect().X + px,
-		Y: r.Y + shape.Rect().Y + py,
+		X: r.X + pr.X,
+		Y: r.Y + pr.Y,
 		W: r.W,
 		H: r.H,
 	}
 }
 
 func (shape *Shape) offsetRects(rects []Rect) []Rect {
-	px := 0
-	py := 0
-	if shape.parent != nil {
-		px = shape.parent.Rect().X
-		py = shape.parent.Rect().Y
-	}
+	pr := shape.parentOffsetRect()
 	var offsetRects []Rect
 	for _, r := range rects {
 		offsetRects = append(offsetRects, Rect{
-			X: r.X + shape.Rect().X + px,
-			Y: r.Y + shape.Rect().Y + py,
+			X: r.X + pr.X,
+			Y: r.Y + pr.Y,
 			W: r.W,
 			H: r.H,
 		})
@@ -95,8 +75,18 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 	return offsetRects
 }
 
+func (shape *Shape) parentOffsetRect() Rect {
+	r := shape.Rect()
+	if shape.parent != nil {
+		r.X += shape.parent.Rect().X
+		r.Y += shape.parent.Rect().Y
+	}
+
+	return r
+}
+
 func (shape *Shape) Draw(canvas Canvas) {
-	shape.graphics.FillRect(shape.offsetRect(shape.Rect()), shape.bgColor)
+	shape.graphics.FillRect(shape.parentOffsetRect(), shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
 		fn()
@@ -121,85 +111,72 @@ func (shape *Shape) Clear() {
 
 func (shape *Shape) DrawPoint(p Point, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p = shape.offsetPoint(p)
-		shape.Graphics().DrawPoint(p, c)
+		shape.Graphics().DrawPoint(shape.offsetPoint(p), c)
 	})
 }
 
 func (shape *Shape) DrawPoints(p []Point, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p = OffsetPoints(p, shape.Rect().X, shape.Rect().Y)
-		shape.Graphics().DrawPoints(p, c)
+		shape.Graphics().DrawPoints(shape.offsetPoints(p), c)
 	})
 }
 
 func (shape *Shape) DrawColorPoints(p []Point, c []Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p = OffsetPoints(p, shape.Rect().X, shape.Rect().Y)
-		shape.Graphics().DrawColorPoints(p, c)
+		shape.Graphics().DrawColorPoints(shape.offsetPoints(p), c)
 	})
 }
 
 func (shape *Shape) DrawLine(p1 Point, p2 Point, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p1 = p1.Offset(shape.Rect().X, shape.Rect().Y)
-		p2 = p2.Offset(shape.Rect().X, shape.Rect().Y)
-		shape.Graphics().DrawLine(p1, p2, c)
+		shape.Graphics().DrawLine(shape.offsetPoint(p1), shape.offsetPoint(p2), c)
 	})
 }
 
 func (shape *Shape) DrawLines(p []Point, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p = OffsetPoints(p, shape.Rect().X, shape.Rect().Y)
-		shape.Graphics().DrawLines(p, c)
+		shape.Graphics().DrawLines(shape.offsetPoints(p), c)
 	})
 }
 
 func (shape *Shape) StrokeRect(r Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRect(r)
-		shape.Graphics().StrokeRect(r, c)
+		shape.Graphics().StrokeRect(shape.offsetRect(r), c)
 	})
 }
 
 func (shape *Shape) StrokeRects(r []Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRects(r)
-		shape.Graphics().StrokeRects(r, c)
+		shape.Graphics().StrokeRects(shape.offsetRects(r), c)
 	})
 }
 
 func (shape *Shape) StrokeColorRects(r []Rect, c []Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRects(r)
-		shape.Graphics().StrokeColorRects(r, c)
+		shape.Graphics().StrokeColorRects(shape.offsetRects(r), c)
 	})
 }
 
 func (shape *Shape) FillRect(r Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRect(r)
-		shape.graphics.FillRect(r, c)
+		shape.graphics.FillRect(shape.offsetRect(r), c)
 	})
 }
 
 func (shape *Shape) FillRects(r []Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRects(r)
-		shape.graphics.FillRects(r, c)
+		shape.graphics.FillRects(shape.offsetRects(r), c)
 	})
 }
 
 func (shape *Shape) FillColorRects(r []Rect, c []Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		r = shape.offsetRects(r)
-		shape.graphics.FillColorRects(r, c)
+		shape.graphics.FillColorRects(shape.offsetRects(r), c)
 	})
 }
 
 func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		p = shape.offsetPoint(p)
-		shape.graphics.DrawText(f, text, c, p)
+		shape.graphics.DrawText(f, text, c, shape.offsetPoint(p))
 	})
 }

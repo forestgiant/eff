@@ -6,7 +6,6 @@ import (
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/component/button"
 	"github.com/forestgiant/eff/sdl"
-	"github.com/forestgiant/eff/util"
 )
 
 type buttonTest struct {
@@ -18,22 +17,29 @@ type buttonTest struct {
 }
 
 func (b *buttonTest) Init(c eff.Canvas) {
-	font, err := c.OpenFont("../assets/fonts/roboto/Roboto-Bold.ttf", 15)
+
+	font, err := c.OpenFont("../assets/fonts/roboto/Roboto-Medium.ttf", 15)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	b.font = font
+	drawMiddleText := func() {
+		textW, textH, err := b.Graphics().GetTextSize(b.font, b.middleText)
+		if err != nil {
+			log.Fatal(err)
+		}
+		textPoint := eff.Point{
+			X: (b.Rect().W - textW) / 2,
+			Y: (b.Rect().H - textH) / 2,
+		}
+		b.DrawText(b.font, b.middleText, eff.Black(), textPoint)
+	}
 
 	clickHandler := func(button *button.Button) {
 		b.Clear()
 		b.middleText = button.Text
-		textPoint, err := util.CenterTextInRect(b.font, b.middleText, b.Rect(), b.Graphics())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		b.DrawText(b.font, b.middleText, eff.Black(), textPoint)
+		drawMiddleText()
 	}
 
 	padding := 20
@@ -46,20 +52,21 @@ func (b *buttonTest) Init(c eff.Canvas) {
 
 	bottomLeftButton := button.NewButton(b.font, "SW", eff.Rect{X: padding, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, bottomLeftButton)
-	c.AddClickable(bottomLeftButton)
+	// c.AddClickable(bottomLeftButton)
 	b.AddChild(bottomLeftButton)
 
 	topRightButton := button.NewButton(b.font, "NE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, topRightButton)
-	c.AddClickable(topRightButton)
+	// c.AddClickable(topRightButton)
 	b.AddChild(topRightButton)
 
 	bottomRightButton := button.NewButton(b.font, "SE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, bottomRightButton)
-	c.AddClickable(bottomRightButton)
+	// c.AddClickable(bottomRightButton)
 	b.AddChild(bottomRightButton)
 
 	b.middleText = "NW"
+	drawMiddleText()
 }
 
 func main() {
@@ -67,6 +74,7 @@ func main() {
 
 	canvas.Run(func() {
 		bt := buttonTest{}
+		bt.SetRect(eff.Rect{X: 0, Y: 0, W: 800, H: 540})
 		canvas.AddChild(&bt)
 		bt.Init(canvas)
 	})

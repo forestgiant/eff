@@ -1,5 +1,11 @@
 package eff
 
+import (
+	"errors"
+	"fmt"
+	"sync"
+)
+
 // Drawable interface describing required methods for drawable objects
 type Drawable interface {
 	Draw(canvas Canvas)
@@ -18,18 +24,27 @@ type Drawable interface {
 
 	SetGraphicsReadyHandler(func())
 
-	AddChild(Drawable)
-	RemoveChild(Drawable)
+	AddChild(Drawable) error
+	RemoveChild(Drawable) error
 	Children() []Drawable
 }
 
 type drawable struct {
+	mu                   sync.RWMutex
 	rect                 Rect
 	parent               Drawable
 	graphics             Graphics
 	children             []Drawable
 	updateHandler        func()
 	graphicsReadyHandler func()
+}
+
+func (d *drawable) init() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.children == nil {
+		d.children = []Drawable{}
+	}
 }
 
 func (d *drawable) SetRect(r Rect) {
@@ -65,10 +80,18 @@ func (d *drawable) Graphics() Graphics {
 
 func (d *drawable) Draw(c Canvas) {}
 
-func (d *drawable) AddChild(c Drawable) {
+func (d *drawable) AddChild(c Drawable) error {
 	if d == nil {
-		return
+		return errors.New("parent is nil")
 	}
+
+	if c == nil {
+		return errors.New("child was nil")
+	}
+
+	d.init()
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
 	c.SetParent(Drawable(d))
 
@@ -77,12 +100,22 @@ func (d *drawable) AddChild(c Drawable) {
 	if d.graphics != nil {
 		c.SetGraphics(d.graphics)
 	}
+
+	return nil
 }
 
-func (d *drawable) RemoveChild(c Drawable) {
+func (d *drawable) RemoveChild(c Drawable) error {
 	if d == nil {
-		return
+		return errors.New("parent is nil")
 	}
+
+	if c == nil {
+		return errors.New("child is nil")
+	}
+
+	d.init()
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
 	index := -1
 	for i, child := range d.children {
@@ -92,16 +125,19 @@ func (d *drawable) RemoveChild(c Drawable) {
 		}
 	}
 	if index == -1 {
-		return
+		return fmt.Errorf("Could not find %v to remove", c)
 	}
 
 	d.children[index].SetParent(nil)
 	d.children[index].SetGraphics(nil)
 
 	d.children = append(d.children[:index], d.children[index+1:]...)
+	return nil
 }
 
 func (d *drawable) Children() []Drawable {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	return d.children
 }
 

@@ -352,8 +352,8 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 		}
 
 		p := point{}
-		p.X = int32(float64(w))
-		p.Y = int32(float64(h))
+		p.X = int32(float64(w) / graphics.scale)
+		p.Y = int32(float64(h) / graphics.scale)
 
 		sizeChan <- p
 	}

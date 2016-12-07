@@ -8,34 +8,59 @@ import (
 	"github.com/forestgiant/eff/sdl"
 )
 
-type myShape struct{}
+type myShape struct {
+	eff.Shape
+}
 
-func (m *myShape) init(canvas eff.Canvas) {
-	childCount := 0
-	addChild := func(parent *eff.Shape) *eff.Shape {
+func (m *myShape) init() {
+	makeChild := func() *eff.Shape {
+		parent := &eff.Shape{}
+		parent.SetRect(eff.Rect{
+			X: 0,
+			Y: 0,
+			W: 100,
+			H: 100,
+		})
+		parent.SetBackgroundColor(eff.Black())
+		pVec := eff.Point{X: rand.Intn(9) + 1, Y: rand.Intn(9) + 1}
+
+		parent.SetUpdateHandler(func() {
+			x := parent.Rect().X + pVec.X
+			y := parent.Rect().Y + pVec.Y
+
+			if x <= 0 || x >= (parent.Parent().Rect().W-parent.Rect().W) {
+				pVec.X *= -1
+			}
+			if y <= 0 || y >= (parent.Parent().Rect().H-parent.Rect().H) {
+				pVec.Y *= -1
+			}
+
+			parent.SetRect(eff.Rect{
+				X: x,
+				Y: y,
+				W: parent.Rect().W,
+				H: parent.Rect().H,
+			})
+		})
+
 		child := &eff.Shape{}
 		child.SetRect(eff.Rect{
 			X: 0,
 			Y: 0,
-			W: int(float64(parent.Rect().W) / 1.1),
-			H: int(float64(parent.Rect().H) / 1.1),
+			W: 5,
+			H: 5,
 		})
-		color := eff.White()
-		if childCount%2 == 0 {
-			color = eff.Black()
-		}
-		color = eff.RandomColor()
-		child.SetBackgroundColor(color)
+		child.SetBackgroundColor(eff.White())
 		parent.AddChild(child)
-		vec := eff.Point{X: 1, Y: 1}
+		cVec := eff.Point{X: rand.Intn(4) + 1, Y: rand.Intn(4) + 1}
 		child.SetUpdateHandler(func() {
-			x := child.Rect().X + vec.X
-			y := child.Rect().Y + vec.Y
+			x := child.Rect().X + cVec.X
+			y := child.Rect().Y + cVec.Y
 			if x <= 0 || x >= (child.Parent().Rect().W-child.Rect().W) {
-				vec.X *= -1
+				cVec.X *= -1
 			}
 			if y <= 0 || y >= (child.Parent().Rect().H-child.Rect().H) {
-				vec.Y *= -1
+				cVec.Y *= -1
 			}
 
 			child.SetRect(eff.Rect{
@@ -46,22 +71,17 @@ func (m *myShape) init(canvas eff.Canvas) {
 			})
 		})
 
-		childCount++
-
-		return child
+		return parent
 	}
-
-	p := &eff.Shape{}
-	p.SetRect(eff.Rect{
+	m.SetRect(eff.Rect{
 		X: 0,
 		Y: 0,
 		W: 800,
 		H: 600,
 	})
-	p.SetBackgroundColor(eff.White())
-	canvas.AddChild(p)
-	for i := 0; i < 50; i++ {
-		p = addChild(p)
+
+	for i := 0; i < 5; i++ {
+		m.AddChild(makeChild())
 	}
 
 }
@@ -71,6 +91,7 @@ func main() {
 	canvas.Run(func() {
 		rand.Seed(time.Now().UnixNano())
 		m := myShape{}
-		m.init(canvas)
+		m.init()
+		canvas.AddChild(&m)
 	})
 }

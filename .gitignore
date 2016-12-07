@@ -49,5 +49,7 @@ boilerplate
 !boilerplate/
 text-view
 !text-view/
+children
+!children/
 
 

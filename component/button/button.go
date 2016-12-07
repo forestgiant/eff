@@ -55,7 +55,7 @@ type Button struct {
 
 // Hitbox returns the hitbox rect of the button, this is the same as Button.Rect
 func (b *Button) Hitbox() eff.Rect {
-	return b.Rect()
+	return b.ParentOffsetRect()
 }
 
 // MouseDown function that is called when any mouse button is pressed down while the cursor is inside the hitbox

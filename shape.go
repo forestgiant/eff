@@ -31,7 +31,7 @@ type Shape struct {
 }
 
 func (shape *Shape) offsetPoint(p Point) Point {
-	pr := shape.parentOffsetRect()
+	pr := shape.ParentOffsetRect()
 	return Point{
 		X: p.X + pr.X,
 		Y: p.Y + pr.Y,
@@ -39,7 +39,7 @@ func (shape *Shape) offsetPoint(p Point) Point {
 }
 
 func (shape *Shape) offsetPoints(points []Point) []Point {
-	pr := shape.parentOffsetRect()
+	pr := shape.ParentOffsetRect()
 	var offsetPoints []Point
 	for _, p := range points {
 		offsetPoints = append(offsetPoints, Point{
@@ -52,7 +52,7 @@ func (shape *Shape) offsetPoints(points []Point) []Point {
 }
 
 func (shape *Shape) offsetRect(r Rect) Rect {
-	pr := shape.parentOffsetRect()
+	pr := shape.ParentOffsetRect()
 	return Rect{
 		X: r.X + pr.X,
 		Y: r.Y + pr.Y,
@@ -62,7 +62,7 @@ func (shape *Shape) offsetRect(r Rect) Rect {
 }
 
 func (shape *Shape) offsetRects(rects []Rect) []Rect {
-	pr := shape.parentOffsetRect()
+	pr := shape.ParentOffsetRect()
 	var offsetRects []Rect
 	for _, r := range rects {
 		offsetRects = append(offsetRects, Rect{
@@ -75,7 +75,7 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 	return offsetRects
 }
 
-func (shape *Shape) parentOffsetRect() Rect {
+func (shape *Shape) ParentOffsetRect() Rect {
 	r := shape.Rect()
 	if shape.parent != nil {
 		r.X += shape.parent.Rect().X
@@ -86,7 +86,7 @@ func (shape *Shape) parentOffsetRect() Rect {
 }
 
 func (shape *Shape) Draw(canvas Canvas) {
-	shape.graphics.FillRect(shape.parentOffsetRect(), shape.bgColor)
+	shape.graphics.FillRect(shape.ParentOffsetRect(), shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
 		fn()

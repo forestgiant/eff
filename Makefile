@@ -14,6 +14,7 @@ ifeq ($(OS),Windows_NT)
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/sound-check/sound-check examples/sound-check/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/sound-player/sound-player examples/sound-player/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/children/children examples/children/main.go
+	CGO_ENABLED=1 GOARCH=386 go build -o examples/clipping/clipping examples/clipping/main.go
 else
 	go build -o examples/text-view/text-view examples/text-view/main.go
 	go build -o examples/animating-text/animating-text examples/animating-text/main.go
@@ -27,6 +28,7 @@ else
 	go build -o examples/sound-check/sound-check examples/sound-check/main.go
 	go build -o examples/sound-player/sound-player examples/sound-player/main.go
 	go build -o examples/children/children examples/children/main.go
+	go build -o examples/clipping/clipping examples/clipping/main.go
 endif
 
 	

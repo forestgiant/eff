@@ -51,5 +51,6 @@ text-view
 !text-view/
 children
 !children/
-
+clipping
+!clipping/
 

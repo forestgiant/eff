@@ -219,17 +219,17 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, handler := range c.keyUpHandlers {
-							handler(getKeyName(t.Keysym.Sym))
+							go handler(getKeyName(t.Keysym.Sym))
 						}
 						for _, handler := range c.keyUpEnumHandlers {
-							handler(t.Keysym.Sym)
+							go handler(t.Keysym.Sym)
 						}
 					case *keyDownEvent:
 						for _, handler := range c.keyDownHandlers {
-							handler(getKeyName(t.Keysym.Sym))
+							go handler(getKeyName(t.Keysym.Sym))
 						}
 						for _, handler := range c.keyDownEnumHandlers {
-							handler(t.Keysym.Sym)
+							go handler(t.Keysym.Sym)
 						}
 					case *mouseDownEvent:
 						leftState := t.Button == mouseLeft
@@ -242,7 +242,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, handler := range c.mouseDownHandlers {
-							handler(leftState, middleState, rightState)
+							go handler(leftState, middleState, rightState)
 						}
 
 						for _, clickable := range c.clickables {
@@ -252,7 +252,7 @@ func (c *Canvas) Run(setup func()) {
 
 							hb := clickable.Hitbox()
 							if hb.Inside(mousePoint) {
-								clickable.MouseDown(leftState, middleState, rightState)
+								go clickable.MouseDown(leftState, middleState, rightState)
 							}
 						}
 
@@ -267,7 +267,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, handler := range c.mouseUpHandlers {
-							handler(leftState, middleState, rightState)
+							go handler(leftState, middleState, rightState)
 						}
 
 						for _, clickable := range c.clickables {
@@ -277,7 +277,7 @@ func (c *Canvas) Run(setup func()) {
 
 							hb := clickable.Hitbox()
 							if hb.Inside(mousePoint) {
-								clickable.MouseUp(leftState, middleState, rightState)
+								go clickable.MouseUp(leftState, middleState, rightState)
 							}
 						}
 					case *mouseMotionEvent:
@@ -287,7 +287,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, handler := range c.mouseMoveHandlers {
-							handler(mousePoint.X, mousePoint.Y)
+							go handler(mousePoint.X, mousePoint.Y)
 						}
 
 						for _, clickable := range c.clickables {
@@ -298,18 +298,18 @@ func (c *Canvas) Run(setup func()) {
 							hb := clickable.Hitbox()
 							if hb.Inside(mousePoint) {
 								if !clickable.IsMouseOver() {
-									clickable.MouseOver()
+									go clickable.MouseOver()
 								}
 							} else {
 								if clickable.IsMouseOver() {
-									clickable.MouseOut()
+									go clickable.MouseOut()
 								}
 							}
 						}
 
 					case *mouseWheelEvent:
 						for _, handler := range c.mouseWheelHandlers {
-							handler(int(t.X), int(t.Y))
+							go handler(int(t.X), int(t.Y))
 						}
 					}
 

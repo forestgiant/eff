@@ -1,7 +1,6 @@
 package button
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/forestgiant/eff"
@@ -61,7 +60,6 @@ func (b *Button) Hitbox() eff.Rect {
 
 // MouseDown function that is called when any mouse button is pressed down while the cursor is inside the hitbox
 func (b *Button) MouseDown(leftState bool, middleState bool, rightState bool) {
-	fmt.Println("button mouse down")
 	b.mouseDown = true
 
 	b.drawButton()
@@ -69,7 +67,6 @@ func (b *Button) MouseDown(leftState bool, middleState bool, rightState bool) {
 
 // MouseUp function that is called when any mouse button is released while the cursor is inside the hitbox
 func (b *Button) MouseUp(leftState bool, middleState bool, rightState bool) {
-	fmt.Println("button mouse up")
 	if b.mouseDown {
 		b.mouseDown = false
 		b.ClickHandler(b)
@@ -80,7 +77,6 @@ func (b *Button) MouseUp(leftState bool, middleState bool, rightState bool) {
 
 // MouseOver function that is called when the mouse moves into the hitbox
 func (b *Button) MouseOver() {
-	fmt.Println("button mouse over")
 	b.mouseOver = true
 
 	b.drawButton()
@@ -88,7 +84,6 @@ func (b *Button) MouseOver() {
 
 // MouseOut function that is called when the mouse moves out of the hitbox
 func (b *Button) MouseOut() {
-	fmt.Println("button mouse out")
 	b.mouseOver = false
 	b.mouseDown = false
 
@@ -97,12 +92,10 @@ func (b *Button) MouseOut() {
 
 func (b *Button) drawButton() {
 	b.Clear()
-	fmt.Println("done clearing")
 	text, err := util.EllipseText(b.font, b.Text, b.Rect().W, b.Graphics())
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("done ellipsing text")
 
 	textW, textH, err := b.Graphics().GetTextSize(b.font, text)
 	if err != nil {
@@ -113,8 +106,6 @@ func (b *Button) drawButton() {
 		X: (b.Rect().W - textW) / 2,
 		Y: (b.Rect().H - textH) / 2,
 	}
-
-	fmt.Println("done sizing text")
 
 	bgColor := b.defaultBGColor
 	textColor := b.defaultTextColor
@@ -128,7 +119,6 @@ func (b *Button) drawButton() {
 
 	b.SetBackgroundColor(bgColor)
 	b.DrawText(b.font, text, textColor, textPoint)
-	fmt.Println("done draw button")
 }
 
 // IsMouseOver function that returns true if the mouse cursor is currently inside the hitbox

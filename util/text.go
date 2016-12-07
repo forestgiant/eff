@@ -2,7 +2,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"strings"
@@ -24,9 +23,7 @@ func EllipseText(font eff.Font, text string, width int, g eff.Graphics) (string,
 		return "", errors.New("EllipseText Error: Graphics is nil")
 	}
 
-	fmt.Println("Starting the text size query ")
 	textW, _, err := g.GetTextSize(font, text)
-	fmt.Println("Done getting the text size", textW)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +33,6 @@ func EllipseText(font eff.Font, text string, width int, g eff.Graphics) (string,
 	}
 
 	for textW > width {
-		fmt.Println("Looping through the text")
 		text = text[:len(text)-1]
 		textW, _, err = g.GetTextSize(font, text+"...")
 		if err != nil {

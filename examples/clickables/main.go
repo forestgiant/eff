@@ -52,17 +52,17 @@ func (b *buttonTest) Init(c eff.Canvas) {
 
 	bottomLeftButton := button.NewButton(b.font, "SW", eff.Rect{X: padding, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, bottomLeftButton)
-	// c.AddClickable(bottomLeftButton)
+	c.AddClickable(bottomLeftButton)
 	b.AddChild(bottomLeftButton)
 
 	topRightButton := button.NewButton(b.font, "NE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: padding, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, topRightButton)
-	// c.AddClickable(topRightButton)
+	c.AddClickable(topRightButton)
 	b.AddChild(topRightButton)
 
 	bottomRightButton := button.NewButton(b.font, "SE", eff.Rect{X: c.Rect().W - padding - buttonWidth, Y: c.Rect().H - padding - buttonHeight, W: buttonWidth, H: buttonHeight}, clickHandler)
 	b.buttons = append(b.buttons, bottomRightButton)
-	// c.AddClickable(bottomRightButton)
+	c.AddClickable(bottomRightButton)
 	b.AddChild(bottomRightButton)
 
 	b.middleText = "NW"

@@ -344,9 +344,10 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 
 	errChan := make(chan error)
 	sizeChan := make(chan point)
-
 	mainThread <- func() {
+
 		w, h, err := sizeText(f, text)
+
 		if err != nil {
 			errChan <- err
 		}

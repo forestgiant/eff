@@ -18,8 +18,8 @@ func (m *myShape) init() {
 		parent.SetRect(eff.Rect{
 			X: 0,
 			Y: 0,
-			W: 100,
-			H: 100,
+			W: 60,
+			H: 60,
 		})
 		parent.SetBackgroundColor(eff.Black())
 		pVec := eff.Point{X: rand.Intn(9) + 1, Y: rand.Intn(9) + 1}
@@ -80,7 +80,7 @@ func (m *myShape) init() {
 		H: 600,
 	})
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 20; i++ {
 		m.AddChild(makeChild())
 	}
 

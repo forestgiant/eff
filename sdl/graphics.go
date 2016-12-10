@@ -3,6 +3,7 @@ package sdl
 import (
 	"errors"
 	"fmt"
+	"math"
 
 	"github.com/forestgiant/eff"
 )
@@ -50,18 +51,60 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 		return
 	}
 
+	clipRect := eff.Rect{
+		X: 0,
+		Y: 0,
+		W: child.W,
+		H: child.H,
+	}
+
+	if shouldClip {
+		newX := 0
+		newY := 0
+		newW := child.W
+		newH := child.H
+		if child.X < 0 {
+			newX = child.X * -1
+		}
+
+		if (child.X + child.W) > parent.W {
+			newW = child.W - ((child.X + child.W) - parent.W)
+		}
+
+		if child.Y < 0 {
+			newY = child.Y * -1
+		}
+
+		if (child.Y + child.H) > parent.H {
+			newH = child.H - ((child.Y + child.H) - parent.H)
+		}
+
+		clipRect.X = newX
+		clipRect.Y = newY
+		clipRect.W = newW
+		clipRect.H = newH
+	}
+
 	srcRect := &rect{
-		X: int32(0),
-		Y: int32(0),
-		W: int32(child.W),
-		H: int32(child.H),
+		X: int32(clipRect.X),
+		Y: int32(clipRect.Y),
+		W: int32(clipRect.W),
+		H: int32(clipRect.H),
 	}
 
 	destRect := &rect{
-		X: int32(child.X),
-		Y: int32(child.Y),
+		X: int32(child.X + parent.X),
+		Y: int32(child.Y + parent.Y),
 		W: int32(child.W),
 		H: int32(child.H),
+	}
+	if shouldClip {
+		destRect = &rect{
+			X: int32(int(math.Max(float64(child.X), 0)) + parent.X),
+			Y: int32(int(math.Max(float64(child.Y), 0)) + parent.Y),
+			W: int32(int(math.Min(float64(clipRect.W), float64(parent.W)))),
+			H: int32(int(math.Min(float64(clipRect.H), float64(parent.H)))),
+		}
 	}
 
 	mainThread <- func() {
@@ -70,7 +113,7 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 			fmt.Println(err)
 		}
 
-		fmt.Println(srcRect, destRect)
+		// fmt.Println(srcRect, destRect)
 		err = graphics.renderer.renderCopy(graphics.texture, srcRect, destRect)
 		if err != nil {
 			fmt.Println(err)

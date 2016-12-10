@@ -21,30 +21,33 @@ type shape interface {
 	FillRect(Rect, Color)
 	FillRects([]Rect, Color)
 	FillColorRects([]Rect, []Color)
+
+	ShouldClip() bool
+	SetShouldClip(bool)
 }
 
 type Shape struct {
 	drawable
 
-	bgColor   Color
-	drawCalls []func()
+	bgColor    Color
+	drawCalls  []func()
+	shouldClip bool
 }
 
 func (shape *Shape) offsetPoint(p Point) Point {
-	pr := shape.ParentOffsetRect()
+
 	return Point{
-		X: p.X + pr.X,
-		Y: p.Y + pr.Y,
+		X: p.X,
+		Y: p.Y,
 	}
 }
 
 func (shape *Shape) offsetPoints(points []Point) []Point {
-	pr := shape.ParentOffsetRect()
 	var offsetPoints []Point
 	for _, p := range points {
 		offsetPoints = append(offsetPoints, Point{
-			X: p.X + pr.X,
-			Y: p.Y + pr.Y,
+			X: p.X,
+			Y: p.Y,
 		})
 	}
 
@@ -52,22 +55,20 @@ func (shape *Shape) offsetPoints(points []Point) []Point {
 }
 
 func (shape *Shape) offsetRect(r Rect) Rect {
-	pr := shape.ParentOffsetRect()
 	return Rect{
-		X: r.X + pr.X,
-		Y: r.Y + pr.Y,
+		X: r.X,
+		Y: r.Y,
 		W: r.W,
 		H: r.H,
 	}
 }
 
 func (shape *Shape) offsetRects(rects []Rect) []Rect {
-	pr := shape.ParentOffsetRect()
 	var offsetRects []Rect
 	for _, r := range rects {
 		offsetRects = append(offsetRects, Rect{
-			X: r.X + pr.X,
-			Y: r.Y + pr.Y,
+			X: r.X,
+			Y: r.Y,
 			W: r.W,
 			H: r.H,
 		})
@@ -75,19 +76,9 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 	return offsetRects
 }
 
-func (shape *Shape) ParentOffsetRect() Rect {
-	r := shape.Rect()
-	if shape.parent != nil {
-		r.X += shape.parent.Rect().X
-		r.Y += shape.parent.Rect().Y
-	}
-
-	return r
-}
-
 func (shape *Shape) Draw(canvas Canvas) {
 	shape.Graphics().Begin(shape.Rect())
-	shape.graphics.FillRect(shape.Rect(), shape.bgColor)
+	shape.graphics.FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
 		fn()
@@ -96,7 +87,7 @@ func (shape *Shape) Draw(canvas Canvas) {
 	if shape.Parent() != nil {
 		pRect = shape.Parent().Rect()
 	}
-	shape.Graphics().End(false, shape.Rect(), pRect)
+	shape.Graphics().End(shape.shouldClip, shape.Rect(), pRect)
 
 	for _, child := range shape.children {
 		child.Draw(canvas)
@@ -185,4 +176,12 @@ func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 	shape.drawCalls = append(shape.drawCalls, func() {
 		shape.graphics.DrawText(f, text, c, shape.offsetPoint(p))
 	})
+}
+
+func (shape *Shape) ShouldClip() bool {
+	return shape.shouldClip
+}
+
+func (shape *Shape) SetShouldClip(shouldClip bool) {
+	shape.shouldClip = shouldClip
 }

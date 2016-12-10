@@ -184,7 +184,7 @@ func (c *Canvas) Run(setup func()) {
 			}
 
 			c.sdlGraphics = NewGraphics(renderer, scale)
-			c.sdlGraphics.renderer.setDrawBlendMode(blendModeBlend)
+
 			c.sdlGraphics.renderer.clear()
 
 			c.SetGraphics(c.sdlGraphics)
@@ -314,7 +314,13 @@ func (c *Canvas) Run(setup func()) {
 					}
 
 				}
-
+				bgColor := c.BackgroundColor()
+				c.sdlGraphics.renderer.setDrawColor(
+					uint8(bgColor.R),
+					uint8(bgColor.G),
+					uint8(bgColor.B),
+					uint8(bgColor.A),
+				)
 				c.sdlGraphics.renderer.clear()
 			}
 
@@ -343,8 +349,9 @@ func (c *Canvas) Run(setup func()) {
 					}
 
 				}
-
+				c.window.updateSurface()
 				c.sdlGraphics.renderer.present()
+
 				enforceFPS()
 				printFPS()
 

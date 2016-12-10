@@ -86,11 +86,17 @@ func (shape *Shape) ParentOffsetRect() Rect {
 }
 
 func (shape *Shape) Draw(canvas Canvas) {
-	shape.graphics.FillRect(shape.ParentOffsetRect(), shape.bgColor)
+	shape.Graphics().Begin(shape.Rect())
+	shape.graphics.FillRect(shape.Rect(), shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
 		fn()
 	}
+	pRect := shape.Rect()
+	if shape.Parent() != nil {
+		pRect = shape.Parent().Rect()
+	}
+	shape.Graphics().End(false, shape.Rect(), pRect)
 
 	for _, child := range shape.children {
 		child.Draw(canvas)

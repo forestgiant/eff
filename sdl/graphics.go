@@ -10,6 +10,7 @@ import (
 type Graphics struct {
 	renderer *renderer
 	scale    float64
+	texture  *texture
 }
 
 func NewGraphics(r *renderer, s float64) *Graphics {
@@ -18,6 +19,67 @@ func NewGraphics(r *renderer, s float64) *Graphics {
 	g.scale = s
 
 	return &g
+}
+
+func (graphics *Graphics) Begin(r eff.Rect) {
+	w := int(float64(r.W) * graphics.scale)
+	h := int(float64(r.H) * graphics.scale)
+	// fmt.Println(w, h)
+	mainThread <- func() {
+		var err error
+		graphics.texture, err = graphics.renderer.createTexture(w, h)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = graphics.renderer.setTextureBlendMode(graphics.texture, blendModeBlend)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = graphics.renderer.setTarget(graphics.texture)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) {
+	if graphics.texture == nil {
+		fmt.Println("Cannot end graphics, texture is nil")
+		return
+	}
+
+	srcRect := &rect{
+		X: int32(0),
+		Y: int32(0),
+		W: int32(child.W),
+		H: int32(child.H),
+	}
+
+	destRect := &rect{
+		X: int32(child.X),
+		Y: int32(child.Y),
+		W: int32(child.W),
+		H: int32(child.H),
+	}
+
+	mainThread <- func() {
+		err := graphics.renderer.setTarget(nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Println(srcRect, destRect)
+		err = graphics.renderer.renderCopy(graphics.texture, srcRect, destRect)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		graphics.texture.destroy()
+		graphics.texture = nil
+
+	}
 }
 
 // DrawPoint draw a point on the screen specifying what color
@@ -324,7 +386,7 @@ func (graphics *Graphics) DrawText(font eff.Font, text string, col eff.Color, po
 
 		freeSurface(s)
 
-		err = graphics.renderer.renderCopy(t, r1, r)
+		err = graphics.renderer.renderCopy(t, &r1, &r)
 		if err != nil {
 			fmt.Println(err)
 		}

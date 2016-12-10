@@ -17,4 +17,7 @@ type Graphics interface {
 
 	DrawText(Font, string, Color, Point) error
 	GetTextSize(Font, string) (int, int, error)
+
+	Begin(Rect)
+	End(bool, Rect, Rect)
 }

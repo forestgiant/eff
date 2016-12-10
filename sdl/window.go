@@ -65,3 +65,13 @@ func (w *Window) getDrawableSize() (int, int) {
 func (w *Window) destroy() {
 	C.SDL_DestroyWindow(w.cptr())
 }
+
+// UpdateWindowSurface (https://wiki.libsdl.org/SDL_UpdateWindowSurface)
+func (w *Window) updateSurface() error {
+	err := C.SDL_UpdateWindowSurface(w.cptr())
+	if err != 0 {
+		return getError()
+	}
+
+	return nil
+}

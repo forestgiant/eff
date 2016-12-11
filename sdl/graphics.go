@@ -51,6 +51,16 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 		return
 	}
 
+	child.X = int(float64(child.X) * graphics.scale)
+	child.Y = int(float64(child.Y) * graphics.scale)
+	child.W = int(float64(child.W) * graphics.scale)
+	child.H = int(float64(child.H) * graphics.scale)
+
+	parent.X = int(float64(parent.X) * graphics.scale)
+	parent.Y = int(float64(parent.Y) * graphics.scale)
+	parent.W = int(float64(parent.W) * graphics.scale)
+	parent.H = int(float64(parent.H) * graphics.scale)
+
 	clipRect := eff.Rect{
 		X: 0,
 		Y: 0,

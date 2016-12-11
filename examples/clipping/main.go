@@ -29,7 +29,7 @@ func (c *colorMarquee) init(f eff.Font) {
 		H: parentSize,
 	})
 	c.SetBackgroundColor(eff.Black())
-	colorCount := 5
+	colorCount := 10
 	newColor := func() *eff.Shape {
 		color := &eff.Shape{}
 		color.SetRect(eff.Rect{

@@ -3,7 +3,6 @@ package sdl
 import (
 	"errors"
 	"fmt"
-	"math"
 
 	"github.com/forestgiant/eff"
 )
@@ -11,14 +10,13 @@ import (
 type Graphics struct {
 	renderer *renderer
 	scale    float64
-	texture  *texture
+	textures []*texture
 }
 
 func NewGraphics(r *renderer, s float64) *Graphics {
 	g := Graphics{}
 	g.renderer = r
 	g.scale = s
-
 	return &g
 }
 
@@ -27,29 +25,30 @@ func (graphics *Graphics) Begin(r eff.Rect) {
 	h := int(float64(r.H) * graphics.scale)
 	// fmt.Println(w, h)
 	mainThread <- func() {
-		var err error
-		graphics.texture, err = graphics.renderer.createTexture(w, h)
+		texture, err := graphics.renderer.createTexture(w, h)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Create Texture error", w, h, err)
 		}
 
-		err = graphics.renderer.setTextureBlendMode(graphics.texture, blendModeBlend)
+		graphics.textures = append(graphics.textures, texture)
+
+		err = graphics.renderer.setTextureBlendMode(texture, blendModeBlend)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Set texture blend mode error", err)
 		}
 
-		err = graphics.renderer.setTarget(graphics.texture)
+		err = graphics.renderer.setTarget(texture)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Set target error", err)
 		}
 	}
 }
 
 func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) {
-	if graphics.texture == nil {
-		fmt.Println("Cannot end graphics, texture is nil")
-		return
-	}
+	// if graphics.currentTexture == nil {
+	// 	fmt.Println("Cannot end graphics, currentTexture is nil")
+	// 	return
+	// }
 
 	child.X = int(float64(child.X) * graphics.scale)
 	child.Y = int(float64(child.Y) * graphics.scale)
@@ -68,32 +67,32 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 		H: child.H,
 	}
 
-	if shouldClip {
-		newX := 0
-		newY := 0
-		newW := child.W
-		newH := child.H
-		if child.X < 0 {
-			newX = child.X * -1
-		}
+	// if shouldClip {
+	// 	newX := 0
+	// 	newY := 0
+	// 	newW := child.W
+	// 	newH := child.H
+	// 	if child.X < 0 {
+	// 		newX = child.X * -1
+	// 	}
 
-		if (child.X + child.W) > parent.W {
-			newW = child.W - ((child.X + child.W) - parent.W)
-		}
+	// 	if (child.X + child.W) > parent.W {
+	// 		newW = child.W - ((child.X + child.W) - parent.W)
+	// 	}
 
-		if child.Y < 0 {
-			newY = child.Y * -1
-		}
+	// 	if child.Y < 0 {
+	// 		newY = child.Y * -1
+	// 	}
 
-		if (child.Y + child.H) > parent.H {
-			newH = child.H - ((child.Y + child.H) - parent.H)
-		}
+	// 	if (child.Y + child.H) > parent.H {
+	// 		newH = child.H - ((child.Y + child.H) - parent.H)
+	// 	}
 
-		clipRect.X = newX
-		clipRect.Y = newY
-		clipRect.W = newW
-		clipRect.H = newH
-	}
+	// 	clipRect.X = newX
+	// 	clipRect.Y = newY
+	// 	clipRect.W = newW
+	// 	clipRect.H = newH
+	// }
 
 	srcRect := &rect{
 		X: int32(clipRect.X),
@@ -103,35 +102,40 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 	}
 
 	destRect := &rect{
-		X: int32(child.X + parent.X),
-		Y: int32(child.Y + parent.Y),
+		X: int32(child.X),
+		Y: int32(child.Y),
 		W: int32(child.W),
 		H: int32(child.H),
 	}
-	if shouldClip {
-		destRect = &rect{
-			X: int32(int(math.Max(float64(child.X), 0)) + parent.X),
-			Y: int32(int(math.Max(float64(child.Y), 0)) + parent.Y),
-			W: int32(int(math.Min(float64(clipRect.W), float64(parent.W)))),
-			H: int32(int(math.Min(float64(clipRect.H), float64(parent.H)))),
-		}
-	}
+	// if shouldClip {
+	// 	destRect = &rect{
+	// 		X: int32(int(math.Max(float64(child.X), 0))),
+	// 		Y: int32(int(math.Max(float64(child.Y), 0))),
+	// 		W: int32(int(math.Min(float64(clipRect.W), float64(parent.W)))),
+	// 		H: int32(int(math.Min(float64(clipRect.H), float64(parent.H)))),
+	// 	}
+	// }
 
 	mainThread <- func() {
-		err := graphics.renderer.setTarget(nil)
-		if err != nil {
-			fmt.Println(err)
+		var targetTexture *texture
+		if len(graphics.textures) > 1 {
+			targetTexture = graphics.textures[len(graphics.textures)-2]
 		}
 
+		err := graphics.renderer.setTarget(targetTexture)
+		if err != nil {
+			fmt.Println("End setTarget error", err)
+		}
+
+		texture := graphics.textures[len(graphics.textures)-1]
+		graphics.textures = graphics.textures[:len(graphics.textures)-1]
 		// fmt.Println(srcRect, destRect)
-		err = graphics.renderer.renderCopy(graphics.texture, srcRect, destRect)
+		err = graphics.renderer.renderCopy(texture, srcRect, destRect)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("End renderCopy error", err)
 		}
 
-		graphics.texture.destroy()
-		graphics.texture = nil
-
+		texture.destroy()
 	}
 }
 

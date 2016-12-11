@@ -21,17 +21,13 @@ type shape interface {
 	FillRect(Rect, Color)
 	FillRects([]Rect, Color)
 	FillColorRects([]Rect, []Color)
-
-	ShouldClip() bool
-	SetShouldClip(bool)
 }
 
 type Shape struct {
 	drawable
 
-	bgColor    Color
-	drawCalls  []func()
-	shouldClip bool
+	bgColor   Color
+	drawCalls []func()
 }
 
 func (shape *Shape) offsetPoint(p Point) Point {
@@ -86,12 +82,19 @@ func (shape *Shape) Draw(canvas Canvas) {
 	pRect := shape.Rect()
 	if shape.Parent() != nil {
 		pRect = shape.Parent().Rect()
+		// s := shape.Parent().Parent()
+		// for s != nil {
+		// 	pRect.X += s.Rect().X
+		// 	pRect.Y += s.Rect().Y
+		// 	s = s.Parent()
+		// }
 	}
-	shape.Graphics().End(shape.shouldClip, shape.Rect(), pRect)
 
 	for _, child := range shape.children {
 		child.Draw(canvas)
 	}
+
+	shape.Graphics().End(shape.shouldClip, shape.Rect(), pRect)
 }
 
 func (shape *Shape) SetBackgroundColor(c Color) {
@@ -176,12 +179,4 @@ func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 	shape.drawCalls = append(shape.drawCalls, func() {
 		shape.graphics.DrawText(f, text, c, shape.offsetPoint(p))
 	})
-}
-
-func (shape *Shape) ShouldClip() bool {
-	return shape.shouldClip
-}
-
-func (shape *Shape) SetShouldClip(shouldClip bool) {
-	shape.shouldClip = shouldClip
 }

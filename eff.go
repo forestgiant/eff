@@ -60,7 +60,7 @@ func RandomColor() Color {
 		R: rand.Intn(0xFF),
 		G: rand.Intn(0xFF),
 		B: rand.Intn(0xFF),
-		A: rand.Intn(0xFF),
+		A: 0xFF,
 	}
 }
 

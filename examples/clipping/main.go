@@ -2,87 +2,94 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
+	"time"
 
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
 )
 
 const (
-	windowW         = 800
-	windowH         = 600
-	parentSize      = 300
-	biggerChildSize = 500
+	windowW    = 800
+	windowH    = 600
+	parentSize = 300
 )
 
-type myShape struct {
+type colorMarquee struct {
 	eff.Shape
-	biggerChild *eff.Shape
+	colors []*eff.Shape
 }
 
-func (m *myShape) init() {
-	m.SetRect(eff.Rect{
+func (c *colorMarquee) init(f eff.Font) {
+	c.SetRect(eff.Rect{
 		X: (windowW - parentSize) / 2,
 		Y: (windowH - parentSize) / 2,
 		W: parentSize,
 		H: parentSize,
 	})
-	m.SetBackgroundColor(eff.Black())
-
-	m.biggerChild = &eff.Shape{}
-	m.biggerChild.SetRect(eff.Rect{
-		X: (parentSize - biggerChildSize) / 2,
-		Y: (parentSize - windowH) / 2,
-		W: biggerChildSize,
-		H: windowH,
-	})
-	m.biggerChild.SetBackgroundColor(eff.Color{R: 0x00, G: 0xFF, B: 0x00, A: 0x66})
-	m.AddChild(m.biggerChild)
-
-	dot := &eff.Shape{}
-	dot.SetRect(eff.Rect{
-		X: 0,
-		Y: 0,
-		W: 5,
-		H: 5,
-	})
-	dot.SetBackgroundColor(eff.Black())
-	m.biggerChild.AddChild(dot)
-	vec := eff.Point{X: 10, Y: 10}
-	dot.SetUpdateHandler(func() {
-		x := dot.Rect().X + vec.X
-		y := dot.Rect().Y + vec.Y
-		if x <= 0 || x >= (dot.Parent().Rect().W-dot.Rect().W) {
-			vec.X *= -1
-		}
-		if y <= 0 || y >= (dot.Parent().Rect().H-dot.Rect().H) {
-			vec.Y *= -1
-		}
-
-		dot.SetRect(eff.Rect{
-			X: x,
-			Y: y,
-			W: dot.Rect().W,
-			H: dot.Rect().H,
+	c.SetBackgroundColor(eff.Black())
+	colorCount := 5
+	newColor := func() *eff.Shape {
+		color := &eff.Shape{}
+		color.SetRect(eff.Rect{
+			X: 0,
+			Y: 0,
+			W: c.Rect().W,
+			H: int(float64(c.Rect().H) / float64(colorCount)),
 		})
-	})
+		color.SetBackgroundColor(eff.RandomColor())
+		return color
+	}
+
+	for i := 0; i < colorCount+1; i++ {
+		color := newColor()
+		color.SetRect(eff.Rect{
+			X: color.Rect().X,
+			Y: i * color.Rect().H,
+			W: color.Rect().W,
+			H: color.Rect().H,
+		})
+
+		color.SetUpdateHandler(func() {
+			y := color.Rect().Y - 1
+			if y < color.Rect().H*-1 {
+				y = (colorCount) * color.Rect().H
+			}
+
+			color.SetRect(eff.Rect{
+				X: color.Rect().X,
+				Y: y,
+				W: color.Rect().W,
+				H: color.Rect().H,
+			})
+		})
+
+		textW, textH, err := c.Graphics().GetTextSize(f, fmt.Sprintf("%d", i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		textPoint := eff.Point{
+			X: (color.Rect().W - textW) / 2,
+			Y: (color.Rect().H - textH) / 2,
+		}
+		color.DrawText(f, fmt.Sprintf("%d", i), eff.White(), textPoint)
+		c.AddChild(color)
+	}
 }
 
 func main() {
 	canvas := sdl.NewCanvas("Clipping", windowW, windowH, eff.White(), 60, true)
 	canvas.Run(func() {
-		fmt.Println("Press space to toggle between clip and no clip")
-		m := &myShape{}
-		m.init()
-		canvas.AddChild(m)
-		canvas.AddKeyUpEnumHandler(func(keyCode sdl.Keycode) {
-			if keyCode == sdl.KeySpace {
-				m.biggerChild.SetShouldClip(!m.biggerChild.ShouldClip())
-				if m.biggerChild.ShouldClip() {
-					fmt.Println("Clipping")
-				} else {
-					fmt.Println("No Clip")
-				}
-			}
-		})
+		rand.Seed(time.Now().UnixNano())
+
+		c := &colorMarquee{}
+		f, err := canvas.OpenFont("../assets/fonts/roboto/Roboto-Medium.ttf", 15)
+		if err != nil {
+			log.Fatal(err)
+		}
+		canvas.AddChild(c)
+		c.init(f)
 	})
 }

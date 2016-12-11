@@ -27,6 +27,9 @@ type Drawable interface {
 	AddChild(Drawable) error
 	RemoveChild(Drawable) error
 	Children() []Drawable
+
+	ShouldClip() bool
+	SetShouldClip(bool)
 }
 
 type drawable struct {
@@ -37,6 +40,7 @@ type drawable struct {
 	children             []Drawable
 	updateHandler        func()
 	graphicsReadyHandler func()
+	shouldClip           bool
 }
 
 func (d *drawable) init() {
@@ -157,4 +161,15 @@ func (d *drawable) HandleUpdate() {
 
 func (d *drawable) SetGraphicsReadyHandler(handler func()) {
 	d.graphicsReadyHandler = handler
+}
+
+func (d *drawable) SetShouldClip(clip bool) {
+	d.shouldClip = clip
+	for _, child := range d.children {
+		child.SetShouldClip(clip)
+	}
+}
+
+func (d *drawable) ShouldClip() bool {
+	return d.shouldClip
 }

@@ -70,7 +70,7 @@ func (b *buttonTest) Init(c eff.Canvas) {
 }
 
 func main() {
-	canvas := sdl.NewCanvas("Clickables", 800, 540, eff.White(), 60, true)
+	canvas := sdl.NewCanvas("Clickables", 800, 540, eff.White(), 1000, false)
 
 	canvas.Run(func() {
 		bt := buttonTest{}

@@ -73,28 +73,19 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 }
 
 func (shape *Shape) Draw(canvas Canvas) {
+
 	shape.Graphics().Begin(shape.Rect())
 	shape.graphics.FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
 		fn()
 	}
-	pRect := shape.Rect()
-	if shape.Parent() != nil {
-		pRect = shape.Parent().Rect()
-		// s := shape.Parent().Parent()
-		// for s != nil {
-		// 	pRect.X += s.Rect().X
-		// 	pRect.Y += s.Rect().Y
-		// 	s = s.Parent()
-		// }
-	}
 
 	for _, child := range shape.children {
 		child.Draw(canvas)
 	}
 
-	shape.Graphics().End(shape.shouldClip, shape.Rect(), pRect)
+	shape.Graphics().End(shape.Rect())
 }
 
 func (shape *Shape) SetBackgroundColor(c Color) {

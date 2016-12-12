@@ -13,7 +13,7 @@ import (
 const (
 	windowW    = 800
 	windowH    = 600
-	parentSize = 300
+	parentSize = 150
 )
 
 type colorMarquee struct {
@@ -79,17 +79,50 @@ func (c *colorMarquee) init(f eff.Font) {
 	}
 }
 
+func createColorMarquee(canvas eff.Canvas) *colorMarquee {
+	c := &colorMarquee{}
+	f, err := canvas.OpenFont("../assets/fonts/roboto/Roboto-Medium.ttf", 15)
+	if err != nil {
+		log.Fatal(err)
+	}
+	canvas.AddChild(c)
+	c.init(f)
+	vec := eff.Point{X: rand.Intn(10), Y: rand.Intn(10)}
+	if rand.Intn(10) > 5 {
+		if rand.Intn(10) < 5 {
+			vec.X *= -1
+		} else {
+			vec.Y *= -1
+		}
+	}
+	c.SetUpdateHandler(func() {
+		x := c.Rect().X + vec.X
+		y := c.Rect().Y + vec.Y
+		if x <= 0 || x >= (canvas.Rect().W-c.Rect().W) {
+			vec.X *= -1
+		}
+
+		if y <= 0 || y >= (canvas.Rect().H-c.Rect().H) {
+			vec.Y *= -1
+		}
+
+		c.SetRect(eff.Rect{
+			X: x,
+			Y: y,
+			W: c.Rect().W,
+			H: c.Rect().H,
+		})
+	})
+
+	return c
+}
+
 func main() {
 	canvas := sdl.NewCanvas("Clipping", windowW, windowH, eff.White(), 60, true)
 	canvas.Run(func() {
 		rand.Seed(time.Now().UnixNano())
-
-		c := &colorMarquee{}
-		f, err := canvas.OpenFont("../assets/fonts/roboto/Roboto-Medium.ttf", 15)
-		if err != nil {
-			log.Fatal(err)
+		for i := 0; i < 10; i++ {
+			createColorMarquee(canvas)
 		}
-		canvas.AddChild(c)
-		c.init(f)
 	})
 }

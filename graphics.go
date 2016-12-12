@@ -19,5 +19,5 @@ type Graphics interface {
 	GetTextSize(Font, string) (int, int, error)
 
 	Begin(Rect)
-	End(bool, Rect, Rect)
+	End(Rect)
 }

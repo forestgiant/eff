@@ -44,61 +44,17 @@ func (graphics *Graphics) Begin(r eff.Rect) {
 	}
 }
 
-func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) {
-	// if graphics.currentTexture == nil {
-	// 	fmt.Println("Cannot end graphics, currentTexture is nil")
-	// 	return
-	// }
-
+func (graphics *Graphics) End(child eff.Rect) {
 	child.X = int(float64(child.X) * graphics.scale)
 	child.Y = int(float64(child.Y) * graphics.scale)
 	child.W = int(float64(child.W) * graphics.scale)
 	child.H = int(float64(child.H) * graphics.scale)
 
-	parent.X = int(float64(parent.X) * graphics.scale)
-	parent.Y = int(float64(parent.Y) * graphics.scale)
-	parent.W = int(float64(parent.W) * graphics.scale)
-	parent.H = int(float64(parent.H) * graphics.scale)
-
-	clipRect := eff.Rect{
+	srcRect := &rect{
 		X: 0,
 		Y: 0,
-		W: child.W,
-		H: child.H,
-	}
-
-	// if shouldClip {
-	// 	newX := 0
-	// 	newY := 0
-	// 	newW := child.W
-	// 	newH := child.H
-	// 	if child.X < 0 {
-	// 		newX = child.X * -1
-	// 	}
-
-	// 	if (child.X + child.W) > parent.W {
-	// 		newW = child.W - ((child.X + child.W) - parent.W)
-	// 	}
-
-	// 	if child.Y < 0 {
-	// 		newY = child.Y * -1
-	// 	}
-
-	// 	if (child.Y + child.H) > parent.H {
-	// 		newH = child.H - ((child.Y + child.H) - parent.H)
-	// 	}
-
-	// 	clipRect.X = newX
-	// 	clipRect.Y = newY
-	// 	clipRect.W = newW
-	// 	clipRect.H = newH
-	// }
-
-	srcRect := &rect{
-		X: int32(clipRect.X),
-		Y: int32(clipRect.Y),
-		W: int32(clipRect.W),
-		H: int32(clipRect.H),
+		W: int32(child.W),
+		H: int32(child.H),
 	}
 
 	destRect := &rect{
@@ -107,14 +63,6 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 		W: int32(child.W),
 		H: int32(child.H),
 	}
-	// if shouldClip {
-	// 	destRect = &rect{
-	// 		X: int32(int(math.Max(float64(child.X), 0))),
-	// 		Y: int32(int(math.Max(float64(child.Y), 0))),
-	// 		W: int32(int(math.Min(float64(clipRect.W), float64(parent.W)))),
-	// 		H: int32(int(math.Min(float64(clipRect.H), float64(parent.H)))),
-	// 	}
-	// }
 
 	mainThread <- func() {
 		var targetTexture *texture
@@ -129,7 +77,7 @@ func (graphics *Graphics) End(shouldClip bool, child eff.Rect, parent eff.Rect) 
 
 		texture := graphics.textures[len(graphics.textures)-1]
 		graphics.textures = graphics.textures[:len(graphics.textures)-1]
-		// fmt.Println(srcRect, destRect)
+
 		err = graphics.renderer.renderCopy(texture, srcRect, destRect)
 		if err != nil {
 			fmt.Println("End renderCopy error", err)

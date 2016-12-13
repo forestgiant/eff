@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -11,12 +12,7 @@ import (
 )
 
 type imageMover struct {
-	img         *eff.Image
-	xDir        int
-	yDir        int
-	initialized bool
-	baseW       int
-	baseH       int
+	eff.Shape
 }
 
 func (i *imageMover) Init(c eff.Canvas) {
@@ -31,60 +27,51 @@ func (i *imageMover) Init(c eff.Canvas) {
 	ext = strings.ToLower(ext)
 
 	if ext != ".png" && ext != ".jpg" {
-		fmt.Println(usage)
-		os.Exit(1)
+		log.Fatal(usage)
 	}
 
-	i.img = &eff.Image{
-		Path: os.Args[1],
-		Rect: eff.Rect{
-			X: 0,
-			Y: 0,
-			W: -1,
-			H: -1,
-		},
+	img, err := c.OpenImage(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	c.AddImage(i.img)
-	// Since the W and H are set to -1 when adding the image they will be replaced with the image size
-	w := i.img.Rect.W
-	h := i.img.Rect.H
-
-	i.baseW = int(float64(c.Width()) / float64(4))
-	i.baseH = int(float64(i.baseW) * (float64(h) / float64(w)))
-
-	i.img.Rect.W = i.baseW
-	i.img.Rect.H = i.baseH
-
-	i.xDir = 1
-	i.yDir = 1
-	i.initialized = true
-}
-
-func (i *imageMover) Initialized() bool {
-	return i.initialized
-}
-
-func (i *imageMover) Draw(c eff.Canvas) {
-	c.FillRect(eff.Rect{X: 0, Y: 0, W: c.Width(), H: c.Height()}, eff.RandomColor())
-}
-
-func (i *imageMover) Update(c eff.Canvas) {
-	i.img.Rect.X += i.xDir
-	i.img.Rect.Y += i.yDir
-
-	if i.img.Rect.X < 0 || i.img.Rect.X+i.img.Rect.W > c.Width() {
-		i.xDir *= -1
+	baseW := int(float64(c.Rect().W) / float64(4))
+	baseH := int(float64(baseW) * (float64(img.Height()) / float64(img.Width())))
+	imgRect := eff.Rect{
+		X: 0,
+		Y: 0,
+		W: baseW,
+		H: baseH,
 	}
 
-	if i.img.Rect.Y < 0 || i.img.Rect.Y+i.img.Rect.H > c.Height() {
-		i.yDir *= -1
-	}
+	vec := eff.Point{X: 1, Y: 1}
+	i.SetUpdateHandler(func() {
+		x := imgRect.X + vec.X
+		y := imgRect.Y + vec.Y
+
+		if x <= 0 || x >= (c.Rect().W-baseW) {
+			vec.X *= -1
+		}
+
+		if y <= 0 || y >= (c.Rect().H-baseH) {
+			vec.Y *= -1
+		}
+
+		imgRect.X = x
+		imgRect.Y = y
+
+		i.Clear()
+		i.SetBackgroundColor(eff.RandomColor())
+		i.DrawImage(img, imgRect)
+	})
 }
 
 func main() {
 	canvas := sdl.NewCanvas("moving image", 800, 540, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 	canvas.Run(func() {
-		canvas.AddDrawable(&imageMover{})
+		imageMover := &imageMover{}
+		imageMover.SetRect(canvas.Rect())
+		canvas.AddChild(imageMover)
+		imageMover.Init(canvas)
 	})
 }

@@ -14,46 +14,39 @@ const (
 )
 
 type mouseBox struct {
-	initialized bool
-	x           int
-	y           int
-	size        int
-	color       eff.Color
+	eff.Shape
+	x     int
+	y     int
+	size  int
+	color eff.Color
 }
 
-func (m *mouseBox) Init(c eff.Canvas) {
+func (m *mouseBox) Init() {
 	m.size = startSize
 	m.color = eff.RandomColor()
-	m.initialized = true
-}
+	m.SetUpdateHandler(func() {
+		m.Clear()
+		r := eff.Rect{
+			X: m.x,
+			Y: m.y,
+			W: m.size,
+			H: m.size,
+		}
 
-func (m *mouseBox) Initialized() bool {
-	return m.initialized
-}
-
-func (m *mouseBox) Draw(c eff.Canvas) {
-	r := eff.Rect{
-		X: m.x,
-		Y: m.y,
-		W: m.size,
-		H: m.size,
-	}
-
-	c.FillRect(r, m.color)
-}
-
-func (m *mouseBox) Update(c eff.Canvas) {
-
+		m.FillRect(r, m.color)
+	})
 }
 
 func main() {
 	canvas := sdl.NewCanvas("Mouse Events", 800, 540, eff.Black(), 60, true)
 	canvas.Run(func() {
-		mb := mouseBox{}
-		canvas.AddDrawable(&mb)
-
+		mb := &mouseBox{}
+		mb.SetRect(canvas.Rect())
+		mb.SetBackgroundColor(eff.Black())
+		canvas.AddChild(mb)
+		mb.Init()
 		canvas.AddMouseDownHandler(func(leftState bool, middleState bool, rightState bool) {
-			canvas.SetClearColor(eff.RandomColor())
+			mb.SetBackgroundColor(eff.RandomColor())
 			mb.color = eff.Black()
 
 			if leftState {
@@ -71,7 +64,7 @@ func main() {
 		})
 
 		canvas.AddMouseUpHandler(func(leftState bool, middleState bool, rightState bool) {
-			canvas.SetClearColor(eff.Black())
+			mb.SetBackgroundColor(eff.Black())
 			mb.color = eff.RandomColor()
 		})
 

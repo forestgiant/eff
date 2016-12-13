@@ -2,6 +2,7 @@
 build:
 	echo "Building examples..."
 ifeq ($(OS),Windows_NT)
+	CGO_ENABLED=1 GOARCH=386 go build -o examples/scroll/scroll examples/scroll/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/text-view/text-view examples/text-view/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/animating-text/animating-text examples/animating-text/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/clickables/clickables examples/clickables/main.go
@@ -16,6 +17,7 @@ ifeq ($(OS),Windows_NT)
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/children/children examples/children/main.go
 	CGO_ENABLED=1 GOARCH=386 go build -o examples/clipping/clipping examples/clipping/main.go
 else
+	go build -o examples/scroll/scroll examples/scroll/main.go
 	go build -o examples/text-view/text-view examples/text-view/main.go
 	go build -o examples/animating-text/animating-text examples/animating-text/main.go
 	go build -o examples/clickables/clickables examples/clickables/main.go

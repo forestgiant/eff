@@ -3,61 +3,47 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
 )
 
 type player struct {
-	initialized bool
+	eff.Shape
 	audioPlayer sdl.AudioPlayer
-	musicPath   string
-	font        eff.Font
 }
 
-func newPlayer(musicPath string) player {
-	p := player{}
-	p.musicPath = musicPath
-	p.audioPlayer = sdl.NewAudioPlayer(musicPath, -1)
-	return p
-}
-
-func (p *player) Init(c eff.Canvas) {
+func (p *player) Init(c eff.Canvas, musicPath string) {
 
 	font, err := c.OpenFont("../assets/fonts/vcr_osd_mono.ttf", 24)
 	if err != nil {
 		log.Fatal(err)
 	}
-	p.font = font
+
+	p.audioPlayer = sdl.NewAudioPlayer(musicPath, -1)
 	p.audioPlayer.Play()
-	p.initialized = true
-}
 
-func (p *player) Initialized() bool {
-	return p.initialized
-}
-
-func (p *player) Draw(c eff.Canvas) {
-	margin := eff.Point{X: 10, Y: 10}
-	yPos := 0
-	c.DrawText(p.font, "Now Playing: "+path.Base(p.musicPath), eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y})
-	yPos += 24 + margin.Y
-	c.DrawText(p.font, "Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
-	yPos += 24 + margin.Y
-	c.DrawText(p.font, "Press z to fade in", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
-	yPos += 24 + margin.Y
-	c.DrawText(p.font, "Press x to fade out", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
-	yPos += 24 + margin.Y
-	c.DrawText(p.font, "Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
-	yPos += 24 + margin.Y
-	c.DrawText(p.font, "Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
-}
-
-func (p *player) Update(c eff.Canvas) {
-
+	p.SetUpdateHandler(func() {
+		p.Clear()
+		margin := eff.Point{X: 10, Y: 10}
+		yPos := 0
+		p.DrawText(font, "Now Playing: "+path.Base(musicPath), eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y})
+		yPos += 24 + margin.Y
+		p.DrawText(font, "Press p to pause", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+		yPos += 24 + margin.Y
+		p.DrawText(font, "Press z to fade in", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+		yPos += 24 + margin.Y
+		p.DrawText(font, "Press x to fade out", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+		yPos += 24 + margin.Y
+		p.DrawText(font, "Press r to resume", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+		yPos += 24 + margin.Y
+		p.DrawText(font, "Press q to quit", eff.RandomColor(), eff.Point{X: margin.X, Y: margin.Y + yPos})
+	})
 }
 
 func main() {
@@ -65,6 +51,7 @@ func main() {
 	canvas := sdl.NewCanvas("Sound Player", 800, 540, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 
 	canvas.Run(func() {
+		rand.Seed(time.Now().UnixNano())
 		usage := "Usage sound-player <PATH_TO_WAV>"
 		if len(os.Args) < 2 {
 			log.Fatal(usage)
@@ -77,9 +64,10 @@ func main() {
 			fmt.Println(usage)
 			os.Exit(1)
 		}
-		player := newPlayer(os.Args[1])
-
-		canvas.AddDrawable(&player)
+		player := &player{}
+		player.SetRect(canvas.Rect())
+		canvas.AddChild(player)
+		player.Init(canvas, os.Args[1])
 
 		canvas.AddKeyUpHandler(func(key string) {
 			switch key {

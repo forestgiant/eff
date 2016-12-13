@@ -134,15 +134,6 @@ func (r *Rect) Scale(s float64) Rect {
 	}
 }
 
-// func (r *Rect) Offset(x int, y int) Rect {
-// 	return Rect{
-// 		X: r.X + x,
-// 		Y: r.Y + y,
-// 		W: r.W,
-// 		H: r.H,
-// 	}
-// }
-
 func ScaleRects(rects []Rect, s float64) []Rect {
 	var scaledRects []Rect
 	for _, r := range rects {
@@ -152,19 +143,17 @@ func ScaleRects(rects []Rect, s float64) []Rect {
 	return scaledRects
 }
 
-// func OffsetRects(rects []Rect, x int, y int) []Rect {
-// 	var offsetRects []Rect
-// 	for _, r := range rects {
-// 		offsetRects = append(offsetRects, r.Offset(x, y))
-// 	}
-
-// 	return offsetRects
-// }
-
 // Font describes a ttf font
 type Font interface {
 	Path() string
 	Size() int
+}
+
+// Image describes an image
+type Image interface {
+	Path() string
+	Width() int
+	Height() int
 }
 
 // Equals test to see if two rectangles occupy the same location exactly

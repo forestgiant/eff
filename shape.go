@@ -21,6 +21,8 @@ type shape interface {
 	FillRect(Rect, Color)
 	FillRects([]Rect, Color)
 	FillColorRects([]Rect, []Color)
+
+	DrawImage(Image, Rect)
 }
 
 type Shape struct {
@@ -169,5 +171,11 @@ func (shape *Shape) FillColorRects(r []Rect, c []Color) {
 func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 	shape.drawCalls = append(shape.drawCalls, func() {
 		shape.graphics.DrawText(f, text, c, shape.offsetPoint(p))
+	})
+}
+
+func (shape *Shape) DrawImage(i Image, r Rect) {
+	shape.drawCalls = append(shape.drawCalls, func() {
+		shape.graphics.DrawImage(i, r)
 	})
 }

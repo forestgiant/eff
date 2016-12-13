@@ -1,4 +1,4 @@
-package drawables
+package shapes
 
 import (
 	"math"
@@ -26,14 +26,16 @@ func (dot *twoPositionDot) linearInterpolate(normalizedPercentage float64) eff.P
 }
 
 type CircleDots struct {
-	dots        []twoPositionDot
-	colorDots   []eff.ColorPoint
-	tweener     tween.Tweener
-	initialized bool
+	eff.Shape
+
+	dots    []twoPositionDot
+	colors  []eff.Color
+	points  []eff.Point
+	tweener tween.Tweener
 }
 
-func (dot *CircleDots) Init(canvas eff.Canvas) {
-	dotCount := (canvas.Width() * canvas.Height()) / 20
+func (dot *CircleDots) Init(width int, height int) {
+	dotCount := (width * height) / 20
 
 	pointOnCirlce := func(radius int, index int, totalPoints int, w int, h int) eff.Point {
 		cx := w / 2
@@ -49,37 +51,26 @@ func (dot *CircleDots) Init(canvas eff.Canvas) {
 		d := twoPositionDot{
 			Color: eff.RandomColor(),
 			p1: eff.Point{
-				X: rand.Intn(canvas.Width()),
-				Y: rand.Intn(canvas.Height()),
+				X: rand.Intn(width),
+				Y: rand.Intn(height),
 			},
-			p2: pointOnCirlce(100, i, dotCount, canvas.Width(), canvas.Height()),
+			p2: pointOnCirlce(100, i, dotCount, width, height),
 		}
 
 		dot.dots = append(dot.dots, d)
-		colorDot := eff.ColorPoint{
-			Point: d.linearInterpolate(0),
-			Color: eff.RandomColor(),
-		}
-		dot.colorDots = append(dot.colorDots, colorDot)
+		dot.points = append(dot.points, d.linearInterpolate(0))
+		dot.colors = append(dot.colors, eff.RandomColor())
 	}
 
 	dot.tweener = tween.NewTweener(time.Second*2, func(progress float64) {
-		for i := range dot.colorDots {
-			dot.colorDots[i].Point = dot.dots[i].linearInterpolate(progress)
+		for i := range dot.points {
+			dot.points[i] = dot.dots[i].linearInterpolate(progress)
 		}
 	}, true, true, nil, nil)
 
-	dot.initialized = true
-}
-
-func (dot *CircleDots) Draw(canvas eff.Canvas) {
-	canvas.DrawColorPoints(dot.colorDots)
-}
-
-func (dot *CircleDots) Update(canvas eff.Canvas) {
-	dot.tweener.Tween()
-}
-
-func (dot *CircleDots) Initialized() bool {
-	return dot.initialized
+	dot.SetUpdateHandler(func() {
+		dot.tweener.Tween()
+		dot.Clear()
+		dot.DrawColorPoints(dot.points, dot.colors)
+	})
 }

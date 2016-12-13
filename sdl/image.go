@@ -7,38 +7,24 @@ import (
 	"unsafe"
 )
 
-// type Image struct {
-// 	drawable
+type Image struct {
+	path    string
+	texture *texture
+	w       int
+	h       int
+}
 
-// 	texture  *texture
-// 	graphics *Graphics
-// }
+func (i *Image) Path() string {
+	return i.path
+}
 
-// func (image *Image) Draw(canvas eff.Canvas) {
-// 	if image.graphics.renderer == nil {
-// 		return
-// 	}
+func (i *Image) Width() int {
+	return i.w
+}
 
-// 	if image.texture == nil {
-// 		fmt.Println("image texture is nil")
-// 		return
-// 	}
-
-// 	r1 := rect{
-// 		X: 0,
-// 		Y: 0,
-// 		W: int32(image.rect.W),
-// 		H: int32(image.rect.H),
-// 	}
-
-// 	r := rect{
-// 		X: int32(float64(image.rect.X) * image.graphics.scale),
-// 		Y: int32(float64(image.rect.Y) * image.graphics.scale),
-// 		W: int32(float64(image.rect.W) * image.graphics.scale),
-// 		H: int32(float64(image.rect.H) * image.graphics.scale),
-// 	}
-// 	image.graphics.renderer.renderCopy(image.texture, r1, r)
-// }
+func (i *Image) Height() int {
+	return i.h
+}
 
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)
 func initImg() error {

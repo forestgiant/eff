@@ -25,6 +25,12 @@ func (t *textDrawable) Init(canvas eff.Canvas) {
 		log.Fatal(err)
 	}
 	t.font = font
+	t.shape.SetRect(eff.Rect{
+		X: 0,
+		Y: 0,
+		W: 800,
+		H: 540,
+	})
 
 	t.index = 1
 	t.text = "Effulgent, Effulgent, Effulgent, Effulgent, Effulgent, Effulgent"

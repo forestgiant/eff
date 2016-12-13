@@ -404,3 +404,40 @@ func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
 	}
 	return f, nil
 }
+
+// OpenImage creates and eff.Image object, used for drawing an image
+func (c *Canvas) OpenImage(path string) (eff.Image, error) {
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	var t *texture
+	var err error
+	var w int
+	var h int
+	mainThread <- func() {
+		s, err := loadImg(path)
+		if err != nil {
+			wg.Done()
+			return
+		}
+		w = int(s.w)
+		h = int(s.h)
+		t, err = c.sdlGraphics.renderer.createTextureFromSurface(s)
+		freeSurface(s)
+		wg.Done()
+	}
+	wg.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	image := &Image{
+		path:    path,
+		texture: t,
+		w:       w,
+		h:       h,
+	}
+
+	return image, nil
+}

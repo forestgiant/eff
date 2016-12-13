@@ -12,6 +12,7 @@ type Drawable interface {
 
 	SetRect(Rect)
 	Rect() Rect
+	ParentOffsetRect() Rect
 
 	SetParent(Drawable)
 	Parent() Drawable
@@ -157,4 +158,18 @@ func (d *drawable) HandleUpdate() {
 
 func (d *drawable) SetGraphicsReadyHandler(handler func()) {
 	d.graphicsReadyHandler = handler
+}
+
+func (d *drawable) ParentOffsetRect() Rect {
+	pRect := Rect{}
+	if d.parent != nil {
+		pRect = d.parent.ParentOffsetRect()
+	}
+
+	return Rect{
+		X: d.rect.X + pRect.X,
+		Y: d.rect.Y + pRect.Y,
+		W: d.rect.W,
+		H: d.rect.H,
+	}
 }

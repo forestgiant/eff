@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -13,16 +14,7 @@ import (
 )
 
 type imageTiler struct {
-	imgPath      string
-	imgs         []*eff.Image
-	onScreenImgs []*eff.Image
-	initialized  bool
-	baseW        int
-	baseH        int
-	rows         int
-	cols         int
-	index        int
-	tweener      tween.Tweener
+	eff.Shape
 }
 
 func (i *imageTiler) Init(c eff.Canvas) {
@@ -37,86 +29,56 @@ func (i *imageTiler) Init(c eff.Canvas) {
 	ext = strings.ToLower(ext)
 
 	if ext != ".png" && ext != ".jpg" {
-		fmt.Println(usage)
-		os.Exit(1)
-	}
-	i.imgPath = os.Args[1]
-
-	img := &eff.Image{
-		Path: i.imgPath,
-		Rect: eff.Rect{
-			X: 0,
-			Y: 0,
-			W: -1,
-			H: -1,
-		},
+		log.Fatal(usage)
 	}
 
-	c.AddImage(img)
-	c.RemoveImage(img)
+	img, err := c.OpenImage(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Since the W and H are set to -1 when adding the image they will be replaced with the image size
-	w := img.Rect.W
-	h := img.Rect.H
+	w := img.Width()
+	h := img.Height()
 
-	i.rows = 3
-	i.baseH = int(float64(c.Height()) / float64(i.rows))
-	i.baseW = int(float64(i.baseH) * (float64(w) / float64(h)))
-	i.cols = int(float64(c.Width())/float64(i.baseW)) + 1
+	rows := 3
+	baseH := int(float64(c.Rect().H) / float64(rows))
+	baseW := int(float64(baseH) * (float64(w) / float64(h)))
+	cols := int(float64(c.Rect().W)/float64(baseW)) + 1
 
-	totalImgs := i.rows * i.cols
-	for j := 0; j < totalImgs; j++ {
-		x := j % i.cols
-		x *= i.baseW
-		y := int(float64(j) / float64(i.cols))
-		y *= i.baseH
+	totalImgs := rows * cols
 
-		img := &eff.Image{
-			Path: i.imgPath,
-			Rect: eff.Rect{
+	count := 0
+	tweener := tween.NewTweener(time.Second*2, func(progress float64) {
+		count = int(progress * float64(totalImgs))
+	}, true, false, nil, nil)
+
+	i.SetUpdateHandler(func() {
+		tweener.Tween()
+		i.Clear()
+		i.SetBackgroundColor(eff.RandomColor())
+		for j := 0; j < count; j++ {
+			x := j % cols
+			x *= baseW
+			y := int(float64(j) / float64(cols))
+			y *= baseH
+			r := eff.Rect{
 				X: x,
 				Y: y,
-				W: 0,
-				H: 0,
-			},
+				W: baseW,
+				H: baseH,
+			}
+			i.DrawImage(img, r)
 		}
-
-		i.imgs = append(i.imgs, img)
-		c.AddImage(img)
-	}
-
-	i.tweener = tween.NewTweener(time.Second*2, func(progress float64) {
-		i.index = int(progress * float64(len(i.imgs)))
-	}, true, false, nil, nil)
-	i.initialized = true
-}
-
-func (i *imageTiler) Initialized() bool {
-	return i.initialized
-}
-
-func (i *imageTiler) Draw(c eff.Canvas) {
-	c.FillRect(eff.Rect{X: 0, Y: 0, W: c.Width(), H: c.Height()}, eff.RandomColor())
-
-	for _, img := range i.onScreenImgs {
-		img.Rect.W = 0
-		img.Rect.H = 0
-	}
-
-	i.onScreenImgs = i.imgs[:i.index]
-
-	for _, img := range i.onScreenImgs {
-		img.Rect.W = i.baseW
-		img.Rect.H = i.baseH
-	}
-}
-
-func (i *imageTiler) Update(c eff.Canvas) {
-	i.tweener.Tween()
+	})
 }
 
 func main() {
 	canvas := sdl.NewCanvas("image tile", 800, 540, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 	canvas.Run(func() {
-		canvas.AddDrawable(&imageTiler{})
+		i := &imageTiler{}
+		i.SetRect(canvas.Rect())
+		canvas.AddChild(i)
+		i.Init(canvas)
 	})
 }

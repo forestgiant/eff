@@ -404,8 +404,8 @@ func (graphics *Graphics) DrawText(font eff.Font, text string, col eff.Color, po
 
 // GetTextSize this uses the currently set font to determine the size of string rendered with that font, does not actually add the text to the canvas
 func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, error) {
-	f := font.(*Font)
-	if f == nil {
+	f, ok := font.(*Font)
+	if !ok {
 		return -1, -1, errors.New("Can't get text size font not loaded")
 	}
 
@@ -432,4 +432,30 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 	case p := <-sizeChan:
 		return int(p.X), int(p.Y), nil
 	}
+}
+
+func (graphics *Graphics) DrawImage(image eff.Image, r eff.Rect) error {
+	i, ok := image.(*Image)
+	if !ok {
+		return errors.New("Can't draw Image, image not loaded")
+	}
+	src := rect{
+		X: 0,
+		Y: 0,
+		W: int32(image.Width()),
+		H: int32(image.Height()),
+	}
+
+	dest := rect{
+		X: int32(float64(r.X) * graphics.scale),
+		Y: int32(float64(r.Y) * graphics.scale),
+		W: int32(float64(r.W) * graphics.scale),
+		H: int32(float64(r.H) * graphics.scale),
+	}
+
+	mainThread <- func() {
+		graphics.renderer.renderCopy(i.texture, &src, &dest)
+	}
+
+	return nil
 }

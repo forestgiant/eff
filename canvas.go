@@ -22,6 +22,7 @@ type Canvas interface {
 	Run(setup func())
 
 	OpenFont(path string, size int) (Font, error)
+	OpenImage(path string) (Image, error)
 
 	Fullscreen() bool
 	SetFullscreen(fullscreen bool)

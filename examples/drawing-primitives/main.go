@@ -4,46 +4,64 @@ import (
 	"strconv"
 
 	"github.com/forestgiant/eff"
-	"github.com/forestgiant/eff/examples/drawing-primitives/drawables"
+	"github.com/forestgiant/eff/examples/drawing-primitives/shapes"
 	"github.com/forestgiant/eff/sdl"
+)
+
+const (
+	windowW = 800
+	windowH = 480
 )
 
 func main() {
 	//Create Eff Canvas
-	canvas := sdl.NewCanvas("Drawing Primitives", 800, 480, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
+	canvas := sdl.NewCanvas("Drawing Primitives", windowW, windowH, eff.Color{R: 0x00, B: 0x00, G: 0x00, A: 0xFF}, 60, true)
 
 	//Start the run loop
 	canvas.Run(func() {
-		//Create drawables
-		var d []eff.Drawable
-		d = append(d, &drawables.Dots{})
-		d = append(d, &drawables.Rects{})
-		d = append(d, &drawables.CollidingBlocks{})
-		d = append(d, &drawables.CircleDots{})
-		d = append(d, &drawables.SquareSpiral{})
 
-		drawableIndex := 0
+		var d []eff.Drawable
+		dots := &shapes.Dots{}
+		dots.Init(windowW, windowH)
+		dots.SetRect(canvas.Rect())
+		d = append(d, dots)
+		rects := &shapes.Rects{}
+		rects.Init(windowW, windowH)
+		rects.SetRect(canvas.Rect())
+		d = append(d, rects)
+		collidingBlocks := &shapes.CollidingBlocks{}
+		collidingBlocks.Init(windowW, windowH)
+		collidingBlocks.SetRect(canvas.Rect())
+		d = append(d, collidingBlocks)
+		circleDots := &shapes.CircleDots{}
+		circleDots.Init(windowW, windowH)
+		circleDots.SetRect(canvas.Rect())
+		d = append(d, circleDots)
+		sqaureSpiral := &shapes.SquareSpiral{}
+		sqaureSpiral.Init(windowW, windowH)
+		sqaureSpiral.SetRect(canvas.Rect())
+		d = append(d, sqaureSpiral)
+
+		shapeIndex := 0
 
 		setDrawable := func(index int) {
 			if index < 0 || index >= len(d) {
 				return
 			}
 
-			if index == drawableIndex {
+			if index == shapeIndex {
 				return
 			}
 
-			if len(d) > 0 && drawableIndex >= 0 {
-				canvas.RemoveDrawable(d[drawableIndex])
+			if len(d) > 0 && shapeIndex >= 0 {
+				canvas.RemoveChild(d[shapeIndex])
 			}
 
-			canvas.AddDrawable(d[index])
+			canvas.AddChild(d[index])
 
-			drawableIndex = index
+			shapeIndex = index
 		}
-
-		//Add drawables to canvas
-		canvas.AddDrawable(d[0])
+		canvas.AddChild(d[0])
 
 		canvas.AddKeyUpHandler(func(key string) {
 

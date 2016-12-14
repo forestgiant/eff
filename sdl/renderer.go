@@ -24,6 +24,12 @@ const (
 	blendModeBlend = C.SDL_BLENDMODE_BLEND
 	blendModeAdd   = C.SDL_BLENDMODE_ADD
 	blendModeMod   = C.SDL_BLENDMODE_MOD
+
+	pixelFormatRGBA8888 = C.SDL_PIXELFORMAT_RGBA8888
+
+	flipNone       = C.SDL_FLIP_NONE
+	flipHorizontal = C.SDL_FLIP_HORIZONTAL
+	flipVertical   = C.SDL_FLIP_VERTICAL
 )
 
 // Texture SDL Surface (https://wiki.libsdl.org/SDL_Texture)
@@ -56,6 +62,15 @@ func createRenderer(window *Window, index int, flags uint32) (*renderer, error) 
 // Clear (https://wiki.libsdl.org/SDL_RenderClear)
 func (r *renderer) clear() error {
 	_ret := C.SDL_RenderClear(r.cptr())
+	if _ret < 0 {
+		return getError()
+	}
+	return nil
+}
+
+// setTextureBlendMode (https://wiki.libsdl.org/SDL_SetTextureBlendMode)
+func (r *renderer) setTextureBlendMode(texture *texture, blendMode C.SDL_BlendMode) error {
+	_ret := C.SDL_SetTextureBlendMode(texture.cptr(), blendMode)
 	if _ret < 0 {
 		return getError()
 	}
@@ -181,11 +196,42 @@ func (r *renderer) createTextureFromSurface(surface *surface) (*texture, error) 
 }
 
 // RenderCopy (https://wiki.libsdl.org/SDL_CreateTextureFromSurface)
-func (r *renderer) renderCopy(texture *texture, srcRect rect, destRect rect) error {
+func (r *renderer) renderCopy(texture *texture, srcRect *rect, destRect *rect) error {
 	err := C.SDL_RenderCopy(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr())
 	if err < 0 {
 		return getError()
 	}
 
 	return nil
+}
+
+func (r *renderer) renderCopyEx(texture *texture, srcRect rect, destRect rect, angle float64, center point) error {
+	_angle := C.double(angle)
+	err := C.SDL_RenderCopyEx(r.cptr(), texture.cptr(), srcRect.cptr(), destRect.cptr(), _angle, center.cptr(), flipNone)
+	if err < 0 {
+		return getError()
+	}
+
+	return nil
+}
+
+func (r *renderer) setTarget(texture *texture) error {
+
+	err := C.SDL_SetRenderTarget(r.cptr(), texture.cptr())
+	if err != 0 {
+		return getError()
+	}
+
+	return nil
+}
+
+func (r *renderer) createTexture(w int, h int) (*texture, error) {
+	_w := C.int(w)
+	_h := C.int(h)
+	_texture := C.SDL_CreateTexture(r.cptr(), pixelFormatRGBA8888, textureAccessTarget, _w, _h)
+	if _texture == nil {
+		return nil, getError()
+	}
+
+	return (*texture)(unsafe.Pointer(_texture)), nil
 }

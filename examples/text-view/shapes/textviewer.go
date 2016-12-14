@@ -1,4 +1,4 @@
-package drawable
+package shapes
 
 import (
 	"log"
@@ -27,12 +27,13 @@ RoboCop heads back to OCP headquarters, where Jones is presenting his improved E
 
 // TextViewer Boilerplate drawable struct
 type TextViewer struct {
-	font        eff.Font
-	textWidth   int
-	textHeight  int
-	lines       []string
-	initialized bool
-	tweener     tween.Tweener
+	eff.Shape
+
+	font       eff.Font
+	textWidth  int
+	textHeight int
+	lines      []string
+	tweener    tween.Tweener
 }
 
 // Init Boilerplate Init function, used to setup the drawable
@@ -42,33 +43,26 @@ func (t *TextViewer) Init(c eff.Canvas) {
 		log.Fatal(err)
 	}
 	t.font = font
-	t.initialized = true
 	minWidth := 5
 	t.textWidth = minWidth
-	t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, c)
+	t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, t.Graphics())
 	t.tweener = tween.NewTweener(time.Second*5, func(progress float64) {
-		maxWidth := c.Width() - minWidth
+		maxWidth := c.Rect().W - minWidth
 		t.textWidth = int(float64(maxWidth)*progress) + minWidth
-		t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, c)
+		t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, t.Graphics())
 	}, true, true, nil, nil)
-}
 
-// Initialized returns true if the drawable has been initialized
-func (t *TextViewer) Initialized() bool { return t.initialized }
+	t.SetUpdateHandler(func() {
+		t.tweener.Tween()
 
-// Draw called once per frame, this function calls the canvas draw functions
-func (t *TextViewer) Draw(c eff.Canvas) {
-	linePoint := eff.Point{X: 0, Y: 0}
-	for _, line := range t.lines {
-		if linePoint.Y < c.Height() {
-			c.DrawText(t.font, line, eff.Black(), linePoint)
+		t.Clear()
+		linePoint := eff.Point{X: 0, Y: 0}
+		for _, line := range t.lines {
+			if linePoint.Y < c.Rect().H {
+				t.DrawText(t.font, line, eff.Black(), linePoint)
+			}
+
+			linePoint.Y += t.textHeight
 		}
-
-		linePoint.Y += t.textHeight
-	}
-}
-
-// Update called once per frame, this function is responsible for updating the state of the drawable
-func (t *TextViewer) Update(c eff.Canvas) {
-	t.tweener.Tween()
+	})
 }

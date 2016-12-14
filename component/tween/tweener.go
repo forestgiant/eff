@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+// EaseFunc function that takes a normalized value for input and returns an eased value based on that input
 type EaseFunc func(float64) float64
 
+// Tweener struct that changes a percentage value over time using
 type Tweener struct {
 	duration    time.Duration
 	started     bool
@@ -21,6 +23,7 @@ type Tweener struct {
 	ease        EaseFunc
 }
 
+// Tween each time this is called this pumps the tween, the more frequently it is called the smoother the tween
 func (tweener *Tweener) Tween() {
 	if !tweener.started {
 		tweener.started = true
@@ -57,11 +60,13 @@ func (tweener *Tweener) Tween() {
 	tweener.update(progress)
 }
 
+// Reset sets the tween state variables back to there starting points
 func (tweener *Tweener) Reset() {
 	tweener.started = false
 	tweener.repeatCount = 0
 }
 
+// NewTweener creates a new tweener struct
 func NewTweener(duration time.Duration, update func(float64), repeat bool, yoyo bool, complete func(), ease EaseFunc) Tweener {
 	return Tweener{
 		duration: duration,

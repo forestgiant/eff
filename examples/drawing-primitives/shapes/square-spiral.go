@@ -1,4 +1,4 @@
-package drawables
+package shapes
 
 import (
 	"time"
@@ -8,22 +8,22 @@ import (
 )
 
 type SquareSpiral struct {
+	eff.Shape
+
 	color        eff.Color
 	linePoints   []eff.Point
 	renderPoints []eff.Point
-	// t            float64
-	tweener     tween.Tweener
-	initialized bool
+	tweener      tween.Tweener
 }
 
-func (s *SquareSpiral) Init(canvas eff.Canvas) {
+func (s *SquareSpiral) Init(width int, height int) {
 	turnCount := 10
 	spiralSize := 5
 	separation := 5
 
 	bottomLeft := eff.Point{
-		X: (canvas.Width() - spiralSize) / 2,
-		Y: (canvas.Height()-spiralSize)/2 + spiralSize,
+		X: (width - spiralSize) / 2,
+		Y: (height-spiralSize)/2 + spiralSize,
 	}
 
 	s.linePoints = append(s.linePoints, bottomLeft)
@@ -85,17 +85,9 @@ func (s *SquareSpiral) Init(canvas eff.Canvas) {
 		s.color = eff.RandomColor()
 	}, nil)
 
-	s.initialized = true
-}
-
-func (s *SquareSpiral) Draw(canvas eff.Canvas) {
-	canvas.DrawLines(s.renderPoints, s.color)
-}
-
-func (s *SquareSpiral) Update(canvas eff.Canvas) {
-	s.tweener.Tween()
-}
-
-func (s *SquareSpiral) Initialized() bool {
-	return s.initialized
+	s.SetUpdateHandler(func() {
+		s.tweener.Tween()
+		s.Clear()
+		s.DrawLines(s.renderPoints, s.color)
+	})
 }

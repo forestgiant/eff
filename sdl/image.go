@@ -7,10 +7,27 @@ import (
 	"unsafe"
 )
 
-type imageTex struct {
+// Image struct containing a bitmap image
+type Image struct {
+	path    string
 	texture *texture
-	w       int32
-	h       int32
+	w       int
+	h       int
+}
+
+// Path file path for the image
+func (i *Image) Path() string {
+	return i.path
+}
+
+// Width the native width of the image
+func (i *Image) Width() int {
+	return i.w
+}
+
+// Height the native height of the image
+func (i *Image) Height() int {
+	return i.h
 }
 
 // InitImg (https://www.libsdl.org/projects/SDL_image/docs/SDL_image.html#SEC8)

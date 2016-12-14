@@ -1,5 +1,6 @@
 package eff
 
+// Graphics describes the Graphics struct which is used to add graphics to the canvas
 type Graphics interface {
 	DrawPoints(points []Point, color Color)
 	DrawPoint(Point, Color)

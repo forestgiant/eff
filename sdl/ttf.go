@@ -14,10 +14,12 @@ type Font struct {
 	sdlFont *C.TTF_Font
 }
 
+// Path the file path to the font
 func (f *Font) Path() string {
 	return f.path
 }
 
+// Size the size of the font
 func (f *Font) Size() int {
 	return f.size
 }

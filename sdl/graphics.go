@@ -7,12 +7,14 @@ import (
 	"github.com/forestgiant/eff"
 )
 
+// Graphics sdl graphics struct
 type Graphics struct {
 	renderer *renderer
 	scale    float64
 	textures []*texture
 }
 
+// NewGraphics creates a new Graphics with an sdl renderer pointer
 func NewGraphics(r *renderer, s float64) *Graphics {
 	g := Graphics{}
 	g.renderer = r
@@ -20,6 +22,7 @@ func NewGraphics(r *renderer, s float64) *Graphics {
 	return &g
 }
 
+// Begin this must be called before calling draw functions
 func (graphics *Graphics) Begin(r eff.Rect) {
 	w := int(float64(r.W) * graphics.scale)
 	h := int(float64(r.H) * graphics.scale)
@@ -44,6 +47,7 @@ func (graphics *Graphics) Begin(r eff.Rect) {
 	}
 }
 
+// End this must be called at the end of a draw function
 func (graphics *Graphics) End(child eff.Rect) {
 	child.X = int(float64(child.X) * graphics.scale)
 	child.Y = int(float64(child.Y) * graphics.scale)
@@ -101,6 +105,7 @@ func (graphics *Graphics) DrawPoint(point eff.Point, color eff.Color) {
 	}
 }
 
+// DrawPoints draw a slice of points all the same color to the screen
 func (graphics *Graphics) DrawPoints(points []eff.Point, color eff.Color) {
 	var sdlPoints []point
 	scale := graphics.scale
@@ -434,6 +439,7 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 	}
 }
 
+// DrawImage draw and image to this the screen
 func (graphics *Graphics) DrawImage(image eff.Image, r eff.Rect) error {
 	i, ok := image.(*Image)
 	if !ok {

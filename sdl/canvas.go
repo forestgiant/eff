@@ -383,8 +383,6 @@ func (c *Canvas) Run(setup func()) {
 	})
 }
 
-// DrawPoints draw a slice of points to the screen all the same color
-
 // Fullscreen get the full screen state of the window
 func (c *Canvas) Fullscreen() bool {
 	return c.fullscreen

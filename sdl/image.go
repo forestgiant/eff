@@ -7,6 +7,7 @@ import (
 	"unsafe"
 )
 
+// Image struct containing a bitmap image
 type Image struct {
 	path    string
 	texture *texture
@@ -14,14 +15,17 @@ type Image struct {
 	h       int
 }
 
+// Path file path for the image
 func (i *Image) Path() string {
 	return i.path
 }
 
+// Width the native width of the image
 func (i *Image) Width() int {
 	return i.w
 }
 
+// Height the native height of the image
 func (i *Image) Height() int {
 	return i.h
 }

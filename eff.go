@@ -14,6 +14,7 @@ type Point struct {
 	Y int
 }
 
+// Scale returns a new scaled point
 func (p *Point) Scale(s float64) Point {
 	return Point{
 		X: int(float64(p.X) * s),
@@ -21,6 +22,7 @@ func (p *Point) Scale(s float64) Point {
 	}
 }
 
+// Offset returns an offset point
 func (p *Point) Offset(x int, y int) Point {
 	return Point{
 		X: p.X + x,
@@ -28,6 +30,7 @@ func (p *Point) Offset(x int, y int) Point {
 	}
 }
 
+// ScalePoints returns a new slice of scaled points
 func ScalePoints(points []Point, s float64) []Point {
 	var scaledPoints []Point
 	for _, p := range points {
@@ -37,6 +40,7 @@ func ScalePoints(points []Point, s float64) []Point {
 	return scaledPoints
 }
 
+// OffsetPoints returns a new slice of offset points
 func OffsetPoints(points []Point, x int, y int) []Point {
 	var offsetPoints []Point
 	for _, p := range points {
@@ -125,6 +129,7 @@ type Rect struct {
 	H int
 }
 
+// Scale returns a new scaled Rect
 func (r *Rect) Scale(s float64) Rect {
 	return Rect{
 		X: int(float64(r.X) * s),
@@ -134,6 +139,7 @@ func (r *Rect) Scale(s float64) Rect {
 	}
 }
 
+// ScaleRects returns a new slice of scaled Rects
 func ScaleRects(rects []Rect, s float64) []Rect {
 	var scaledRects []Rect
 	for _, r := range rects {

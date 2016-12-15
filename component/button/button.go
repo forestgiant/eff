@@ -91,6 +91,10 @@ func (b *Button) MouseOut() {
 }
 
 func (b *Button) drawButton() {
+	if b.Graphics() == nil {
+		return
+	}
+
 	b.Clear()
 	text, err := util.EllipseText(b.font, b.Text, b.Rect().W, b.Graphics())
 	if err != nil {

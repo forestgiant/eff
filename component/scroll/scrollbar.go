@@ -1,7 +1,7 @@
 package scroll
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/forestgiant/eff"
 )
@@ -42,6 +42,8 @@ func (n *nub) IsMouseOver() bool { return n.mouseOver }
 
 type ScrollBar struct {
 	eff.Shape
+
+	OnScrollHandler func(float64)
 }
 
 func (s *ScrollBar) init(c eff.Canvas) {
@@ -65,13 +67,12 @@ func (s *ScrollBar) init(c eff.Canvas) {
 		minY := pRect.Y
 		maxY := minY + s.Rect().H
 
-		if y < minY || y > maxY {
-			return
-		}
+		y = int(math.Max(float64(minY), float64(y)))
+		y = int(math.Min(float64(maxY), float64(y)))
 
 		y -= minY
 		percentage := float64(y) / float64(s.Rect().H)
-		fmt.Println(percentage)
+		// fmt.Println(percentage)
 		nubPercentage := float64(nub.Rect().H) / float64(s.Rect().H)
 		if percentage <= 1-nubPercentage {
 			nub.SetRect(eff.Rect{
@@ -82,12 +83,14 @@ func (s *ScrollBar) init(c eff.Canvas) {
 			})
 		}
 
+		if s.OnScrollHandler != nil {
+			s.OnScrollHandler(percentage)
+		}
+
 	})
 
-	c.AddMouseDownHandler(func(leftState bool, middleState bool, rightState bool) {
-		if leftState && nub.scrolling {
-			nub.scrolling = false
-		}
+	c.AddMouseUpHandler(func(leftState bool, middleState bool, rightState bool) {
+		nub.scrolling = false
 	})
 }
 

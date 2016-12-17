@@ -312,7 +312,6 @@ func (c *Canvas) Run(setup func()) {
 							go handler(int(t.X), int(t.Y))
 						}
 					}
-
 				}
 				bgColor := c.BackgroundColor()
 				c.sdlGraphics.renderer.setDrawColor(
@@ -321,10 +320,14 @@ func (c *Canvas) Run(setup func()) {
 					uint8(bgColor.B),
 					uint8(bgColor.A),
 				)
+				c.sdlGraphics.renderer.setTarget(nil)
 				c.sdlGraphics.renderer.clear()
 			}
 
-			c.Draw(c)
+			for _, child := range c.Children() {
+				child.Draw(c)
+			}
+
 			c.HandleUpdate()
 
 			mainThread <- func() {

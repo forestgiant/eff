@@ -28,6 +28,9 @@ type Drawable interface {
 	AddChild(Drawable) error
 	RemoveChild(Drawable) error
 	Children() []Drawable
+
+	ShouldDraw() bool
+	SetShouldDraw(bool)
 }
 
 type drawable struct {
@@ -35,6 +38,7 @@ type drawable struct {
 	rect                 Rect
 	parent               Drawable
 	graphics             Graphics
+	drawNeeded           bool
 	children             []Drawable
 	updateHandler        func()
 	graphicsReadyHandler func()
@@ -50,6 +54,9 @@ func (d *drawable) init() {
 
 func (d *drawable) SetRect(r Rect) {
 	d.rect = r
+	if d.Parent() != nil {
+		d.Parent().SetShouldDraw(true)
+	}
 }
 
 func (d *drawable) Rect() Rect {
@@ -171,5 +178,16 @@ func (d *drawable) ParentOffsetRect() Rect {
 		Y: d.rect.Y + pRect.Y,
 		W: d.rect.W,
 		H: d.rect.H,
+	}
+}
+
+func (d *drawable) ShouldDraw() bool {
+	return d.drawNeeded
+}
+
+func (d *drawable) SetShouldDraw(b bool) {
+	d.drawNeeded = b
+	if d.Parent() != nil && b {
+		d.Parent().SetShouldDraw(b)
 	}
 }

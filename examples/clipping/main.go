@@ -87,7 +87,7 @@ func createColorMarquee(canvas eff.Canvas) *colorMarquee {
 	}
 	canvas.AddChild(c)
 	c.init(f)
-	vec := eff.Point{X: rand.Intn(10), Y: rand.Intn(10)}
+	vec := eff.Point{X: rand.Intn(9) + 1, Y: rand.Intn(9) + 1}
 	if rand.Intn(10) > 5 {
 		if rand.Intn(10) < 5 {
 			vec.X *= -1
@@ -121,7 +121,7 @@ func main() {
 	canvas := sdl.NewCanvas("Clipping", windowW, windowH, eff.White(), 60, true)
 	canvas.Run(func() {
 		rand.Seed(time.Now().UnixNano())
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 70; i++ {
 			createColorMarquee(canvas)
 		}
 	})

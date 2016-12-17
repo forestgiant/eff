@@ -21,6 +21,6 @@ type Graphics interface {
 
 	DrawImage(Image, Rect) error
 
-	Begin(Rect)
-	End(Rect)
+	Begin(*Shape)
+	End(*Shape)
 }

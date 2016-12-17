@@ -9,9 +9,10 @@ import (
 
 // Graphics sdl graphics struct
 type Graphics struct {
-	renderer *renderer
-	scale    float64
-	textures []*texture
+	renderer       *renderer
+	scale          float64
+	textures       []*texture
+	textureByShape map[*eff.Shape]*texture
 }
 
 // NewGraphics creates a new Graphics with an sdl renderer pointer
@@ -19,36 +20,53 @@ func NewGraphics(r *renderer, s float64) *Graphics {
 	g := Graphics{}
 	g.renderer = r
 	g.scale = s
+	g.textureByShape = make(map[*eff.Shape]*texture)
 	return &g
 }
 
 // Begin this must be called before calling draw functions
-func (graphics *Graphics) Begin(r eff.Rect) {
-	w := int(float64(r.W) * graphics.scale)
-	h := int(float64(r.H) * graphics.scale)
+func (graphics *Graphics) Begin(shape *eff.Shape) {
 	// fmt.Println(w, h)
 	mainThread <- func() {
-		texture, err := graphics.renderer.createTexture(w, h)
-		if err != nil {
-			fmt.Println("Create Texture error", w, h, err)
+		var texture *texture
+		var ok bool
+		if texture, ok = graphics.textureByShape[shape]; ok {
+			// fmt.Println("Begin: Re-using texture", ok)
+			graphics.textures = append(graphics.textures, texture)
+			err := graphics.renderer.setTarget(texture)
+			if err != nil {
+				fmt.Println("Begin: Set target error", err)
+			}
+		} else {
+			// fmt.Println("Begin: Creating new texture")
+			w := int(float64(shape.Rect().W) * graphics.scale)
+			h := int(float64(shape.Rect().H) * graphics.scale)
+
+			texture, err := graphics.renderer.createTexture(w, h)
+			if err != nil {
+				fmt.Println("Begin: Create Texture error", w, h, err)
+			}
+
+			graphics.textures = append(graphics.textures, texture)
+
+			err = graphics.renderer.setTextureBlendMode(texture, blendModeBlend)
+			if err != nil {
+				fmt.Println("Begin: Set texture blend mode error", err)
+			}
+
+			graphics.textureByShape[shape] = texture
+			err = graphics.renderer.setTarget(texture)
+			if err != nil {
+				fmt.Println("Begin: Set target error", err)
+			}
 		}
 
-		graphics.textures = append(graphics.textures, texture)
-
-		err = graphics.renderer.setTextureBlendMode(texture, blendModeBlend)
-		if err != nil {
-			fmt.Println("Set texture blend mode error", err)
-		}
-
-		err = graphics.renderer.setTarget(texture)
-		if err != nil {
-			fmt.Println("Set target error", err)
-		}
 	}
 }
 
 // End this must be called at the end of a draw function
-func (graphics *Graphics) End(child eff.Rect) {
+func (graphics *Graphics) End(shape *eff.Shape) {
+	child := shape.Rect()
 	child.X = int(float64(child.X) * graphics.scale)
 	child.Y = int(float64(child.Y) * graphics.scale)
 	child.W = int(float64(child.W) * graphics.scale)
@@ -87,7 +105,7 @@ func (graphics *Graphics) End(child eff.Rect) {
 			fmt.Println("End renderCopy error", err)
 		}
 
-		texture.destroy()
+		// texture.destroy()
 	}
 }
 

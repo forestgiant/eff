@@ -78,7 +78,7 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 // Draw this draws the shape and all of its children to the canvas, typically called by the canvas its added to
 func (shape *Shape) Draw(canvas Canvas) {
 
-	shape.Graphics().Begin(shape.Rect())
+	shape.Graphics().Begin(shape)
 	shape.graphics.FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
 
 	for _, fn := range shape.drawCalls {
@@ -89,7 +89,7 @@ func (shape *Shape) Draw(canvas Canvas) {
 		child.Draw(canvas)
 	}
 
-	shape.Graphics().End(shape.Rect())
+	shape.Graphics().End(shape)
 }
 
 // SetBackgroundColor sets the background color of the shape

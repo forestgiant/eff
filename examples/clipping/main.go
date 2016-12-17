@@ -121,7 +121,7 @@ func main() {
 	canvas := sdl.NewCanvas("Clipping", windowW, windowH, eff.White(), 60, true)
 	canvas.Run(func() {
 		rand.Seed(time.Now().UnixNano())
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 20; i++ {
 			createColorMarquee(canvas)
 		}
 	})

@@ -29,7 +29,7 @@ func (s *Scroller) init(content *eff.Shape, r eff.Rect, c eff.Canvas) {
 		W: barWidth,
 		H: s.Rect().H,
 	}, c)
-	scrollBar.SetBackgroundColor(eff.Black())
+	scrollBar.SetBackgroundColor(eff.Color{R: 0x00, G: 0x00, B: 0x00, A: 0x66})
 
 	s.AddChild(content)
 	s.AddChild(scrollBar)

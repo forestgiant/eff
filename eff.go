@@ -144,6 +144,27 @@ func (r *Rect) Scale(s float64) Rect {
 	}
 }
 
+// Inside tests to see if rect is inside of this rect, assumes test rect has coordinates local to this rect
+func (r *Rect) LocalInside(testRect Rect) bool {
+	if testRect.X > r.W {
+		return false
+	}
+
+	if testRect.Y > r.H {
+		return false
+	}
+
+	if (testRect.X + testRect.W) < 0 {
+		return false
+	}
+
+	if (testRect.Y + testRect.H) < 0 {
+		return false
+	}
+
+	return true
+}
+
 // ScaleRects returns a new slice of scaled Rects
 func ScaleRects(rects []Rect, s float64) []Rect {
 	var scaledRects []Rect

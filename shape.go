@@ -1,5 +1,7 @@
 package eff
 
+import "fmt"
+
 type shape interface {
 	Drawable
 
@@ -86,7 +88,13 @@ func (shape *Shape) Draw(canvas Canvas) {
 	}
 
 	for _, child := range shape.children {
-		child.Draw(canvas)
+		rect := shape.Rect()
+		if rect.LocalInside(child.Rect()) {
+			child.Draw(canvas)
+		} else {
+			fmt.Println("Not drawing")
+		}
+
 	}
 
 	shape.Graphics().End(shape)

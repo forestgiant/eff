@@ -150,7 +150,7 @@ func (c *Canvas) Run(setup func()) {
 				windowPosUndefined,
 				c.Rect().W,
 				c.Rect().H,
-				windowOpenGl|windowAllowHighDPI,
+				windowOpenGl|windowAllowHighDPI|windowMouseCapture,
 			)
 			drawableW, _ := c.window.getDrawableSize()
 			scale := float64(drawableW) / float64(c.Rect().W)
@@ -167,15 +167,15 @@ func (c *Canvas) Run(setup func()) {
 				c.window.setFullscreen(0)
 			}
 
-			windowFlags := rendererAccelerated | rendererPresentVsync
+			renderFlags := rendererAccelerated | rendererPresentVsync
 			if !c.useVsync {
-				windowFlags = rendererAccelerated
+				renderFlags = rendererAccelerated
 			}
 
 			renderer, err := createRenderer(
 				c.window,
 				-1,
-				uint32(windowFlags),
+				uint32(renderFlags),
 			)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Failed to create renderer: ", err)
@@ -349,6 +349,11 @@ func (c *Canvas) Run(setup func()) {
 					}
 
 				}
+				err := captureMouse(true)
+				if err != nil {
+					// fmt.Println(err)
+				}
+
 				c.window.updateSurface()
 				c.sdlGraphics.renderer.present()
 

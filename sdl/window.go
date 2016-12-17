@@ -22,6 +22,7 @@ const (
 	windowFullscreenDesktop = C.SDL_WINDOW_FULLSCREEN_DESKTOP
 	windowForeign           = C.SDL_WINDOW_FOREIGN
 	windowAllowHighDPI      = C.SDL_WINDOW_ALLOW_HIGHDPI
+	windowMouseCapture      = C.SDL_WINDOW_MOUSE_CAPTURE
 )
 
 const (
@@ -69,6 +70,19 @@ func (w *Window) destroy() {
 // UpdateWindowSurface (https://wiki.libsdl.org/SDL_UpdateWindowSurface)
 func (w *Window) updateSurface() error {
 	err := C.SDL_UpdateWindowSurface(w.cptr())
+	if err != 0 {
+		return getError()
+	}
+
+	return nil
+}
+
+func captureMouse(capture bool) error {
+	var _capture C.SDL_bool
+	if capture {
+		_capture = 1
+	}
+	err := C.SDL_CaptureMouse(_capture)
 	if err != 0 {
 		return getError()
 	}

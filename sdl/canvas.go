@@ -256,6 +256,11 @@ func (c *Canvas) Run(setup func()) {
 							}
 						}
 
+						err := captureMouse(true)
+						if err != nil {
+							fmt.Println(err)
+						}
+
 					case *mouseUpEvent:
 						leftState := t.Button == mouseLeft
 						middleState := t.Button == mouseMiddle
@@ -279,6 +284,11 @@ func (c *Canvas) Run(setup func()) {
 							if hb.Inside(mousePoint) {
 								go clickable.MouseUp(leftState, middleState, rightState)
 							}
+						}
+
+						err := captureMouse(false)
+						if err != nil {
+							fmt.Println(err)
 						}
 					case *mouseMotionEvent:
 						mousePoint := eff.Point{
@@ -351,10 +361,6 @@ func (c *Canvas) Run(setup func()) {
 						delay(targetTimeBetweenFrames - timeBetweenFrames)
 					}
 
-				}
-				err := captureMouse(true)
-				if err != nil {
-					// fmt.Println(err)
 				}
 
 				c.window.updateSurface()

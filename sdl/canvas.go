@@ -334,9 +334,7 @@ func (c *Canvas) Run(setup func()) {
 				c.sdlGraphics.renderer.clear()
 			}
 
-			for _, child := range c.Children() {
-				child.Draw(c)
-			}
+			c.Draw(c)
 
 			c.HandleUpdate()
 

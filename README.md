@@ -4,7 +4,6 @@ Effulgent Media API
 This API provides a way to easily create graphics programs in Go. Providing a framework to create [games](#examples), 
 [ui](#examples), [animation](#examples), or any type of graphical application.
 
-The sdl package is a partial wrapper of sdl for Go.  For a complete wrapper checkout go-sdl2 <https://github.com/veandco/go-sdl2>
 > **NOTE:** This repository is under heavy ongoing development and
 is likely to break over time. We currently do not have any releases
 yet. If you are planning to use the repository, please consider vendoring
@@ -16,15 +15,14 @@ Eff uses the openGL renderer in SDL, any system it runs on will require opengl s
 * Arch Linux: `sudo pacman -S sdl2{,_mixer,_image,_ttf}`
 * Ubuntu/Debian: `sudo apt-get install libsdl2{,-mixer,-image,-ttf}-dev `
 * Windows:
-    1. Install mingw <http://www.mingw.org/>, ensure the `bin` folder is in the windows path
-    2. Download the windows development sdl2 libraries:
-        1. SDL2 <https://www.libsdl.org/download-2.0.php>
-        2. SDL2_ttf <https://www.libsdl.org/projects/SDL_ttf/>
-        3. SDL2_mixer <https://www.libsdl.org/projects/SDL_mixer/>
-        4. SDL2_image <https://www.libsdl.org/projects/SDL_image/>
-    3. Extract each tarball to the same directory (i.e. `c:\mingw_dev_lib`) and add the bin(i.e. `c:\mingw_dev_lib\bin`) folder to the PATH enviroment variable.  Currently only the 32bit(i686) libraries are supported.
-    4. Update the cgo comment at the top of sdl.go to ensure that the include path and lib path match where you extracted the libraries
-    5. When building set the `GOARCH=386` and `CGO_ENABLED=1`. Use the `SET` command if you are using the normal windows command line and not git-bash
+    1. Download mysys264 <https://msys2.github.io/>
+    2. Install the git the x86_64 toolchain and SDL2 using pacman ```pacman -S git mingw-w64-x86_64-toolchain mingw64/mingw-w64-x86_64-SDL2 mingw64/mingw-w64-x86_64-SDL2_mixer mingw64/mingw-w64-x86_64-SDL2_image mingw64/mingw-w64-x86_64-SDL2_ttf mingw64/mingw-w64-x86_64-SDL2_net mingw64/mingw-w64-x86_64-cmake make``` You might need to restart the mysys64 shell once installed
+    3. Download golang from the website as a zip not an installer
+    4. Install in inside the mysys64 root, typically `C:\msys64\go`
+	5. Inside the mysys64 enviroment update your `.bashrc` to have a `$GOROOT` (in the above example is `C:\mysys64\go` and `$GOPATH`
+	6. Ensure that the `$PATH` is appended with `$GOROOT\bin` and `$GOPATH\bin`
+	7. Either `go get github.com/forestgiant/eff` or clone the repo from git in your `$GOPATH/src`
+	8. From the root of the `eff` source code type `make` this will build all the examples
 
 ### API Usage Example
 ```

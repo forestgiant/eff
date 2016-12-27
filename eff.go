@@ -144,7 +144,7 @@ func (r *Rect) Scale(s float64) Rect {
 	}
 }
 
-// Inside tests to see if rect is inside of this rect, assumes test rect has coordinates local to this rect
+// LocalInside tests to see if rect is inside of this rect, assumes test rect has coordinates local to this rect
 func (r *Rect) LocalInside(testRect Rect) bool {
 	if testRect.X > r.W {
 		return false

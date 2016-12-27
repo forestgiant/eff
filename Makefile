@@ -1,19 +1,19 @@
 .PHONY: build
 build:
-	echo "Building examples..."
-	go build -o examples/scroll/scroll examples/scroll/main.go
-	go build -o examples/text-view/text-view examples/text-view/main.go
-	go build -o examples/animating-text/animating-text examples/animating-text/main.go
-	go build -o examples/clickables/clickables examples/clickables/main.go
-	go build -o examples/drawing-primitives/drawing-primitives examples/drawing-primitives/main.go
-	go build -o examples/image-tile/image-tile examples/image-tile/main.go
-	go build -o examples/mouse-events/mouse-events examples/mouse-events/main.go
-	go build -o examples/moving-image/moving-image examples/moving-image/main.go
-	go build -o examples/moving-text/moving-text examples/moving-text/main.go
-	go build -o examples/sine-wave/sine-wave examples/sine-wave/main.go
-	go build -o examples/sound-check/sound-check examples/sound-check/main.go
-	go build -o examples/sound-player/sound-player examples/sound-player/main.go
-	go build -o examples/children/children examples/children/main.go
-	go build -o examples/clipping/clipping examples/clipping/main.go
+	cd examples/scroll; go build; cd ../../
+	cd examples/text-view; go build; cd ../../;
+	cd examples/animating-text; go build; cd ../../;
+	cd examples/clickables; go build; cd ../../;
+	cd examples/drawing-primitives; go build; cd ../../;
+	cd examples/image-tile; go build; cd ../../;
+	cd examples/mouse-events; go build; cd ../../;
+	cd examples/moving-image; go build; cd ../../;
+	cd examples/moving-text; go build; cd ../../;
+	cd examples/sine-wave; go build; cd ../../;
+	cd examples/sound-check; go build; cd ../../;
+	cd examples/sound-player; go build; cd ../../;
+	cd examples/children; go build; cd ../../;
+	cd examples/clipping; go build; cd ../../;
+	cd examples/many-children; go build; cd ../../;
 
 	

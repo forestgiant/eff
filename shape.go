@@ -85,14 +85,12 @@ func (shape *Shape) Draw(canvas Canvas) {
 			fn()
 		}
 		shape.SetShouldDraw(false)
-	}
-
-	for _, child := range shape.children {
-		rect := shape.Rect()
-		if rect.LocalInside(child.Rect()) {
-			child.Draw(canvas)
+		for _, child := range shape.children {
+			rect := shape.Rect()
+			if rect.LocalInside(child.Rect()) {
+				child.Draw(canvas)
+			}
 		}
-
 	}
 
 	shape.Graphics().End(shape)

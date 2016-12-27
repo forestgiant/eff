@@ -26,7 +26,6 @@ func NewGraphics(r *renderer, s float64) *Graphics {
 
 // Begin this must be called before calling draw functions
 func (graphics *Graphics) Begin(shape *eff.Shape) {
-	// fmt.Println(w, h)
 	mainThread <- func() {
 		var texture *texture
 		var ok bool

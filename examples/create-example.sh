@@ -7,7 +7,6 @@ do
     mkdir $var
     cp boilerplate/main.go $var/main.go
     echo "$var\n!$var/" >> ../.gitignore
-    awk -v var=$var '/ifeq/{print;print "\tCGO_ENABLED=1 GOARCH=386 go build -o examples/" var "/" var " examples/" var "/main.go";next}1' ../Makefile > make.tmp
-    awk -v var=$var '/else/{print;print "\tgo build -o examples/" var "/" var " examples/" var "/main.go";next}1' make.tmp > ../Makefile
-    rm make.tmp
+    awk -v var=$var '/build:/{print;print "\tcd examples/" var "; go build; cd ../../";next}1' ../Makefile > make.tmp
+    mv make.tmp ../Makefile
 done

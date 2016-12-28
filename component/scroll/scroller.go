@@ -1,10 +1,6 @@
 package scroll
 
-import (
-	"fmt"
-
-	"github.com/forestgiant/eff"
-)
+import "github.com/forestgiant/eff"
 
 type Scroller struct {
 	eff.Shape
@@ -50,6 +46,6 @@ func NewScroller(content *eff.Shape, r eff.Rect, c eff.Canvas) *Scroller {
 	s := &Scroller{}
 	s.init(content, r, c)
 	// s.SetRect(r)
-	fmt.Println(s.Rect())
+	// fmt.Println(s.Rect())
 	return s
 }

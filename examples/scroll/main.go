@@ -56,6 +56,7 @@ func main() {
 			W: windowW,
 			H: rowHeight * rowCount,
 		})
+		content.SetBackgroundColor(eff.RandomColor())
 		for i := 0; i < rowCount; i++ {
 			content.AddChild(createRow(fmt.Sprintf("Row: %d", i)))
 		}

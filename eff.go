@@ -63,6 +63,20 @@ type Color struct {
 	A int
 }
 
+// Add offset the rgb values of the color
+func (c *Color) Add(v int) {
+	c.R += v
+	c.G += v
+	c.B += v
+
+	c.R = int(math.Min(0xFF, float64(c.R)))
+	c.R = int(math.Max(0x00, float64(c.R)))
+	c.G = int(math.Min(0xFF, float64(c.G)))
+	c.G = int(math.Max(0x00, float64(c.G)))
+	c.B = int(math.Min(0xFF, float64(c.B)))
+	c.B = int(math.Max(0x00, float64(c.B)))
+}
+
 // RandomColor genereate a random color struct.  The opacity is also random
 func RandomColor() Color {
 	return Color{

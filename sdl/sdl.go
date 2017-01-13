@@ -1,4 +1,5 @@
 package sdl
+
 // #cgo linux freebsd darwin windows pkg-config: sdl2
 // #cgo linux freebsd darwin windows LDFLAGS: -lSDL2_ttf -lSDL2_mixer -lSDL2_image
 // #include "wrapper.h"
@@ -99,6 +100,14 @@ func getError() error {
 		return errors.New(C.GoString(err))
 	}
 	return nil
+}
+
+// getVersion gets the current SDL version (https://wiki.libsdl.org/SDL_GetVersion) return values are major, minor, patch
+func getVersion() (int, int, int) {
+	var version C.SDL_version
+	C.SDL_GetVersion(&version)
+
+	return int(version.major), int(version.minor), int(version.patch)
 }
 
 // ClearError (https://wiki.libsdl.org/SDL_ClearError)

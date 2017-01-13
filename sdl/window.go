@@ -76,16 +76,3 @@ func (w *Window) updateSurface() error {
 
 	return nil
 }
-
-func captureMouse(capture bool) error {
-	var _capture C.SDL_bool
-	if capture {
-		_capture = 1
-	}
-	err := C.SDL_CaptureMouse(_capture)
-	if err != 0 {
-		return getError()
-	}
-
-	return nil
-}

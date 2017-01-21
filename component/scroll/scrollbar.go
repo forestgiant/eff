@@ -54,7 +54,7 @@ func (s *ScrollBar) init(c eff.Canvas) {
 		W: s.Rect().W,
 		H: s.Rect().H / 10,
 	})
-	nub.SetBackgroundColor(eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF})
+	nub.SetBackgroundColor(eff.Color{R: 0xCC, G: 0xCC, B: 0xCC, A: 0xFF})
 	s.AddChild(nub)
 
 	c.AddClickable(nub)

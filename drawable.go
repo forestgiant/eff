@@ -25,6 +25,8 @@ type Drawable interface {
 
 	SetGraphicsReadyHandler(func())
 
+	SetResizeHandler(func())
+
 	AddChild(Drawable) error
 	RemoveChild(Drawable) error
 	Children() []Drawable
@@ -42,6 +44,7 @@ type drawable struct {
 	children             []Drawable
 	updateHandler        func()
 	graphicsReadyHandler func()
+	resizeHandler        func()
 }
 
 func (d *drawable) init() {
@@ -53,9 +56,18 @@ func (d *drawable) init() {
 }
 
 func (d *drawable) SetRect(r Rect) {
+	resized := false
+	if r.W != d.rect.W || r.H != d.rect.H {
+		resized = true
+	}
+
 	d.rect = r
 	if d.Parent() != nil {
 		d.Parent().SetShouldDraw(true)
+	}
+
+	if resized && d.resizeHandler != nil {
+		d.resizeHandler()
 	}
 }
 
@@ -165,6 +177,10 @@ func (d *drawable) HandleUpdate() {
 
 func (d *drawable) SetGraphicsReadyHandler(handler func()) {
 	d.graphicsReadyHandler = handler
+}
+
+func (d *drawable) SetResizeHandler(handler func()) {
+	d.resizeHandler = handler
 }
 
 func (d *drawable) ParentOffsetRect() Rect {

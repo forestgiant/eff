@@ -5,10 +5,11 @@ import "github.com/forestgiant/eff"
 type Scroller struct {
 	eff.Shape
 
-	content *eff.Shape
+	content eff.Drawable
 }
 
-func (s *Scroller) init(content *eff.Shape, r eff.Rect, c eff.Canvas) {
+func (s *Scroller) init(content eff.Drawable, r eff.Rect, c eff.Canvas) {
+	s.SetBackgroundColor(eff.White())
 	s.content = content
 	s.content.SetRect(eff.Rect{
 		X: 0,
@@ -42,7 +43,7 @@ func (s *Scroller) init(content *eff.Shape, r eff.Rect, c eff.Canvas) {
 	}
 }
 
-func NewScroller(content *eff.Shape, r eff.Rect, c eff.Canvas) *Scroller {
+func NewScroller(content eff.Drawable, r eff.Rect, c eff.Canvas) *Scroller {
 	s := &Scroller{}
 	s.init(content, r, c)
 	// s.SetRect(r)

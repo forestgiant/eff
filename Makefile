@@ -1,5 +1,6 @@
 .PHONY: build
 build:
+	cd examples/grid; go build; cd ../../
 	cd examples/scroll; go build; cd ../../
 	cd examples/text-view; go build; cd ../../;
 	cd examples/animating-text; go build; cd ../../;

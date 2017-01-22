@@ -10,7 +10,7 @@ import (
 
 const (
 	// Version current semantic version of eff
-	Version = "0.2.1"
+	Version = "0.2.2"
 )
 
 // Point container for 2d points

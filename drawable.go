@@ -120,6 +120,7 @@ func (d *drawable) AddChild(c Drawable) error {
 	if d.graphics != nil {
 		c.SetGraphics(d.graphics)
 	}
+	d.SetShouldDraw(true)
 
 	return nil
 }
@@ -152,6 +153,8 @@ func (d *drawable) RemoveChild(c Drawable) error {
 	d.children[index].SetGraphics(nil)
 
 	d.children = append(d.children[:index], d.children[index+1:]...)
+
+	d.SetShouldDraw(true)
 	return nil
 }
 

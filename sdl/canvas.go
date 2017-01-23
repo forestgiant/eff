@@ -330,6 +330,14 @@ func (c *Canvas) Run(setup func()) {
 					uint8(bgColor.B),
 					uint8(bgColor.A),
 				)
+
+				drawableW, _ := c.window.getDrawableSize()
+				scale := float64(drawableW) / float64(c.Rect().W)
+				if scale != c.sdlGraphics.scale {
+					c.sdlGraphics.scale = scale
+					c.SetShouldDraw(true)
+					c.RedrawChildren()
+				}
 				c.sdlGraphics.renderer.setTarget(nil)
 				c.sdlGraphics.renderer.clear()
 			}

@@ -33,6 +33,7 @@ type Drawable interface {
 
 	ShouldDraw() bool
 	SetShouldDraw(bool)
+	RedrawChildren()
 }
 
 type drawable struct {
@@ -208,5 +209,12 @@ func (d *drawable) SetShouldDraw(b bool) {
 	d.drawNeeded = b
 	if d.Parent() != nil && b {
 		d.Parent().SetShouldDraw(b)
+	}
+}
+
+func (d *drawable) RedrawChildren() {
+	for _, child := range d.children {
+		child.SetShouldDraw(true)
+		child.RedrawChildren()
 	}
 }

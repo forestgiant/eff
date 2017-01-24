@@ -5,7 +5,8 @@ import "github.com/forestgiant/eff"
 type Scroller struct {
 	eff.Shape
 
-	content eff.Drawable
+	content          eff.Drawable
+	scrollBarVisibie bool
 }
 
 func (s *Scroller) init(content eff.Drawable, r eff.Rect, c eff.Canvas) {
@@ -19,7 +20,7 @@ func (s *Scroller) init(content eff.Drawable, r eff.Rect, c eff.Canvas) {
 	})
 	s.SetRect(r)
 
-	barWidth := 30
+	barWidth := 10
 	scrollBar := NewScrollBar(eff.Rect{
 		X: s.Rect().W - barWidth,
 		Y: 0,
@@ -27,9 +28,27 @@ func (s *Scroller) init(content eff.Drawable, r eff.Rect, c eff.Canvas) {
 		H: s.Rect().H,
 	}, c)
 	scrollBar.SetBackgroundColor(eff.Color{R: 0x00, G: 0x00, B: 0x00, A: 0x66})
+	s.content.SetResizeHandler(func() {
+		if s.content.Rect().H > s.Rect().H && !s.scrollBarVisibie {
+			s.AddChild(scrollBar)
+			s.scrollBarVisibie = true
+		} else if s.content.Rect().H < s.Rect().H && s.scrollBarVisibie {
+			s.RemoveChild(scrollBar)
+			s.scrollBarVisibie = false
+			s.content.SetRect(eff.Rect{
+				X: 0,
+				Y: 0,
+				W: s.content.Rect().W,
+				H: s.content.Rect().H,
+			})
+		}
+	})
 
 	s.AddChild(content)
-	s.AddChild(scrollBar)
+	if s.content.Rect().H > s.Rect().H && !s.scrollBarVisibie {
+		s.AddChild(scrollBar)
+		s.scrollBarVisibie = true
+	}
 
 	scrollBar.OnScrollHandler = func(p float64) {
 		heightDiff := content.Rect().H - s.Rect().H

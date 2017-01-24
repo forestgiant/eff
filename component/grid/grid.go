@@ -57,20 +57,24 @@ func (g *Grid) updateGrid() {
 	}
 }
 
-// AddChild adds a child to the grid and places it in the correct spot
-func (g *Grid) AddChild(c eff.Drawable) error {
+func (g *Grid) updateRect() {
 	if g.cellHeight > 0 && g.rows > 0 {
 		rowCount := (len(g.Children()) + 1) / g.cols
 		newHeight := rowCount*(g.cellHeight) + ((rowCount + 1) * g.padding)
-		if newHeight > g.Rect().H {
-			g.SetRect(eff.Rect{
-				X: g.Rect().X,
-				Y: g.Rect().Y,
-				W: g.Rect().W,
-				H: newHeight,
-			})
-		}
+
+		g.SetRect(eff.Rect{
+			X: g.Rect().X,
+			Y: g.Rect().Y,
+			W: g.Rect().W,
+			H: newHeight,
+		})
+		g.RedrawChildren()
 	}
+}
+
+// AddChild adds a child to the grid and places it in the correct spot
+func (g *Grid) AddChild(c eff.Drawable) error {
+	g.updateRect()
 	c.SetRect(g.rectForIndex(len(g.Children())))
 	return g.Shape.AddChild(c)
 }
@@ -81,7 +85,7 @@ func (g *Grid) RemoveChild(c eff.Drawable) error {
 	if err != nil {
 		return err
 	}
-
+	g.updateRect()
 	g.updateGrid()
 
 	return nil

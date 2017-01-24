@@ -25,6 +25,8 @@ _testmain.go
 
 cover.out
 
+.DS_Store
+
 drawing-primitives
 !drawing-primitives/
 sine-wave

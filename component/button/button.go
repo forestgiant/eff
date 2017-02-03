@@ -31,6 +31,14 @@ func downTextColor() eff.Color {
 	return eff.Black()
 }
 
+func selectedBGColor() eff.Color {
+	return eff.Black()
+}
+
+func selectedTextColor() eff.Color {
+	return eff.White()
+}
+
 // Click function that is called when the button is clicked
 type Click func(*Button)
 
@@ -38,19 +46,22 @@ type Click func(*Button)
 type Button struct {
 	eff.Shape
 
-	mouseDown        bool
-	mouseOver        bool
-	Text             string
-	ClickHandler     func(b *Button)
-	font             eff.Font
-	defaultBGColor   eff.Color
-	defaultTextColor eff.Color
-	overBGColor      eff.Color
-	overTextColor    eff.Color
-	downBGColor      eff.Color
-	downTextColor    eff.Color
-	bgColor          eff.Color
-	textColor        eff.Color
+	mouseDown         bool
+	mouseOver         bool
+	selected          bool
+	Text              string
+	ClickHandler      func(b *Button)
+	font              eff.Font
+	defaultBGColor    eff.Color
+	defaultTextColor  eff.Color
+	overBGColor       eff.Color
+	overTextColor     eff.Color
+	downBGColor       eff.Color
+	downTextColor     eff.Color
+	selectedBGColor   eff.Color
+	selectedTextColor eff.Color
+	bgColor           eff.Color
+	textColor         eff.Color
 }
 
 // Hitbox returns the hitbox rect of the button, this is the same as Button.Rect
@@ -69,7 +80,10 @@ func (b *Button) MouseDown(leftState bool, middleState bool, rightState bool) {
 func (b *Button) MouseUp(leftState bool, middleState bool, rightState bool) {
 	if b.mouseDown {
 		b.mouseDown = false
-		b.ClickHandler(b)
+		if b.ClickHandler != nil {
+			b.ClickHandler(b)
+		}
+
 	}
 
 	b.drawButton()
@@ -113,14 +127,16 @@ func (b *Button) drawButton() {
 
 	bgColor := b.defaultBGColor
 	textColor := b.defaultTextColor
-	if b.mouseDown {
+	if b.selected {
+		bgColor = b.selectedBGColor
+		textColor = b.selectedTextColor
+	} else if b.mouseDown {
 		bgColor = b.downBGColor
 		textColor = b.downTextColor
 	} else if b.mouseOver {
 		bgColor = b.overBGColor
 		textColor = b.overTextColor
 	}
-
 	b.SetBackgroundColor(bgColor)
 	b.DrawText(b.font, text, textColor, textPoint)
 }
@@ -182,6 +198,33 @@ func (b *Button) DownTextColor() eff.Color {
 	return b.downTextColor
 }
 
+func (b *Button) SetSelectedBGColor(c eff.Color) {
+	b.selectedBGColor = c
+	b.drawButton()
+}
+
+func (b *Button) SelectedBGColor() eff.Color {
+	return b.selectedBGColor
+}
+
+func (b *Button) SetSelectedTextColor(c eff.Color) {
+	b.selectedTextColor = c
+	b.drawButton()
+}
+
+func (b *Button) SelectedTextColor() eff.Color {
+	return b.selectedTextColor
+}
+
+func (b *Button) Selected() bool {
+	return b.selected
+}
+
+func (b *Button) SetSelected(selected bool) {
+	b.selected = selected
+	b.drawButton()
+}
+
 // NewButton function that creates an instance of the component button
 func NewButton(font eff.Font, text string, rect eff.Rect, clickhandler Click) *Button {
 	b := &Button{
@@ -197,9 +240,15 @@ func NewButton(font eff.Font, text string, rect eff.Rect, clickhandler Click) *B
 	b.downTextColor = downTextColor()
 	b.overBGColor = overBGColor()
 	b.overTextColor = overTextColor()
+	b.selectedBGColor = selectedBGColor()
+	b.selectedTextColor = selectedTextColor()
 	b.bgColor = defaultBGColor()
 	b.textColor = defaultTextColor()
+
 	b.SetGraphicsReadyHandler(func() {
+		b.drawButton()
+	})
+	b.SetResizeHandler(func() {
 		b.drawButton()
 	})
 

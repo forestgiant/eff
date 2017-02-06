@@ -59,7 +59,7 @@ func (g *Grid) updateGrid() {
 
 func (g *Grid) updateRect() {
 	if g.cellHeight > 0 && g.rows > 0 {
-		rowCount := (len(g.Children()) + 1) / g.cols
+		rowCount := util.RoundToInt(float64((len(g.Children()) + 1)) / float64(g.cols))
 		newHeight := rowCount*(g.cellHeight) + ((rowCount + 1) * g.padding)
 
 		g.SetRect(eff.Rect{

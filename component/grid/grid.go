@@ -1,6 +1,8 @@
 package grid
 
 import (
+	"math"
+
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/util"
 )
@@ -59,7 +61,7 @@ func (g *Grid) updateGrid() {
 
 func (g *Grid) updateRect() {
 	if g.cellHeight > 0 && g.rows > 0 {
-		rowCount := util.RoundToInt(float64((len(g.Children()) + 1)) / float64(g.cols))
+		rowCount := int(math.Ceil(float64((len(g.Children()) + 1)) / float64(g.cols)))
 		newHeight := rowCount*(g.cellHeight) + ((rowCount + 1) * g.padding)
 
 		g.SetRect(eff.Rect{

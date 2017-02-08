@@ -77,7 +77,9 @@ func (shape *Shape) offsetRects(rects []Rect) []Rect {
 
 // Draw this draws the shape and all of its children to the canvas, typically called by the canvas its added to
 func (shape *Shape) Draw(canvas Canvas) {
-
+	if shape.Graphics() == nil {
+		return
+	}
 	shape.Graphics().Begin(shape)
 	if shape.ShouldDraw() {
 		shape.graphics.FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)

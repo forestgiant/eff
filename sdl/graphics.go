@@ -29,7 +29,7 @@ func (graphics *Graphics) Begin(shape *eff.Shape) {
 	mainThread <- func() {
 		var texture *texture
 		var ok bool
-		if texture, ok = graphics.textureByShape[shape]; ok {
+		if texture, ok = graphics.textureByShape[shape]; ok && !shape.TextureInvalid() {
 			// fmt.Println("Begin: Re-using texture", ok)
 			graphics.textures = append(graphics.textures, texture)
 			err := graphics.renderer.setTarget(texture)
@@ -54,6 +54,7 @@ func (graphics *Graphics) Begin(shape *eff.Shape) {
 			}
 
 			graphics.textureByShape[shape] = texture
+			shape.SetTextureInvalid(false)
 			err = graphics.renderer.setTarget(texture)
 			if err != nil {
 				fmt.Println("Begin: Set target error", err)

@@ -62,6 +62,7 @@ type Button struct {
 	selectedTextColor eff.Color
 	bgColor           eff.Color
 	textColor         eff.Color
+	img               eff.Image
 }
 
 // Hitbox returns the hitbox rect of the button, this is the same as Button.Rect
@@ -110,20 +111,6 @@ func (b *Button) drawButton() {
 	}
 
 	b.Clear()
-	text, err := util.EllipseText(b.font, b.Text, b.Rect().W, b.Graphics())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	textW, textH, err := b.Graphics().GetTextSize(b.font, text)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	textPoint := eff.Point{
-		X: (b.Rect().W - textW) / 2,
-		Y: (b.Rect().H - textH) / 2,
-	}
 
 	bgColor := b.defaultBGColor
 	textColor := b.defaultTextColor
@@ -138,7 +125,38 @@ func (b *Button) drawButton() {
 		textColor = b.overTextColor
 	}
 	b.SetBackgroundColor(bgColor)
-	b.DrawText(b.font, text, textColor, textPoint)
+
+	if len(b.Text) > 0 && b.font != nil {
+		text, err := util.EllipseText(b.font, b.Text, b.Rect().W, b.Graphics())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		textW, textH, err := b.Graphics().GetTextSize(b.font, text)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		textPoint := eff.Point{
+			X: (b.Rect().W - textW) / 2,
+			Y: (b.Rect().H - textH) / 2,
+		}
+		b.DrawText(b.font, text, textColor, textPoint)
+	}
+
+	if b.img != nil {
+		aspect := float64(b.img.Width()) / float64(b.img.Height())
+		w := int(float64(b.Rect().H) * aspect)
+		x := (b.Rect().W - w) / 2
+
+		b.Clear()
+		b.DrawImage(b.img, eff.Rect{
+			X: x,
+			Y: 0,
+			W: w,
+			H: b.Rect().H,
+		})
+	}
 }
 
 // IsMouseOver function that returns true if the mouse cursor is currently inside the hitbox
@@ -225,6 +243,10 @@ func (b *Button) SetSelected(selected bool) {
 	b.drawButton()
 }
 
+func (b *Button) SetImage(img eff.Image) {
+	b.img = img
+}
+
 // NewButton function that creates an instance of the component button
 func NewButton(font eff.Font, text string, rect eff.Rect, clickhandler Click) *Button {
 	b := &Button{
@@ -253,4 +275,37 @@ func NewButton(font eff.Font, text string, rect eff.Rect, clickhandler Click) *B
 	})
 
 	return b
+}
+
+func NewImageButton(imgPath string, rect eff.Rect, canvas eff.Canvas, clickhandler Click) (*Button, error) {
+	img, err := canvas.OpenImage(imgPath)
+	if err != nil {
+		return nil, err
+	}
+
+	b := &Button{
+		img:          img,
+		ClickHandler: clickhandler,
+	}
+
+	b.SetRect(rect)
+	b.defaultBGColor = defaultBGColor()
+	b.defaultTextColor = defaultTextColor()
+	b.downBGColor = downBGColor()
+	b.downTextColor = downTextColor()
+	b.overBGColor = overBGColor()
+	b.overTextColor = overTextColor()
+	b.selectedBGColor = selectedBGColor()
+	b.selectedTextColor = selectedTextColor()
+	b.bgColor = defaultBGColor()
+	b.textColor = defaultTextColor()
+
+	b.SetGraphicsReadyHandler(func() {
+		b.drawButton()
+	})
+	b.SetResizeHandler(func() {
+		b.drawButton()
+	})
+
+	return b, nil
 }

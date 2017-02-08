@@ -33,6 +33,8 @@ type Drawable interface {
 
 	ShouldDraw() bool
 	SetShouldDraw(bool)
+	TextureInvalid() bool
+	SetTextureInvalid(bool)
 	RedrawChildren()
 }
 
@@ -42,6 +44,7 @@ type drawable struct {
 	parent               Drawable
 	graphics             Graphics
 	drawNeeded           bool
+	textureInvalid       bool
 	children             []Drawable
 	updateHandler        func()
 	graphicsReadyHandler func()
@@ -67,8 +70,11 @@ func (d *drawable) SetRect(r Rect) {
 		d.Parent().SetShouldDraw(true)
 	}
 
-	if resized && d.resizeHandler != nil {
-		d.resizeHandler()
+	if resized {
+		d.SetTextureInvalid(true)
+		if d.resizeHandler != nil {
+			d.resizeHandler()
+		}
 	}
 }
 
@@ -217,4 +223,12 @@ func (d *drawable) RedrawChildren() {
 		child.SetShouldDraw(true)
 		child.RedrawChildren()
 	}
+}
+
+func (d *drawable) TextureInvalid() bool {
+	return d.textureInvalid
+}
+
+func (d *drawable) SetTextureInvalid(invalid bool) {
+	d.textureInvalid = invalid
 }

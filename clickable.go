@@ -8,4 +8,5 @@ type Clickable interface {
 	MouseOver()
 	MouseOut()
 	IsMouseOver() bool
+	IsVisible() bool
 }

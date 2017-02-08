@@ -247,7 +247,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, clickable := range c.clickables {
-							if clickable == nil {
+							if clickable == nil || !clickable.IsVisible() {
 								continue
 							}
 
@@ -277,7 +277,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, clickable := range c.clickables {
-							if clickable == nil {
+							if clickable == nil || !clickable.IsVisible() {
 								continue
 							}
 
@@ -302,7 +302,7 @@ func (c *Canvas) Run(setup func()) {
 						}
 
 						for _, clickable := range c.clickables {
-							if clickable == nil {
+							if clickable == nil || !clickable.IsVisible() {
 								continue
 							}
 

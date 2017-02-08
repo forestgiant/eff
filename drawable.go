@@ -38,6 +38,8 @@ type Drawable interface {
 	TextureInvalid() bool
 	SetTextureInvalid(bool)
 	InvalidateChildTextures()
+
+	IsVisible() bool
 }
 
 type drawable struct {
@@ -240,4 +242,24 @@ func (d *drawable) InvalidateChildTextures() {
 		child.SetTextureInvalid(true)
 		child.InvalidateChildTextures()
 	}
+}
+
+func (d *drawable) IsVisible() bool {
+	if d.Parent() == nil {
+		return false
+	}
+
+	rect := d.Rect()
+	if rect.X+rect.W < 0 || rect.Y+rect.H < 0 {
+		return false
+	}
+	for p := d.Parent(); p != nil; p = p.Parent() {
+		rect.X += p.Rect().X
+		rect.Y += p.Rect().Y
+		if rect.X+rect.W < 0 || rect.Y+rect.H < 0 {
+			return false
+		}
+	}
+
+	return true
 }

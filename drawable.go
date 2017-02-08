@@ -33,9 +33,11 @@ type Drawable interface {
 
 	ShouldDraw() bool
 	SetShouldDraw(bool)
+	RedrawChildren()
+
 	TextureInvalid() bool
 	SetTextureInvalid(bool)
-	RedrawChildren()
+	InvalidateChildTextures()
 }
 
 type drawable struct {
@@ -231,4 +233,11 @@ func (d *drawable) TextureInvalid() bool {
 
 func (d *drawable) SetTextureInvalid(invalid bool) {
 	d.textureInvalid = invalid
+}
+
+func (d *drawable) InvalidateChildTextures() {
+	for _, child := range d.children {
+		child.SetTextureInvalid(true)
+		child.InvalidateChildTextures()
+	}
 }

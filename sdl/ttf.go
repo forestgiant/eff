@@ -24,6 +24,23 @@ func (f *Font) Size() int {
 	return f.size
 }
 
+func (f *Font) refresh(pointSize int) error {
+	if f.path == "" {
+		return errors.New("fontPath is empty")
+	}
+
+	_fontPath := C.CString(f.path)
+	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
+
+	if _font == nil {
+		return getTTFError()
+	}
+
+	f.sdlFont = _font
+
+	return nil
+}
+
 var ttfInitialized bool
 
 // InitTTF initialize the SDL_ttf

@@ -41,6 +41,7 @@ type Canvas struct {
 	frameRate           int
 	useVsync            bool
 	sdlGraphics         *Graphics
+	fonts               []*Font
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -336,7 +337,12 @@ func (c *Canvas) Run(setup func()) {
 				if scale != c.sdlGraphics.scale {
 					c.sdlGraphics.scale = scale
 					c.SetShouldDraw(true)
+					c.SetTextureInvalid(true)
 					c.RedrawChildren()
+					c.InvalidateChildTextures()
+					for _, font := range c.fonts {
+						font.refresh(int(float64(font.size) * c.sdlGraphics.scale))
+					}
 				}
 				c.sdlGraphics.renderer.setTarget(nil)
 				c.sdlGraphics.renderer.clear()
@@ -420,6 +426,7 @@ func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
 	if err != nil {
 		return nil, err
 	}
+	c.fonts = append(c.fonts, f)
 	return f, nil
 }
 

@@ -11,7 +11,6 @@ import (
 type Font struct {
 	path    string
 	size    int
-	points  int
 	sdlFont *C.TTF_Font
 }
 
@@ -31,7 +30,7 @@ func (f *Font) refresh(scale float64) error {
 	}
 
 	_fontPath := C.CString(f.path)
-	pointSize := int(float64(f.points) * scale)
+	pointSize := int(float64(f.size) * scale)
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
 
 	if _font == nil {
@@ -79,8 +78,7 @@ func openFont(fontPath string, points int, scale float64) (*Font, error) {
 
 	f := Font{
 		path:    fontPath,
-		size:    pointSize,
-		points:  points,
+		size:    points,
 		sdlFont: (*C.TTF_Font)(unsafe.Pointer(_font)),
 	}
 	return &f, nil

@@ -11,6 +11,7 @@ import (
 type Font struct {
 	path    string
 	size    int
+	points  int
 	sdlFont *C.TTF_Font
 }
 
@@ -24,12 +25,13 @@ func (f *Font) Size() int {
 	return f.size
 }
 
-func (f *Font) refresh(pointSize int) error {
+func (f *Font) refresh(scale float64) error {
 	if f.path == "" {
 		return errors.New("fontPath is empty")
 	}
 
 	_fontPath := C.CString(f.path)
+	pointSize := int(float64(f.points) * scale)
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
 
 	if _font == nil {
@@ -62,12 +64,13 @@ func getTTFError() error {
 }
 
 // OpenFont (https://www.libsdl.org/projects/SDL_ttf)
-func openFont(fontPath string, pointSize int) (*Font, error) {
+func openFont(fontPath string, points int, scale float64) (*Font, error) {
 	if fontPath == "" {
 		return nil, errors.New("fontPath is empty")
 	}
 
 	_fontPath := C.CString(fontPath)
+	pointSize := int(float64(points) * scale)
 	var _font = C.TTF_OpenFont(_fontPath, C.int(pointSize))
 
 	if _font == nil {
@@ -77,6 +80,7 @@ func openFont(fontPath string, pointSize int) (*Font, error) {
 	f := Font{
 		path:    fontPath,
 		size:    pointSize,
+		points:  points,
 		sdlFont: (*C.TTF_Font)(unsafe.Pointer(_font)),
 	}
 	return &f, nil

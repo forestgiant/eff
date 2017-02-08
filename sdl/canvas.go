@@ -341,7 +341,7 @@ func (c *Canvas) Run(setup func()) {
 					c.RedrawChildren()
 					c.InvalidateChildTextures()
 					for _, font := range c.fonts {
-						font.refresh(int(float64(font.size) * c.sdlGraphics.scale))
+						font.refresh(c.sdlGraphics.scale)
 					}
 				}
 				c.sdlGraphics.renderer.setTarget(nil)
@@ -421,8 +421,8 @@ func (c *Canvas) SetFullscreen(fullscreen bool) {
 
 // OpenFont creates a eff.Font object, used for rendering text
 func (c *Canvas) OpenFont(path string, size int) (eff.Font, error) {
-	size = int(float64(size) * c.sdlGraphics.scale)
-	f, err := openFont(path, size)
+
+	f, err := openFont(path, size, c.sdlGraphics.scale)
 	if err != nil {
 		return nil, err
 	}

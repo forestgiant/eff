@@ -198,6 +198,19 @@ func (c *Canvas) Run(setup func()) {
 	}
 
 	run := func() {
+		refreshUI := func() {
+			drawableW, _ := c.window.getDrawableSize()
+			scale := float64(drawableW) / float64(c.Rect().W)
+			c.sdlGraphics.scale = scale
+			c.SetShouldDraw(true)
+			c.SetTextureInvalid(true)
+			c.RedrawChildren()
+			c.InvalidateChildTextures()
+			for _, font := range c.fonts {
+				font.refresh(c.sdlGraphics.scale)
+			}
+		}
+
 		running := true
 
 		for running {
@@ -213,10 +226,12 @@ func (c *Canvas) Run(setup func()) {
 						case KeyF:
 							c.fullscreen = !c.fullscreen
 							if c.fullscreen {
-								c.window.setFullscreen(windowFullscreen)
+								c.window.setFullscreen(windowFullscreenDesktop)
 							} else {
 								c.window.setFullscreen(0)
 							}
+
+							refreshUI()
 						}
 
 						for _, handler := range c.keyUpHandlers {
@@ -335,14 +350,7 @@ func (c *Canvas) Run(setup func()) {
 				drawableW, _ := c.window.getDrawableSize()
 				scale := float64(drawableW) / float64(c.Rect().W)
 				if scale != c.sdlGraphics.scale {
-					c.sdlGraphics.scale = scale
-					c.SetShouldDraw(true)
-					c.SetTextureInvalid(true)
-					c.RedrawChildren()
-					c.InvalidateChildTextures()
-					for _, font := range c.fonts {
-						font.refresh(c.sdlGraphics.scale)
-					}
+					refreshUI()
 				}
 				c.sdlGraphics.renderer.setTarget(nil)
 				c.sdlGraphics.renderer.clear()

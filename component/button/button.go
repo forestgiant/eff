@@ -63,6 +63,8 @@ type Button struct {
 	bgColor           eff.Color
 	textColor         eff.Color
 	img               eff.Image
+	imagePadding      int
+	imgShape          *eff.Shape
 }
 
 // Hitbox returns the hitbox rect of the button, this is the same as Button.Rect
@@ -145,16 +147,29 @@ func (b *Button) drawButton() {
 	}
 
 	if b.img != nil {
-		aspect := float64(b.img.Width()) / float64(b.img.Height())
-		w := int(float64(b.Rect().H) * aspect)
-		x := (b.Rect().W - w) / 2
+		if b.imgShape != nil && b.imgShape.Parent() != nil {
+			b.RemoveChild(b.imgShape)
+		}
+		b.imgShape = &eff.Shape{}
+		b.imgShape.SetBackgroundColor(eff.Color{R: 0x00, G: 0x00, B: 0x00, A: 0x00})
+		b.imgShape.SetRect(eff.Rect{
+			X: b.imagePadding,
+			Y: b.imagePadding,
+			W: b.Rect().W - (2 * b.imagePadding),
+			H: b.Rect().H - (2 * b.imagePadding),
+		})
+		b.AddChild(b.imgShape)
 
+		aspect := float64(b.img.Height()) / float64(b.img.Width())
+		h := util.RoundToInt(float64(b.imgShape.Rect().W) * aspect)
+		y := util.RoundToInt(float64(b.imgShape.Rect().H-h) / 2)
 		b.Clear()
-		b.DrawImage(b.img, eff.Rect{
-			X: x,
-			Y: 0,
-			W: w,
-			H: b.Rect().H,
+		b.imgShape.Clear()
+		b.imgShape.DrawImage(b.img, eff.Rect{
+			X: 0,
+			Y: y,
+			W: b.imgShape.Rect().W,
+			H: h,
 		})
 	}
 }
@@ -245,6 +260,10 @@ func (b *Button) SetSelected(selected bool) {
 
 func (b *Button) SetImage(img eff.Image) {
 	b.img = img
+}
+
+func (b *Button) SetImagePadding(padding int) {
+	b.imagePadding = padding
 }
 
 // NewButton function that creates an instance of the component button

@@ -18,6 +18,7 @@ type Canvas interface {
 
 	AddClickable(clickable Clickable)
 	RemoveClickable(clickable Clickable)
+	RemoveAllClickables()
 
 	Run(setup func())
 

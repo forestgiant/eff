@@ -22,6 +22,9 @@ func EllipseText(font eff.Font, text string, width int, g eff.Graphics) (string,
 	if g == nil {
 		return "", errors.New("EllipseText Error: Graphics is nil")
 	}
+	if len(text) == 0 {
+		return "", errors.New("EllipseText Error: Text string is empty")
+	}
 
 	textW, _, err := g.GetTextSize(font, text)
 	if err != nil {

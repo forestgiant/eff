@@ -81,6 +81,12 @@ func (c *Canvas) RemoveClickable(clickable eff.Clickable) {
 	c.clickables = append(c.clickables[:index], c.clickables[index+1:]...)
 }
 
+func (c *Canvas) RemoveAllClickables() {
+	for _, click := range c.clickables {
+		c.RemoveClickable(click)
+	}
+}
+
 // AddKeyUpHandler adds key up event handler to the canvas
 func (c *Canvas) AddKeyUpHandler(handler eff.KeyHandler) {
 	c.keyUpHandlers = append(c.keyUpHandlers, handler)

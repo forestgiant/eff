@@ -47,7 +47,7 @@ func loadMusic(path string) (*music, error) {
 
 // PlayMusic (https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC57)
 func playMusic(music *music, loopCount int) error {
-	if C.Mix_PlayMusic(music, C.int(loopCount)) < 0 {
+	if C.Mix_PlayMusic((*C.Mix_Music)(music), C.int(loopCount)) < 0 {
 		return getMixError()
 	}
 
@@ -70,7 +70,7 @@ func haltMusic() {
 }
 
 func fadeInMusic(music *music, loopCount int, fadeTimeMS int) error {
-	if C.Mix_FadeInMusic(music, C.int(loopCount), C.int(fadeTimeMS)) < 0 {
+	if C.Mix_FadeInMusic((*C.Mix_Music)(music), C.int(loopCount), C.int(fadeTimeMS)) < 0 {
 		return getMixError()
 	}
 

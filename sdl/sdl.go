@@ -2,7 +2,8 @@ package sdl
 
 // #cgo darwin CFLAGS: -mmacosx-version-min=10.7
 // #cgo linux freebsd darwin windows pkg-config: sdl2
-// #cgo linux freebsd darwin windows LDFLAGS: -lSDL2_ttf -lSDL2_mixer -lSDL2_image -mmacosx-version-min=10.7
+// #cgo darwin LDFLAGS: -lSDL2_ttf -lSDL2_mixer -lSDL2_image -mmacosx-version-min=10.7
+// #cgo linux freebsd windows LDFLAGS: -lSDL2_ttf -lSDL2_mixer -lSDL2_image
 // #include "wrapper.h"
 import "C"
 import (

@@ -42,6 +42,7 @@ type Canvas struct {
 	useVsync            bool
 	sdlGraphics         *Graphics
 	fonts               []*Font
+	printFps            bool
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -58,6 +59,11 @@ func NewCanvas(title string, width int, height int, clearColor eff.Color, frameR
 	c.frameRate = frameRate
 	c.useVsync = useVsync
 	return &c
+}
+
+// SetPrintFPS pass true to log the fps, false to disable it
+func (c *Canvas) SetPrintFPS(printFps bool) {
+	c.printFps = printFps
 }
 
 // AddClickable adds a struct that implements the eff.Clickable interface
@@ -374,7 +380,10 @@ func (c *Canvas) Run(setup func()) {
 						currentFPS = 1000 / delta
 					}
 					if getTicks()-lastFPSPrintTime >= 1000 {
-						fmt.Println(currentFPS, "fps")
+						if c.printFps {
+							fmt.Println(currentFPS, "fps")
+						}
+
 						lastFPSPrintTime = getTicks()
 					}
 				}

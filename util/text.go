@@ -2,8 +2,7 @@ package util
 
 import (
 	"errors"
-	"log"
-	"math"
+	"fmt"
 	"strings"
 
 	"github.com/forestgiant/eff"
@@ -61,41 +60,33 @@ func CenterTextInRect(font eff.Font, text string, rect eff.Rect, g eff.Graphics)
 }
 
 // GetMultilineText creates and array of strings that do not exceed the maxWidth.  Returns the slice of strings and the height of the text per line
-func GetMultilineText(font eff.Font, text string, maxWidth int, g eff.Graphics) ([]string, int) {
-	w, h, err := g.GetTextSize(font, text)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	lineCount := w / maxWidth
-	maxRunesPerLine := len(text) / lineCount
-	checkSize := int(float64(maxRunesPerLine) * float64(0.75))
-	checkSize = int(math.Max(float64(checkSize), 1))
+func GetMultilineText(font eff.Font, text string, maxWidth int, g eff.Graphics) ([]string, int, error) {
 	var lines []string
-	words := strings.Split(text, " ")
-	wordIndex := 0
-	for wordIndex < len(words) {
-		w := 0
-		line := ""
-		for wordIndex < len(words) {
-			if len(line) >= checkSize {
-				w, _, err = g.GetTextSize(font, line+words[wordIndex]+" ")
-				if w > maxWidth {
-					break
-				}
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
 
-			line += words[wordIndex]
-			line += " "
-			wordIndex++
+	words := strings.Split(text, " ")
+	var maxH int
+	var line string
+	for _, word := range words {
+		oldLine := line
+		line = fmt.Sprintf("%s%s ", line, word)
+		w, h, err := g.GetTextSize(font, line)
+		if err != nil {
+			return nil, 0, err
 		}
 
+		if w > maxWidth {
+			lines = append(lines, oldLine)
+			line = word
+		}
+
+		if h > maxH {
+			maxH = h
+		}
+	}
+
+	if len(line) > 0 {
 		lines = append(lines, line)
 	}
 
-	return lines, h
-
+	return lines, maxH, nil
 }

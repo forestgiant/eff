@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/forestgiant/eff"
+	"github.com/forestgiant/eff/util"
 )
 
 // Graphics sdl graphics struct
@@ -443,8 +444,8 @@ func (graphics *Graphics) GetTextSize(font eff.Font, text string) (int, int, err
 		}
 
 		p := point{}
-		p.X = int32(float64(w) / graphics.scale)
-		p.Y = int32(float64(h) / graphics.scale)
+		p.X = int32(util.RoundToInt(float64(w) / graphics.scale))
+		p.Y = int32(util.RoundToInt(float64(h) / graphics.scale))
 
 		sizeChan <- p
 	}

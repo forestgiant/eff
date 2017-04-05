@@ -45,11 +45,17 @@ func (t *TextViewer) Init(c eff.Canvas) {
 	t.font = font
 	minWidth := 5
 	t.textWidth = minWidth
-	t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, t.Graphics())
+	t.lines, t.textHeight, err = util.GetMultilineText(t.font, text, t.textWidth, c.Graphics())
+	if err != nil {
+		log.Fatal(err)
+	}
 	t.tweener = tween.NewTweener(time.Second*5, func(progress float64) {
 		maxWidth := c.Rect().W - minWidth
 		t.textWidth = int(float64(maxWidth)*progress) + minWidth
-		t.lines, t.textHeight = util.GetMultilineText(t.font, text, t.textWidth, t.Graphics())
+		t.lines, t.textHeight, err = util.GetMultilineText(t.font, text, t.textWidth, c.Graphics())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}, true, true, nil, nil)
 
 	t.SetUpdateHandler(func() {
@@ -58,7 +64,7 @@ func (t *TextViewer) Init(c eff.Canvas) {
 		t.Clear()
 		linePoint := eff.Point{X: 0, Y: 0}
 		for _, line := range t.lines {
-			if linePoint.Y < c.Rect().H {
+			if linePoint.Y < c.Rect().H && len(line) > 0 {
 				t.DrawText(t.font, line, eff.Black(), linePoint)
 			}
 

@@ -51,15 +51,19 @@ func (s *Scroller) init(content eff.Drawable, r eff.Rect, c eff.Canvas) {
 	}
 
 	scrollBar.OnScrollHandler = func(p float64) {
-		heightDiff := content.Rect().H - s.Rect().H
-		s.content.SetRect(eff.Rect{
-			X: 0,
-			Y: int(-1 * float64(heightDiff) * p),
-			W: s.content.Rect().W,
-			H: s.content.Rect().H,
-		})
-
+		s.SetPercentage(p)
 	}
+}
+
+//SetPercentage sets the scroll position to a percetange represented as a float64 from 0-1
+func (s *Scroller) SetPercentage(p float64) {
+	heightDiff := s.content.Rect().H - s.Rect().H
+	s.content.SetRect(eff.Rect{
+		X: 0,
+		Y: int(-1 * float64(heightDiff) * p),
+		W: s.content.Rect().W,
+		H: s.content.Rect().H,
+	})
 }
 
 func NewScroller(content eff.Drawable, r eff.Rect, c eff.Canvas) *Scroller {

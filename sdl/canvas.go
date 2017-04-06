@@ -43,6 +43,7 @@ type Canvas struct {
 	sdlGraphics         *Graphics
 	fonts               []*Font
 	printFps            bool
+	running             bool
 }
 
 // NewCanvas creates a new SDL canvas instance
@@ -163,7 +164,7 @@ func (c *Canvas) Run(setup func()) {
 				windowPosUndefined,
 				c.Rect().W,
 				c.Rect().H,
-				windowOpenGl|windowAllowHighDPI|windowMouseCapture,
+				windowOpenGl|windowAllowHighDPI|windowMouseCapture|windowResizable,
 			)
 			drawableW, _ := c.window.getDrawableSize()
 			scale := float64(drawableW) / float64(c.Rect().W)
@@ -223,28 +224,28 @@ func (c *Canvas) Run(setup func()) {
 			}
 		}
 
-		running := true
+		c.running = true
 
-		for running {
+		for c.running {
 			mainThread <- func() {
 				for event := pollEvent(); event != nil; event = pollEvent() {
 					switch t := event.(type) {
 					case *quitEvent:
-						running = false
+						c.running = false
 					case *keyUpEvent:
-						switch t.Keysym.Sym {
-						case KeyQ:
-							running = false
-						case KeyF:
-							c.fullscreen = !c.fullscreen
-							if c.fullscreen {
-								c.window.setFullscreen(windowFullscreenDesktop)
-							} else {
-								c.window.setFullscreen(0)
-							}
+						// switch t.Keysym.Sym {
+						// case KeyQ:
+						// 	c.running = false
+						// case KeyF:
+						// 	c.fullscreen = !c.fullscreen
+						// 	if c.fullscreen {
+						// 		c.window.setFullscreen(windowFullscreenDesktop)
+						// 	} else {
+						// 		c.window.setFullscreen(0)
+						// 	}
 
-							refreshUI()
-						}
+						// 	refreshUI()
+						// }
 
 						for _, handler := range c.keyUpHandlers {
 							go handler(getKeyName(t.Keysym.Sym))
@@ -430,6 +431,11 @@ func (c *Canvas) Run(setup func()) {
 			close(mainDone) // stop mainThread
 		}
 	})
+}
+
+// Stop stops the eff loop
+func (c *Canvas) Stop() {
+	c.running = false
 }
 
 // Fullscreen get the full screen state of the window

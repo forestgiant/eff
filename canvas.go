@@ -21,6 +21,7 @@ type Canvas interface {
 	RemoveAllClickables()
 
 	Run(setup func())
+	Stop()
 
 	OpenFont(path string, size int) (Font, error)
 	OpenImage(path string) (Image, error)

@@ -82,17 +82,19 @@ func (shape *Shape) Draw(canvas Canvas) {
 	}
 	shape.Graphics().Begin(shape)
 	if shape.ShouldDraw() {
-		shape.graphics.FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
+		shape.Graphics().FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
 		for _, fn := range shape.drawCalls {
 			fn()
 		}
 		shape.SetShouldDraw(false)
-		for _, child := range shape.children {
+		shape.mu.RLock()
+		for _, child := range shape.Children() {
 			rect := shape.Rect()
 			if rect.LocalInside(child.Rect()) {
 				child.Draw(canvas)
 			}
 		}
+		shape.mu.RUnlock()
 	}
 
 	shape.Graphics().End(shape)
@@ -182,7 +184,7 @@ func (shape *Shape) StrokeColorRects(r []Rect, c []Color) {
 // FillRect fills a single rect to the canvas
 func (shape *Shape) FillRect(r Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		shape.graphics.FillRect(shape.offsetRect(r), c)
+		shape.Graphics().FillRect(shape.offsetRect(r), c)
 	})
 	shape.SetShouldDraw(true)
 }
@@ -190,7 +192,7 @@ func (shape *Shape) FillRect(r Rect, c Color) {
 // FillRects fills a slice of rects to the canvas using a single color
 func (shape *Shape) FillRects(r []Rect, c Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		shape.graphics.FillRects(shape.offsetRects(r), c)
+		shape.Graphics().FillRects(shape.offsetRects(r), c)
 	})
 	shape.SetShouldDraw(true)
 }
@@ -198,7 +200,7 @@ func (shape *Shape) FillRects(r []Rect, c Color) {
 // FillColorRects fills a slice of rects to the canvas using a different color for each, expects the length of the color slice to equal the length of the rect slice
 func (shape *Shape) FillColorRects(r []Rect, c []Color) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		shape.graphics.FillColorRects(shape.offsetRects(r), c)
+		shape.Graphics().FillColorRects(shape.offsetRects(r), c)
 	})
 	shape.SetShouldDraw(true)
 }
@@ -206,7 +208,7 @@ func (shape *Shape) FillColorRects(r []Rect, c []Color) {
 // DrawText draws a text string to the canvas
 func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		shape.graphics.DrawText(f, text, c, shape.offsetPoint(p))
+		shape.Graphics().DrawText(f, text, c, shape.offsetPoint(p))
 	})
 	shape.SetShouldDraw(true)
 }
@@ -214,7 +216,7 @@ func (shape *Shape) DrawText(f Font, text string, c Color, p Point) {
 // DrawImage draws an image to the canvas
 func (shape *Shape) DrawImage(i Image, r Rect) {
 	shape.drawCalls = append(shape.drawCalls, func() {
-		shape.graphics.DrawImage(i, r)
+		shape.Graphics().DrawImage(i, r)
 	})
 	shape.SetShouldDraw(true)
 }

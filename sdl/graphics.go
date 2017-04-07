@@ -39,6 +39,15 @@ func (graphics *Graphics) Begin(shape *eff.Shape) {
 			}
 		} else {
 			// fmt.Println("Begin: Creating new texture")
+			if texture != nil {
+				for i, t := range graphics.textures {
+					if t == texture {
+						graphics.textures = append(graphics.textures[:i], graphics.textures[i+1:]...)
+					}
+				}
+				texture.destroy()
+			}
+
 			w := int(float64(shape.Rect().W) * graphics.scale)
 			h := int(float64(shape.Rect().H) * graphics.scale)
 

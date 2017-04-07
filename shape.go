@@ -81,23 +81,24 @@ func (shape *Shape) Draw(canvas Canvas) {
 		return
 	}
 	shape.Graphics().Begin(shape)
+	shape.mu.RLock()
 	if shape.ShouldDraw() {
 		shape.Graphics().FillRect(Rect{X: 0, Y: 0, W: shape.Rect().W, H: shape.Rect().H}, shape.bgColor)
 		for _, fn := range shape.drawCalls {
 			fn()
 		}
 		shape.SetShouldDraw(false)
-		shape.mu.RLock()
-		for _, child := range shape.Children() {
+
+		for _, child := range shape.children {
 			rect := shape.Rect()
 			if rect.LocalInside(child.Rect()) {
 				child.Draw(canvas)
 			}
 		}
-		shape.mu.RUnlock()
 	}
 
 	shape.Graphics().End(shape)
+	shape.mu.RUnlock()
 }
 
 // SetBackgroundColor sets the background color of the shape

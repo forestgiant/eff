@@ -180,6 +180,9 @@ func (d *drawable) SetUpdateHandler(handler func()) {
 }
 
 func (d *drawable) HandleUpdate() {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+
 	if d.updateHandler != nil {
 		d.updateHandler()
 	}

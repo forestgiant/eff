@@ -87,6 +87,7 @@ func openFont(fontPath string, points int, scale float64) (*Font, error) {
 // RenderTextSolid (https://www.libsdl.org/projects/SDL_ttf)
 func renderTextSolid(font *Font, text string, c color) (*surface, error) {
 	_text := C.CString(text)
+	defer C.free(unsafe.Pointer(_text))
 	_color := c.cptr()
 	_surface := C.TTF_RenderText_Solid(font.sdlFont, _text, *_color)
 
@@ -100,7 +101,9 @@ func renderTextSolid(font *Font, text string, c color) (*surface, error) {
 // RenderTextBlended (https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC51)
 func renderTextBlended(font *Font, text string, c color) (*surface, error) {
 	_text := C.CString(text)
+	defer C.free(unsafe.Pointer(_text))
 	_color := c.cptr()
+	// defer C.free(unsafe.Pointer(_color))
 	_surface := C.TTF_RenderText_Blended(font.sdlFont, _text, *_color)
 
 	if _surface == nil {
@@ -113,6 +116,7 @@ func renderTextBlended(font *Font, text string, c color) (*surface, error) {
 // SizeText https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC39
 func sizeText(font *Font, text string) (int, int, error) {
 	_text := C.CString(text)
+	defer C.free(unsafe.Pointer(_text))
 	var _w C.int
 	var _h C.int
 	err := C.TTF_SizeText(font.sdlFont, _text, &_w, &_h)
